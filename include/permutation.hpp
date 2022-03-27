@@ -60,7 +60,7 @@ p_s(uint64_t* const state)
   state[1] ^= state[0];
   state[0] ^= state[4];
   state[3] ^= state[2];
-  state[2] ^= state[2];
+  state[2] = ~state[2];
 }
 
 // Just to force compile-time evaluation of template argument to `rotr` function
@@ -143,10 +143,35 @@ template<const size_t a, const size_t b>
 static inline void
 p_b(uint64_t* const state) requires(check_a(a) && check_b(b))
 {
-  for (size_t i = 0; i < b; i++) {
-    // for round index & constant index convention, read section 2.6.1 of Ascon
-    // specification
-    permute<i + a - b>(state);
+  if (b == 6) {
+    permute<6>(state);
+    permute<7>(state);
+    permute<8>(state);
+    permute<9>(state);
+    permute<10>(state);
+    permute<11>(state);
+  } else if (b == 8) {
+    permute<4>(state);
+    permute<5>(state);
+    permute<6>(state);
+    permute<7>(state);
+    permute<8>(state);
+    permute<9>(state);
+    permute<10>(state);
+    permute<11>(state);
+  } else if (b == 12) {
+    permute<0>(state);
+    permute<1>(state);
+    permute<2>(state);
+    permute<3>(state);
+    permute<4>(state);
+    permute<5>(state);
+    permute<6>(state);
+    permute<7>(state);
+    permute<8>(state);
+    permute<9>(state);
+    permute<10>(state);
+    permute<11>(state);
   }
 }
 
