@@ -1,2 +1,4 @@
 a.out
 .vscode
+lib*.so
+__pycache__

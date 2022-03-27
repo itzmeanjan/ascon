@@ -12,8 +12,11 @@ test/a.out: test/main.cpp include/*.hpp
 test_ascon: test/a.out
 	./test/a.out
 
+lib:
+	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(SYCLFLAGS) $(IFLAGS) -fsycl-targets=spir64_x86_64 -fPIC --shared wrapper/hash.cpp -o wrapper/libascon_hash.so
+
 clean:
-	find . -name 'a.out' -o -name '*.o' | xargs rm -f
+	find . -name 'a.out' -o -name '*.o' -o -name 'lib*.so' -o -name '__pycache__' | xargs rm -rf
 
 format:
 	find . -name '*.cpp' -o -name '*.hpp' | xargs clang-format -i --style=Mozilla
