@@ -16,10 +16,11 @@ constexpr uint64_t RC[12] = { 0x00000000000000f0, 0x00000000000000e1,
 
 // Addition of constants step; see section 2.6.1 of Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+template<const size_t c_idx>
 static inline void
-p_c(uint64_t* const state, const size_t r_idx)
+p_c(uint64_t* const state)
 {
-  state[2] ^= RC[r_idx];
+  state[2] ^= RC[c_idx];
 }
 
 // Substitution layer i.e. 5 -bit S-box S(x) applied on Ascon state; taken from
@@ -63,8 +64,8 @@ p_s(uint64_t* const state)
 }
 
 // Just to force compile-time evaluation of template argument to `rotr` function
-constexpr bool
-check(const size_t n)
+static inline constexpr bool
+check_n(const size_t n)
 {
   return n < 64;
 }
@@ -72,7 +73,7 @@ check(const size_t n)
 // Circular right shift of `x` by `n` bit positions | 0 <= n < 64
 template<const size_t n>
 static inline const uint64_t
-rotr(const uint64_t x) requires(check(n))
+rotr(const uint64_t x) requires(check_n(n))
 {
   return (x >> n) | (x << (64 - n));
 }
@@ -91,12 +92,62 @@ p_l(uint64_t* const state)
 
 // Ascon permutation; taken from section 2.6 of Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+template<const size_t c_idx>
 static inline void
-permute(uint64_t* const state, const size_t r_idx)
+permute(uint64_t* const state)
 {
-  p_c(state, r_idx);
+  p_c<c_idx>(state);
   p_s(state);
   p_l(state);
+}
+
+static inline constexpr bool
+check_a(const size_t a)
+{
+  return a == 12;
+}
+
+// Permutation p_a to be sequentially applied on state for `a` -many times;
+// taken from section 2.6 of Ascon specification
+// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+template<const size_t a>
+static inline void
+p_a(uint64_t* const state) requires(check_a(a))
+{
+  // for round index & constant index convention, read section 2.6.1 of Ascon
+  // specification
+  permute<0>(state);
+  permute<1>(state);
+  permute<2>(state);
+  permute<3>(state);
+  permute<4>(state);
+  permute<5>(state);
+  permute<6>(state);
+  permute<7>(state);
+  permute<8>(state);
+  permute<9>(state);
+  permute<10>(state);
+  permute<11>(state);
+}
+
+static inline constexpr bool
+check_b(const size_t b)
+{
+  return b == 12 || b == 8 || b == 6;
+}
+
+// Permutation p_b to be sequentially applied on state for `b` -many times;
+// taken from section 2.6 of Ascon specification
+// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+template<const size_t a, const size_t b>
+static inline void
+p_b(uint64_t* const state) requires(check_a(a) && check_b(b))
+{
+  for (size_t i = 0; i < b; i++) {
+    // for round index & constant index convention, read section 2.6.1 of Ascon
+    // specification
+    permute<i + a - b>(state);
+  }
 }
 
 }
