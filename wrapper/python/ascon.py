@@ -15,7 +15,7 @@ from posixpath import abspath
 import numpy as np
 
 SO_PATH: str = abspath('../libascon_hash.so')
-assert exists(SO_PATH)
+assert exists(SO_PATH), '`make lib` to generate shared library !'
 
 SO_LIB: ct.CDLL = ct.CDLL(SO_PATH)
 
