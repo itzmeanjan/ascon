@@ -15,3 +15,14 @@ from_be_bytes(const uint8_t* const i_bytes)
          (static_cast<uint64_t>(i_bytes[6]) << 8) |
          static_cast<uint64_t>(i_bytes[7]);
 }
+
+// Given a 64 -bit unsigned integer, this function interprets it as a big-endian
+// byte array
+inline void
+to_be_bytes(const uint64_t num, uint8_t* const bytes)
+{
+#pragma unroll 8
+  for (size_t i = 0; i < 8; i++) {
+    bytes[i] = static_cast<uint8_t>(num >> ((8u - (i + 1u)) << 3u));
+  }
+}

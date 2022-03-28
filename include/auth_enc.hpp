@@ -53,13 +53,13 @@ initialize(uint64_t* const state, // uninitialized hash state
   state[4] ^= k.limbs[1];
 }
 
-// Pad associated data, when rate = 64, such that padded data (bit-) length is
-// evenly divisible by rate ( = 64 ).
+// Pad associated data/ plain text, when rate = 64, such that padded data/ plain
+// text (bit-) length is evenly divisible by rate ( = 64 ).
 //
-// See Ascon-128 padding rule in section 2.4.2 of Ascon specification
+// See Ascon-128 padding rule in section 2.4.{2,3} of Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
 static inline const uint64_t
-pad_associated_data(const uint8_t* const data, const size_t pad_byte_len)
+pad_data(const uint8_t* const data, const size_t pad_byte_len)
 {
   uint64_t data_blk;
 
@@ -121,15 +121,15 @@ pad_associated_data(const uint8_t* const data, const size_t pad_byte_len)
   return data_blk;
 }
 
-// Pad associated data, when rate = 128, such that padded data (bit-) length is
-// evenly divisible by rate ( = 128 ).
+// Pad associated data/ plain text, when rate = 128, such that padded data/
+// plain text (bit-) length is evenly divisible by rate ( = 128 ).
 //
-// See Ascon-128a padding rule in section 2.4.2 of Ascon specification
+// See Ascon-128a padding rule in section 2.4.{2,3} of Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
 static inline void
-pad_associated_data(const uint8_t* const data,
-                    const size_t pad_byte_len,
-                    uint64_t* const data_blk)
+pad_data(const uint8_t* const data,
+         const size_t pad_byte_len,
+         uint64_t* const data_blk)
 {
   switch (pad_byte_len) {
     case 16:
@@ -339,7 +339,7 @@ process_associated_data(uint64_t* const __restrict state,
     const uint8_t* data_ = data + data_len - ((r >> 3) - pad_byte_len);
 
     if (r == 64) {
-      const uint64_t last_data_blk = pad_associated_data(data_, pad_byte_len);
+      const uint64_t last_data_blk = pad_data(data_, pad_byte_len);
 
       const size_t data_blk_cnt = ((data_len + pad_byte_len) << 3) >> 6;
 
@@ -355,7 +355,7 @@ process_associated_data(uint64_t* const __restrict state,
 
     } else if (r == 128) {
       uint64_t last_data_blk[2];
-      pad_associated_data(data_, pad_byte_len, last_data_blk);
+      pad_data(data_, pad_byte_len, last_data_blk);
 
       const size_t data_blk_cnt = ((data_len + pad_byte_len) << 3) >> 7;
 
@@ -376,6 +376,84 @@ process_associated_data(uint64_t* const __restrict state,
 
   // final 1 -bit domain seperator constant mixing is mandatory
   state[4] ^= 0b1ul;
+}
+
+// Process plain text in blocks ( same as rate bits wide ) and produce cipher
+// text is equal sized blocks; see section 2.4.3 of Ascon specification
+// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+template<const size_t b, const size_t r>
+static inline void
+process_plaintext(uint64_t* const __restrict state,
+                  const uint8_t* const __restrict text,
+                  const size_t text_len,
+                  uint8_t* const __restrict cipher) requires(check_b(b) &&
+                                                             check_r(r))
+{
+  const size_t tmp = (text_len << 3) % r;
+  const size_t zero_pad_len = r - 1 - tmp;
+  const size_t pad_byte_len = (zero_pad_len + 1) >> 3;
+
+  const uint8_t* text_ = text + text_len - ((r >> 3) - pad_byte_len);
+
+  if (r == 64) {
+    const uint64_t last_text_blk = pad_data(text_, pad_byte_len);
+
+    const size_t text_blk_cnt = ((text_len + pad_byte_len) << 3) >> 6;
+
+    for (size_t i = 0; i < text_blk_cnt - 1; i++) {
+      const uint64_t text_blk = from_be_bytes(text + (i << 3));
+
+      state[0] ^= text_blk;
+      to_be_bytes(state[0], cipher + (i << 3));
+
+      p_b<b>(state);
+    }
+
+    state[0] ^= last_text_blk;
+
+    const size_t remaining_len = text_len % 8;
+    if (remaining_len > 0) {
+      uint8_t* cipher_ = cipher + text_len - remaining_len;
+
+      for (size_t i = 0; i < remaining_len; i++) {
+        cipher_[i] = static_cast<uint8_t>((state[0] >> ((7ul - i) << 3)));
+      }
+    }
+
+  } else if (r == 128) {
+    uint64_t last_text_blk[2];
+    pad_data(text_, pad_byte_len, last_text_blk);
+
+    const size_t text_blk_cnt = ((text_len + pad_byte_len) << 3) >> 7;
+
+    for (size_t i = 0; i < text_blk_cnt - 1; i++) {
+      const uint64_t text_blk_0 = from_be_bytes(text + ((i << 1) << 3));
+      const uint64_t text_blk_1 = from_be_bytes(text + (((i << 1) + 1) << 3));
+
+      state[0] ^= text_blk_0;
+      state[1] ^= text_blk_1;
+      to_be_bytes(state[0], cipher + ((i << 1) << 3));
+      to_be_bytes(state[1], cipher + (((i << 1) + 1) << 3));
+
+      p_b<b>(state);
+    }
+
+    state[0] ^= last_text_blk[0];
+    state[1] ^= last_text_blk[1];
+
+    const size_t remaining_len = text_len % 16;
+    if (remaining_len > 0) {
+      uint8_t* cipher_ = cipher + text_len - remaining_len;
+
+      for (size_t i = 0; i < remaining_len; i++) {
+        if (i < 8) {
+          cipher_[i] = static_cast<uint8_t>((state[0] >> ((7ul - i) << 3)));
+        } else {
+          cipher_[i] = static_cast<uint8_t>((state[1] >> ((15ul - i) << 3)));
+        }
+      }
+    }
+  }
 }
 
 // Ascon-128/128a finalization step, generates 128 -bit tag; taken from

@@ -22,17 +22,6 @@ constexpr uint64_t ASCON_HASHA_INIT_STATE[5] = { 0x01470194fc6528a6,
                                                  0xd6f6a54d7f52377d,
                                                  0xa13c42a223be8d87 };
 
-// Given a 64 -bit unsigned integer, this function interprets it as a big-endian
-// byte array
-inline void
-to_be_bytes(const uint64_t num, uint8_t* const bytes)
-{
-#pragma unroll 8
-  for (size_t i = 0; i < 8; i++) {
-    bytes[i] = static_cast<uint8_t>(num >> ((8u - (i + 1u)) << 3u));
-  }
-}
-
 // Pad input message with required number of `1` -bit ( only single 1 -bit is
 // appended right next to last byte of input message ) and `0` -bits;
 // prepare very last message block ( 64 -bit wide ) to be absorbed into hash
