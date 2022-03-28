@@ -122,14 +122,14 @@ prepare_last_msg_block(const uint8_t* const msg, const size_t pad_byte_len)
 // specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
 //
-// For possible values of template parameter `a`, `b`, follow table 2 in
+// For possible values of template parameter `b`, follow table 2 in
 // specification
-template<const size_t a, const size_t b>
+template<const size_t b>
 static void
 absorb(uint64_t* const __restrict state,
        const uint8_t* const __restrict msg,
        const size_t msg_len // in terms of bytes, can be >= 0
-       ) requires(check_a(a) && check_b(b))
+       ) requires(check_b(b))
 {
   // these many 0 -bits to be appended to input message
   const size_t tmp = (msg_len << 3) % 64;
@@ -145,7 +145,7 @@ absorb(uint64_t* const __restrict state,
     const uint64_t msg_blk = from_be_bytes(msg + (i << 3));
 
     state[0] ^= msg_blk;
-    p_b<a, b>(state);
+    p_b<b>(state);
   }
 
   state[0] ^= last_msg_blk;
@@ -168,7 +168,7 @@ squeeze(uint64_t* const __restrict state,
     const uint64_t block = state[0];
     to_be_bytes(block, digest + (i << 3));
 
-    p_b<a, b>(state);
+    p_b<b>(state);
   }
 }
 
@@ -187,7 +187,7 @@ hash(const uint8_t* const __restrict msg,
                         ASCON_HASH_INIT_STATE[3],
                         ASCON_HASH_INIT_STATE[4] };
 
-  absorb<12, 12>(state, msg, msg_len);
+  absorb<12>(state, msg, msg_len);
   squeeze<12, 12>(state, digest);
 }
 
@@ -206,7 +206,7 @@ hash_a(const uint8_t* const __restrict msg,
                         ASCON_HASHA_INIT_STATE[3],
                         ASCON_HASHA_INIT_STATE[4] };
 
-  absorb<12, 8>(state, msg, msg_len);
+  absorb<8>(state, msg, msg_len);
   squeeze<12, 8>(state, digest);
 }
 

@@ -141,9 +141,9 @@ check_b(const size_t b)
 // Permutation p_b to be sequentially applied on state for `b` -many times;
 // taken from section 2.6 of Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-template<const size_t a, const size_t b>
+template<const size_t b>
 static inline void
-p_b(uint64_t* const state) requires(check_a(a) && check_b(b))
+p_b(uint64_t* const state) requires(check_b(b))
 {
   if (b == 6) {
     permute<6>(state);
