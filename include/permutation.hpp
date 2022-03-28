@@ -1,5 +1,7 @@
 #pragma once
-#include <CL/sycl.hpp>
+#include <cstdint>
+
+using size_t = std::size_t;
 
 // Ascon Light Weight Cryptography ( i.e. authenticated encryption and hashing )
 // Implementation
