@@ -1,5 +1,6 @@
 #pragma once
 #include "permutation.hpp"
+#include "utils.hpp"
 
 namespace ascon {
 
@@ -20,21 +21,6 @@ constexpr uint64_t ASCON_HASHA_INIT_STATE[5] = { 0x01470194fc6528a6,
                                                  0x2ec8e3296c76384c,
                                                  0xd6f6a54d7f52377d,
                                                  0xa13c42a223be8d87 };
-
-// Given big-endian byte array of length 8, this function interprets it as
-// 64 -bit unsigned integer
-inline const uint64_t
-from_be_bytes(const uint8_t* const i_bytes)
-{
-  return (static_cast<uint64_t>(i_bytes[0]) << 56) |
-         (static_cast<uint64_t>(i_bytes[1]) << 48) |
-         (static_cast<uint64_t>(i_bytes[2]) << 40) |
-         (static_cast<uint64_t>(i_bytes[3]) << 32) |
-         (static_cast<uint64_t>(i_bytes[4]) << 24) |
-         (static_cast<uint64_t>(i_bytes[5]) << 16) |
-         (static_cast<uint64_t>(i_bytes[6]) << 8) |
-         static_cast<uint64_t>(i_bytes[7]);
-}
 
 // Given a 64 -bit unsigned integer, this function interprets it as a big-endian
 // byte array
