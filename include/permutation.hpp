@@ -3,9 +3,9 @@
 
 using size_t = std::size_t;
 
-// Ascon Light Weight Cryptography ( i.e. authenticated encryption and hashing )
-// Implementation
-namespace ascon {
+// Underlying permutation functions ( read `p_a` & `p_b` ) for Ascon
+// cryptographic suite
+namespace ascon_perm {
 
 // Ascon  permutation round constants; taken from table 4 in Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
@@ -103,6 +103,9 @@ permute(uint64_t* const state)
   p_l(state);
 }
 
+// Round count for permutation function `p_a` is always 12; see table 1, 2 Ascon
+// specification
+// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
 static inline constexpr bool
 check_a(const size_t a)
 {
@@ -132,6 +135,9 @@ p_a(uint64_t* const state) requires(check_a(a))
   permute<11>(state);
 }
 
+// Round count for permutation function `p_b` ∈ {6, 8, 12}; see table 1, 2 Ascon
+// specification
+// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
 static inline constexpr bool
 check_b(const size_t b)
 {
