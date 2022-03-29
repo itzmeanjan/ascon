@@ -2,6 +2,7 @@
 #include "hash.hpp"
 #include <cassert>
 
+// Test Ascon Light Weight Cryptography Implementation
 namespace ascon_test {
 
 // Testing Ascon Hash implementation for input length 0;

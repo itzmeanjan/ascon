@@ -1,382 +1,7 @@
 #pragma once
-#include "permutation.hpp"
-#include "utils.hpp"
+#include "cipher.hpp"
 
 namespace ascon {
-
-// 128 -bit Ascon secret key, used for authenticated encryption/ decryption;
-// see table 1 in section 2.2 of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-struct secret_key_t
-{
-  uint64_t limbs[2];
-};
-
-// 128 -bit Ascon nonce, used for authenticated encryption/ decryption
-// see table 1 in section 2.2 of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-struct nonce_t
-{
-  uint64_t limbs[2];
-};
-
-// 128 -bit tag, generated in finalization step of Ascon-128/128a; see table 1
-// in section 2.2 of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-struct tag_t
-{
-  uint64_t limbs[2];
-};
-
-// Initialize cipher state for Ascon authenticated encryption/ decryption;
-// see section 2.4.1 of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-//
-// # -of rounds `a` should be 12 for both Ascon-128 & Ascon-128a, though still
-// it's parameterized
-template<const uint64_t IV, const size_t a>
-static inline void
-initialize(uint64_t* const state, // uninitialized hash state
-           const secret_key_t& k, // 128 -bit secret key
-           const nonce_t& n       // 128 -bit nonce
-           ) requires(check_a(a))
-{
-  state[0] = IV;
-  state[1] = k.limbs[0];
-  state[2] = k.limbs[1];
-  state[3] = n.limbs[0];
-  state[4] = n.limbs[1];
-
-  p_a<a>(state);
-
-  state[3] ^= k.limbs[0];
-  state[4] ^= k.limbs[1];
-}
-
-// Pad associated data/ plain text, when rate = 64, such that padded data/ plain
-// text (bit-) length is evenly divisible by rate ( = 64 ).
-//
-// See Ascon-128 padding rule in section 2.4.{2,3} of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-static inline const uint64_t
-pad_data(const uint8_t* const data, const size_t pad_byte_len)
-{
-  uint64_t data_blk;
-
-  switch (pad_byte_len) {
-    case 8:
-      data_blk = 0b1ul << 63 /* padding: '1' ++ '0' <63 bits> */;
-      break;
-    case 7:
-      data_blk = (static_cast<uint64_t>(data[0]) << 56) |
-                 (0b1ul << 55) /* padding: '1' ++ '0' <55 bits> */;
-      break;
-    case 6:
-      data_blk = (static_cast<uint64_t>(data[0]) << 56) |
-                 (static_cast<uint64_t>(data[1]) << 48) |
-                 (0b1ul << 47) /* padding: '1' ++ '0' <47 bits> */;
-      break;
-    case 5:
-      data_blk = (static_cast<uint64_t>(data[0]) << 56) |
-                 (static_cast<uint64_t>(data[1]) << 48) |
-                 (static_cast<uint64_t>(data[2]) << 40) |
-                 (0b1ul << 39) /* padding: '1' ++ '0' <39 bits> */;
-      break;
-    case 4:
-      data_blk = (static_cast<uint64_t>(data[0]) << 56) |
-                 (static_cast<uint64_t>(data[1]) << 48) |
-                 (static_cast<uint64_t>(data[2]) << 40) |
-                 (static_cast<uint64_t>(data[3]) << 32) |
-                 (0b1ul << 31) /* padding: '1' ++ '0' <31 bits> */;
-      break;
-    case 3:
-      data_blk = (static_cast<uint64_t>(data[0]) << 56) |
-                 (static_cast<uint64_t>(data[1]) << 48) |
-                 (static_cast<uint64_t>(data[2]) << 40) |
-                 (static_cast<uint64_t>(data[3]) << 32) |
-                 (static_cast<uint64_t>(data[4]) << 24) |
-                 (0b1ul << 23) /* padding: '1' ++ '0' <23 bits> */;
-      break;
-    case 2:
-      data_blk = (static_cast<uint64_t>(data[0]) << 56) |
-                 (static_cast<uint64_t>(data[1]) << 48) |
-                 (static_cast<uint64_t>(data[2]) << 40) |
-                 (static_cast<uint64_t>(data[3]) << 32) |
-                 (static_cast<uint64_t>(data[4]) << 24) |
-                 (static_cast<uint64_t>(data[5]) << 16) |
-                 (0b1ul << 15) /* padding: '1' ++ '0' <15 bits> */;
-      break;
-    case 1:
-      data_blk = (static_cast<uint64_t>(data[0]) << 56) |
-                 (static_cast<uint64_t>(data[1]) << 48) |
-                 (static_cast<uint64_t>(data[2]) << 40) |
-                 (static_cast<uint64_t>(data[3]) << 32) |
-                 (static_cast<uint64_t>(data[4]) << 24) |
-                 (static_cast<uint64_t>(data[5]) << 16) |
-                 (static_cast<uint64_t>(data[6]) << 8) |
-                 (0b1ul << 7) /* padding: '1' ++ '0' <7 bits> */;
-      break;
-  }
-
-  return data_blk;
-}
-
-// Pad associated data/ plain text, when rate = 128, such that padded data/
-// plain text (bit-) length is evenly divisible by rate ( = 128 ).
-//
-// See Ascon-128a padding rule in section 2.4.{2,3} of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-static inline void
-pad_data(const uint8_t* const data,
-         const size_t pad_byte_len,
-         uint64_t* const data_blk)
-{
-  switch (pad_byte_len) {
-    case 16:
-      data_blk[0] = 0b1ul << 63 /* padding: '1' ++ '0' <63 bits> */;
-      data_blk[1] = 0b0ul /* ++ '0' <64 bits> */;
-      break;
-    case 15:
-      data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
-                    (0b1ul << 55) /* padding: '1' ++ '0' <55 bits> */;
-      data_blk[1] = 0b0ul /* ++ '0' <64 bits> */;
-      break;
-    case 14:
-      data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
-                    (static_cast<uint64_t>(data[1]) << 48) |
-                    (0b1ul << 47) /* padding: '1' ++ '0' <47 bits> */;
-      data_blk[1] = 0b0ul /* ++ '0' <64 bits> */;
-      break;
-    case 13:
-      data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
-                    (static_cast<uint64_t>(data[1]) << 48) |
-                    (static_cast<uint64_t>(data[2]) << 40) |
-                    (0b1ul << 39) /* padding: '1' ++ '0' <39 bits> */;
-      data_blk[1] = 0b0ul /* ++ '0' <64 bits> */;
-      break;
-    case 12:
-      data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
-                    (static_cast<uint64_t>(data[1]) << 48) |
-                    (static_cast<uint64_t>(data[2]) << 40) |
-                    (static_cast<uint64_t>(data[3]) << 32) |
-                    (0b1ul << 31) /* padding: '1' ++ '0' <31 bits> */;
-      data_blk[1] = 0b0ul /* ++ '0' <64 bits> */;
-      break;
-    case 11:
-      data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
-                    (static_cast<uint64_t>(data[1]) << 48) |
-                    (static_cast<uint64_t>(data[2]) << 40) |
-                    (static_cast<uint64_t>(data[3]) << 32) |
-                    (static_cast<uint64_t>(data[4]) << 24) |
-                    (0b1ul << 23) /* padding: '1' ++ '0' <23 bits> */;
-      data_blk[1] = 0b0ul /* ++ '0' <64 bits> */;
-      break;
-    case 10:
-      data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
-                    (static_cast<uint64_t>(data[1]) << 48) |
-                    (static_cast<uint64_t>(data[2]) << 40) |
-                    (static_cast<uint64_t>(data[3]) << 32) |
-                    (static_cast<uint64_t>(data[4]) << 24) |
-                    (static_cast<uint64_t>(data[5]) << 16) |
-                    (0b1ul << 15) /* padding: '1' ++ '0' <15 bits> */;
-      data_blk[1] = 0b0ul /* ++ '0' <64 bits> */;
-      break;
-    case 9:
-      data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
-                    (static_cast<uint64_t>(data[1]) << 48) |
-                    (static_cast<uint64_t>(data[2]) << 40) |
-                    (static_cast<uint64_t>(data[3]) << 32) |
-                    (static_cast<uint64_t>(data[4]) << 24) |
-                    (static_cast<uint64_t>(data[5]) << 16) |
-                    (static_cast<uint64_t>(data[6]) << 8) |
-                    (0b1ul << 7) /* padding: '1' ++ '0' <7 bits> */;
-      data_blk[1] = 0b0ul /* ++ '0' <64 bits> */;
-      break;
-    case 8:
-      data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
-                    (static_cast<uint64_t>(data[1]) << 48) |
-                    (static_cast<uint64_t>(data[2]) << 40) |
-                    (static_cast<uint64_t>(data[3]) << 32) |
-                    (static_cast<uint64_t>(data[4]) << 24) |
-                    (static_cast<uint64_t>(data[5]) << 16) |
-                    (static_cast<uint64_t>(data[6]) << 8) |
-                    static_cast<uint64_t>(data[7]);
-      data_blk[1] = 0b1ul << 63 /* padding: '1' ++ '0' <63 bits> */;
-      break;
-    case 7:
-      data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
-                    (static_cast<uint64_t>(data[1]) << 48) |
-                    (static_cast<uint64_t>(data[2]) << 40) |
-                    (static_cast<uint64_t>(data[3]) << 32) |
-                    (static_cast<uint64_t>(data[4]) << 24) |
-                    (static_cast<uint64_t>(data[5]) << 16) |
-                    (static_cast<uint64_t>(data[6]) << 8) |
-                    static_cast<uint64_t>(data[7]);
-      data_blk[1] = (static_cast<uint64_t>(data[8]) << 56) |
-                    (0b1ul << 55) /* padding: '1' ++ '0' <55 bits> */;
-      break;
-    case 6:
-      data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
-                    (static_cast<uint64_t>(data[1]) << 48) |
-                    (static_cast<uint64_t>(data[2]) << 40) |
-                    (static_cast<uint64_t>(data[3]) << 32) |
-                    (static_cast<uint64_t>(data[4]) << 24) |
-                    (static_cast<uint64_t>(data[5]) << 16) |
-                    (static_cast<uint64_t>(data[6]) << 8) |
-                    static_cast<uint64_t>(data[7]);
-      data_blk[1] = (static_cast<uint64_t>(data[8]) << 56) |
-                    (static_cast<uint64_t>(data[9]) << 48) |
-                    (0b1ul << 47) /* padding: '1' ++ '0' <47 bits> */;
-      break;
-    case 5:
-      data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
-                    (static_cast<uint64_t>(data[1]) << 48) |
-                    (static_cast<uint64_t>(data[2]) << 40) |
-                    (static_cast<uint64_t>(data[3]) << 32) |
-                    (static_cast<uint64_t>(data[4]) << 24) |
-                    (static_cast<uint64_t>(data[5]) << 16) |
-                    (static_cast<uint64_t>(data[6]) << 8) |
-                    static_cast<uint64_t>(data[7]);
-      data_blk[1] = (static_cast<uint64_t>(data[8]) << 56) |
-                    (static_cast<uint64_t>(data[9]) << 48) |
-                    (static_cast<uint64_t>(data[10]) << 40) |
-                    (0b1ul << 39) /* padding: '1' ++ '0' <39 bits> */;
-      break;
-    case 4:
-      data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
-                    (static_cast<uint64_t>(data[1]) << 48) |
-                    (static_cast<uint64_t>(data[2]) << 40) |
-                    (static_cast<uint64_t>(data[3]) << 32) |
-                    (static_cast<uint64_t>(data[4]) << 24) |
-                    (static_cast<uint64_t>(data[5]) << 16) |
-                    (static_cast<uint64_t>(data[6]) << 8) |
-                    static_cast<uint64_t>(data[7]);
-      data_blk[1] = (static_cast<uint64_t>(data[8]) << 56) |
-                    (static_cast<uint64_t>(data[9]) << 48) |
-                    (static_cast<uint64_t>(data[10]) << 40) |
-                    (static_cast<uint64_t>(data[11]) << 32) |
-                    (0b1ul << 31) /* padding: '1' ++ '0' <31 bits> */;
-      break;
-    case 3:
-      data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
-                    (static_cast<uint64_t>(data[1]) << 48) |
-                    (static_cast<uint64_t>(data[2]) << 40) |
-                    (static_cast<uint64_t>(data[3]) << 32) |
-                    (static_cast<uint64_t>(data[4]) << 24) |
-                    (static_cast<uint64_t>(data[5]) << 16) |
-                    (static_cast<uint64_t>(data[6]) << 8) |
-                    static_cast<uint64_t>(data[7]);
-      data_blk[1] = (static_cast<uint64_t>(data[8]) << 56) |
-                    (static_cast<uint64_t>(data[9]) << 48) |
-                    (static_cast<uint64_t>(data[10]) << 40) |
-                    (static_cast<uint64_t>(data[11]) << 32) |
-                    (static_cast<uint64_t>(data[12]) << 24) |
-                    (0b1ul << 23) /* padding: '1' ++ '0' <23 bits> */;
-      break;
-    case 2:
-      data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
-                    (static_cast<uint64_t>(data[1]) << 48) |
-                    (static_cast<uint64_t>(data[2]) << 40) |
-                    (static_cast<uint64_t>(data[3]) << 32) |
-                    (static_cast<uint64_t>(data[4]) << 24) |
-                    (static_cast<uint64_t>(data[5]) << 16) |
-                    (static_cast<uint64_t>(data[6]) << 8) |
-                    static_cast<uint64_t>(data[7]);
-      data_blk[1] = (static_cast<uint64_t>(data[8]) << 56) |
-                    (static_cast<uint64_t>(data[9]) << 48) |
-                    (static_cast<uint64_t>(data[10]) << 40) |
-                    (static_cast<uint64_t>(data[11]) << 32) |
-                    (static_cast<uint64_t>(data[12]) << 24) |
-                    (static_cast<uint64_t>(data[13]) << 16) |
-                    (0b1ul << 15) /* padding: '1' ++ '0' <15 bits> */;
-      break;
-    case 1:
-      data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
-                    (static_cast<uint64_t>(data[1]) << 48) |
-                    (static_cast<uint64_t>(data[2]) << 40) |
-                    (static_cast<uint64_t>(data[3]) << 32) |
-                    (static_cast<uint64_t>(data[4]) << 24) |
-                    (static_cast<uint64_t>(data[5]) << 16) |
-                    (static_cast<uint64_t>(data[6]) << 8) |
-                    static_cast<uint64_t>(data[7]);
-      data_blk[1] = (static_cast<uint64_t>(data[8]) << 56) |
-                    (static_cast<uint64_t>(data[9]) << 48) |
-                    (static_cast<uint64_t>(data[10]) << 40) |
-                    (static_cast<uint64_t>(data[11]) << 32) |
-                    (static_cast<uint64_t>(data[12]) << 24) |
-                    (static_cast<uint64_t>(data[13]) << 16) |
-                    (static_cast<uint64_t>(data[14]) << 8) |
-                    (0b1ul << 7) /* padding: '1' ++ '0' <7 bits> */;
-      break;
-  }
-}
-
-// Compile-time check rate bit length for Ascon-128 & Ascon-128a; see table 1 of
-// Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-static inline constexpr bool
-check_r(const size_t r)
-{
-  return r == 64 || r == 128;
-}
-
-// Process `s` -many blocks of associated data, each of with rate ( = {64, 128}
-// ) -bits; see section 2.4.2 of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-template<const size_t b, const size_t r>
-static inline void
-process_associated_data(uint64_t* const __restrict state,
-                        const uint8_t* const __restrict data, // associated data
-                        const size_t data_len // in terms of bytes
-                        ) requires(check_b(b) && check_r(r))
-{
-  // only when associated data is non-empty; do padding and then mixing
-  if (data_len > 0) {
-    const size_t tmp = (data_len << 3) % r;
-    const size_t zero_pad_len = r - 1 - tmp;
-    const size_t pad_byte_len = (zero_pad_len + 1) >> 3;
-
-    const uint8_t* data_ = data + data_len - ((r >> 3) - pad_byte_len);
-
-    if (r == 64) {
-      const uint64_t last_data_blk = pad_data(data_, pad_byte_len);
-
-      const size_t data_blk_cnt = ((data_len + pad_byte_len) << 3) >> 6;
-
-      for (size_t i = 0; i < data_blk_cnt - 1; i++) {
-        const uint64_t data_blk = from_be_bytes(data + (i << 3));
-
-        state[0] ^= data_blk;
-        p_b<b>(state);
-      }
-
-      state[0] ^= last_data_blk;
-      p_b<b>(state);
-
-    } else if (r == 128) {
-      uint64_t last_data_blk[2];
-      pad_data(data_, pad_byte_len, last_data_blk);
-
-      const size_t data_blk_cnt = ((data_len + pad_byte_len) << 3) >> 7;
-
-      for (size_t i = 0; i < data_blk_cnt - 1; i++) {
-        const uint64_t data_blk_0 = from_be_bytes(data + ((i << 1) << 3));
-        const uint64_t data_blk_1 = from_be_bytes(data + (((i << 1) + 1) << 3));
-
-        state[0] ^= data_blk_0;
-        state[1] ^= data_blk_1;
-        p_b<b>(state);
-      }
-
-      state[0] ^= last_data_blk[0];
-      state[1] ^= last_data_blk[1];
-      p_b<b>(state);
-    }
-  }
-
-  // final 1 -bit domain seperator constant mixing is mandatory
-  state[4] ^= 0b1ul;
-}
 
 // Process plain text in blocks ( same as rate bits wide ) and produce cipher
 // text is equal sized blocks; see section 2.4.3 of Ascon specification
@@ -401,10 +26,10 @@ process_plaintext(uint64_t* const __restrict state,
     const size_t text_blk_cnt = ((text_len + pad_byte_len) << 3) >> 6;
 
     for (size_t i = 0; i < text_blk_cnt - 1; i++) {
-      const uint64_t text_blk = from_be_bytes(text + (i << 3));
+      const uint64_t text_blk = ascon_utils::from_be_bytes(text + (i << 3));
 
       state[0] ^= text_blk;
-      to_be_bytes(state[0], cipher + (i << 3));
+      ascon_utils::to_be_bytes(state[0], cipher + (i << 3));
 
       p_b<b>(state);
     }
@@ -419,7 +44,6 @@ process_plaintext(uint64_t* const __restrict state,
         cipher_[i] = static_cast<uint8_t>((state[0] >> ((7ul - i) << 3)));
       }
     }
-
   } else if (r == 128) {
     uint64_t last_text_blk[2];
     pad_data(text_, pad_byte_len, last_text_blk);
@@ -427,13 +51,15 @@ process_plaintext(uint64_t* const __restrict state,
     const size_t text_blk_cnt = ((text_len + pad_byte_len) << 3) >> 7;
 
     for (size_t i = 0; i < text_blk_cnt - 1; i++) {
-      const uint64_t text_blk_0 = from_be_bytes(text + ((i << 1) << 3));
-      const uint64_t text_blk_1 = from_be_bytes(text + (((i << 1) + 1) << 3));
+      const uint64_t text_blk_0 =
+        ascon_utils::from_be_bytes(text + ((i << 1) << 3));
+      const uint64_t text_blk_1 =
+        ascon_utils::from_be_bytes(text + (((i << 1) + 1) << 3));
 
       state[0] ^= text_blk_0;
       state[1] ^= text_blk_1;
-      to_be_bytes(state[0], cipher + ((i << 1) << 3));
-      to_be_bytes(state[1], cipher + (((i << 1) + 1) << 3));
+      ascon_utils::to_be_bytes(state[0], cipher + ((i << 1) << 3));
+      ascon_utils::to_be_bytes(state[1], cipher + (((i << 1) + 1) << 3));
 
       p_b<b>(state);
     }
@@ -456,139 +82,53 @@ process_plaintext(uint64_t* const __restrict state,
   }
 }
 
-// Process cipher text in blocks ( same as rate bits wide ) and keep producing
-// plain text blocks is equal sized blocks; see section 2.4.3 of Ascon
-// specification
+// Encrypts plain text with Ascon-128 authenticated encryption algorithm; see
+// algorithm 1 of Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-template<const size_t b, const size_t r>
-static inline void
-process_ciphertext(uint64_t* const __restrict state,
-                   const uint8_t* const __restrict cipher,
-                   const size_t cipher_len, // in terms of bytes
-                   uint8_t* const __restrict text) requires(check_b(b) &&
-                                                            check_r(r))
+//
+// See parameters in table 1 of Ascon specification
+static inline const tag_t
+encrypt_128(const secret_key_t& k,
+            const nonce_t& n,
+            const uint8_t* const __restrict associated_data,
+            const size_t data_len,
+            const uint8_t* const __restrict text,
+            const size_t text_len,
+            uint8_t* const __restrict cipher)
 {
-  const size_t cipher_bit_len = cipher_len << 3;
-  const size_t cipher_blocks = cipher_bit_len / r;
-  const size_t remaining_bit_len = cipher_bit_len % r;
+  uint64_t state[5];
 
-  for (size_t i = 0; i < cipher_blocks; i++) {
-    if (r == 64) {
-      const size_t offset = i << 3;
+  initialize<ASCON_128_IV, 12>(state, k, n);
 
-      const uint64_t cipher_blk = from_be_bytes(cipher + offset);
-      const uint64_t text_blk = cipher_blk ^ state[0];
+  process_associated_data<6, 64>(state, associated_data, data_len);
+  process_plaintext<6, 64>(state, text, text_len, cipher);
 
-      to_be_bytes(text_blk, text + offset);
-
-      state[0] = cipher_blk;
-      p_b<b>(state);
-    } else if (r == 128) {
-      const size_t offset_0 = (i << 1) << 3;
-      const size_t offset_1 = ((i << 1) + 1) << 3;
-
-      const uint64_t cipher_blk_0 = from_be_bytes(cipher + offset_0);
-      const uint64_t cipher_blk_1 = from_be_bytes(cipher + offset_1);
-
-      const uint64_t text_blk_0 = cipher_blk_0 ^ state[0];
-      const uint64_t text_blk_1 = cipher_blk_1 ^ state[1];
-
-      to_be_bytes(text_blk_0, text + offset_0);
-      to_be_bytes(text_blk_1, text + offset_1);
-
-      state[0] = cipher_blk_0;
-      state[1] = cipher_blk_1;
-      p_b<b>(state);
-    }
-  }
-
-  if (remaining_bit_len > 0) {
-    const size_t rem_byte_len = remaining_bit_len >> 3;
-    const uint8_t* cipher_ = cipher + cipher_len - rem_byte_len;
-    uint8_t* text_ = text + cipher_len - rem_byte_len;
-
-    if (r == 64) {
-      uint64_t rem_cipher = 0ul;
-      for (size_t i = 0; i < rem_byte_len; i++) {
-        rem_cipher |= static_cast<uint64_t>(cipher_[i]) << ((7ul - i) << 3);
-      }
-
-      const uint64_t rem_text = state[0] ^ rem_cipher;
-
-      for (size_t i = 0; i < rem_byte_len; i++) {
-        text_[i] = static_cast<uint8_t>((rem_text >> ((7ul - i) << 3)));
-      }
-
-      state[0] ^= (rem_text | (0b1ul << (((8ul - rem_byte_len) << 3) - 1ul)));
-    } else if (r == 128) {
-      uint64_t rem_cipher_0 = 0ul;
-      uint64_t rem_cipher_1 = 0ul;
-      for (size_t i = 0; i < rem_byte_len; i++) {
-        if (i < 8) {
-          rem_cipher_0 |= static_cast<uint64_t>(cipher_[i]) << ((7 - i) << 3);
-        } else {
-          rem_cipher_1 |= static_cast<uint64_t>(cipher_[i]) << ((15 - i) << 3);
-        }
-      }
-
-      const uint64_t rem_text_0 = state[0] ^ rem_cipher_0;
-      const uint64_t rem_text_1 = state[1] ^ rem_cipher_1;
-
-      for (size_t i = 0; i < rem_byte_len; i++) {
-        if (i < 8) {
-          text_[i] = static_cast<uint8_t>((rem_text_0 >> ((7 - i) << 3)));
-        } else {
-          text_[i] = static_cast<uint8_t>((rem_text_1 >> ((15 - i) << 3)));
-        }
-      }
-
-      if (rem_byte_len < 8) {
-        state[0] ^= (rem_text_0 | (0b1ul << (((8 - rem_byte_len) << 3) - 1)));
-        state[1] ^= 0b0ul;
-      } else if (rem_byte_len == 8) {
-        state[0] ^= rem_text_0;
-        state[1] ^= (0b1ul << 63);
-      } else {
-        state[0] ^= rem_text_0;
-        state[1] ^= (rem_text_1 | (0b1ul << (((16 - rem_byte_len) << 3) - 1)));
-      }
-    }
-
-  } else {
-    if (r == 64) {
-      state[0] ^= 0b1ul << 63;
-    } else if (r == 128) {
-      state[0] ^= 0b1ul << 63;
-      state[1] ^= 0b0ul;
-    }
-  }
+  const tag_t t = finalize<12, 64>(state, k);
+  return t;
 }
 
-// Ascon-128/128a finalization step, generates 128 -bit tag; taken from
-// section 2.4.4 of Ascon specification
+// Encrypts plain text with Ascon-128a authenticated encryption algorithm; see
+// algorithm 1 of Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-template<const size_t a, const size_t r>
+//
+// See parameters in table 1 of Ascon specification
 static inline const tag_t
-finalize(uint64_t* const state,
-         const secret_key_t& k // 128 -bit secret key
-         ) requires(check_a(a) && check_r(r))
+encrypt_128a(const secret_key_t& k,
+             const nonce_t& n,
+             const uint8_t* const __restrict associated_data,
+             const size_t data_len,
+             const uint8_t* const __restrict text,
+             const size_t text_len,
+             uint8_t* const __restrict cipher)
 {
-  if (r == 64) {
-    state[1] ^= k.limbs[0];
-    state[2] ^= k.limbs[1];
-  } else if (r == 128) {
-    state[2] ^= k.limbs[0];
-    state[3] ^= k.limbs[1];
-  }
+  uint64_t state[5];
 
-  p_a<a>(state);
+  initialize<ASCON_128a_IV, 12>(state, k, n);
 
-  // 128 -bit tag
-  tag_t t;
+  process_associated_data<8, 128>(state, associated_data, data_len);
+  process_plaintext<8, 128>(state, text, text_len, cipher);
 
-  t.limbs[0] = state[3] ^ k.limbs[0];
-  t.limbs[1] = state[4] ^ k.limbs[1];
-
+  const tag_t t = finalize<12, 128>(state, k);
   return t;
 }
 

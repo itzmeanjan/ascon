@@ -1,6 +1,9 @@
 #pragma once
 #include <cstdint>
 
+// Utility functions for Ascon Light Weight Cryptography Implementation
+namespace ascon_utils {
+
 // Given big-endian byte array of length 8, this function interprets it as
 // 64 -bit unsigned integer
 static inline const uint64_t
@@ -40,4 +43,6 @@ bin_log(size_t n)
   }
 
   return cnt;
+}
+
 }

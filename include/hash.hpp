@@ -117,7 +117,7 @@ absorb(uint64_t* const __restrict state,
   const size_t msg_blk_cnt = ((msg_len + pad_byte_len) << 3) >> 6;
 
   for (size_t i = 0; i < msg_blk_cnt - 1; i++) {
-    const uint64_t msg_blk = from_be_bytes(msg + (i << 3));
+    const uint64_t msg_blk = ascon_utils::from_be_bytes(msg + (i << 3));
 
     state[0] ^= msg_blk;
     p_b<b>(state);
@@ -141,7 +141,7 @@ squeeze(uint64_t* const __restrict state,
 
   for (size_t i = 0; i < 4; i++) {
     const uint64_t block = state[0];
-    to_be_bytes(block, digest + (i << 3));
+    ascon_utils::to_be_bytes(block, digest + (i << 3));
 
     p_b<b>(state);
   }
