@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <random>
 
 // Utility functions for Ascon Light Weight Cryptography Implementation
 namespace ascon_utils {
@@ -43,6 +44,32 @@ bin_log(size_t n)
   }
 
   return cnt;
+}
+
+// Generate `len` -many random 64 -bit unsigned integers
+static inline void
+random_data(uint64_t* const data, const size_t len)
+{
+  std::random_device rd;
+  std::mt19937_64 gen(rd());
+  std::uniform_int_distribution<uint64_t> dis;
+
+  for (size_t i = 0; i < len; i++) {
+    data[i] = dis(gen);
+  }
+}
+
+// Generate `len` -many random 8 -bit unsigned integers
+static inline void
+random_data(uint8_t* const data, const size_t len)
+{
+  std::random_device rd;
+  std::mt19937_64 gen(rd());
+  std::uniform_int_distribution<uint8_t> dis;
+
+  for (size_t i = 0; i < len; i++) {
+    data[i] = dis(gen);
+  }
 }
 
 }

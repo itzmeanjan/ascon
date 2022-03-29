@@ -1,7 +1,6 @@
 #pragma once
 #include "permutation.hpp"
 #include "utils.hpp"
-#include <iostream>
 
 namespace ascon {
 
