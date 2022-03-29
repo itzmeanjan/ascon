@@ -3,6 +3,9 @@
 import ascon
 import numpy as np
 
+# = (1 << 64) - 1
+H = 0xffff_ffff_ffff_ffff
+
 
 def test_hash_kat():
     '''
@@ -206,5 +209,139 @@ def test_ascon_128a_kat():
     print(f'[test] passed {count} -many Ascon-128a KAT(s)')
 
 
+def test_bench_ascon_hash(benchmark):
+    '''
+    Benchmark Ascon-Hash implementation with random 64 -bytes input
+    '''
+
+    # prepare random 64 -bytes input
+    msg = np.random.randint(0, high=256, size=64, dtype=np.uint8)
+
+    @benchmark
+    def compute():
+        return ascon.hash(msg)
+
+
+def test_bench_ascon_hasha(benchmark):
+    '''
+    Benchmark Ascon-HashA implementation with random 64 -bytes input
+    '''
+
+    # prepare random 64 -bytes input
+    msg = np.random.randint(0, high=256, size=64, dtype=np.uint8)
+
+    @benchmark
+    def compute():
+        return ascon.hash_a(msg)
+
+
+def test_bench_ascon_128_encrypt(benchmark):
+    '''
+    Benchmark Ascon-128 authenticated encryption implementation with
+    random 64 -bytes associated data & 64 -bytes plain text
+    '''
+
+    # random 128 -bit secret key
+    key = np.random.randint(0, high=H, size=2, dtype=np.uint64).tobytes()
+    # random 128 -bit nonce
+    nonce = np.random.randint(0, high=H, size=2, dtype=np.uint64).tobytes()
+    # random 64 -bytes associated data
+    data = np.random.randint(0, high=256, size=64, dtype=np.uint8)
+    # random 64 -bytes plain text
+    text = np.random.randint(0, high=256, size=64, dtype=np.uint8)
+
+    @benchmark
+    def compute():
+        return ascon.encrypt_128(key, nonce, data, text)
+
+    # ensure encryption works as expected !
+    enc, tag = compute
+    flag, _ = ascon.decrypt_128(key, nonce, data, enc, tag)
+
+    assert flag
+
+
+def test_bench_ascon_128_decrypt(benchmark):
+    '''
+    Benchmark Ascon-128 verified decryption implementation with
+    random 64 -bytes associated data & 64 -bytes cipher text
+    '''
+
+    # random 128 -bit secret key
+    key = np.random.randint(0, high=H, size=2, dtype=np.uint64).tobytes()
+    # random 128 -bit nonce
+    nonce = np.random.randint(0, high=H, size=2, dtype=np.uint64).tobytes()
+    # random 64 -bytes associated data
+    data = np.random.randint(0, high=256, size=64, dtype=np.uint8)
+    # random 64 -bytes plain text
+    text = np.random.randint(0, high=256, size=64, dtype=np.uint8)
+
+    # encrypt text
+    enc, tag = ascon.encrypt_128(key, nonce, data, text)
+
+    @benchmark
+    def compute():
+        return ascon.decrypt_128(key, nonce, data, enc, tag)
+
+    # ensure decryption works as expected !
+    flag, _ = compute
+
+    assert flag
+
+
+def test_bench_ascon_128a_encrypt(benchmark):
+    '''
+    Benchmark Ascon-128a authenticated encryption implementation with
+    random 64 -bytes associated data & 64 -bytes plain text
+    '''
+
+    # random 128 -bit secret key
+    key = np.random.randint(0, high=H, size=2, dtype=np.uint64).tobytes()
+    # random 128 -bit nonce
+    nonce = np.random.randint(0, high=H, size=2, dtype=np.uint64).tobytes()
+    # random 64 -bytes associated data
+    data = np.random.randint(0, high=256, size=64, dtype=np.uint8)
+    # random 64 -bytes plain text
+    text = np.random.randint(0, high=256, size=64, dtype=np.uint8)
+
+    @benchmark
+    def compute():
+        return ascon.encrypt_128a(key, nonce, data, text)
+
+    # ensure encryption works as expected !
+    enc, tag = compute
+    flag, _ = ascon.decrypt_128a(key, nonce, data, enc, tag)
+
+    assert flag
+
+
+def test_bench_ascon_128a_decrypt(benchmark):
+    '''
+    Benchmark Ascon-128a verified decryption implementation with
+    random 64 -bytes associated data & 64 -bytes cipher text
+    '''
+
+    # random 128 -bit secret key
+    key = np.random.randint(0, high=H, size=2, dtype=np.uint64).tobytes()
+    # random 128 -bit nonce
+    nonce = np.random.randint(0, high=H, size=2, dtype=np.uint64).tobytes()
+    # random 64 -bytes associated data
+    data = np.random.randint(0, high=256, size=64, dtype=np.uint8)
+    # random 64 -bytes plain text
+    text = np.random.randint(0, high=256, size=64, dtype=np.uint8)
+
+    # encrypt text
+    enc, tag = ascon.encrypt_128a(key, nonce, data, text)
+
+    @benchmark
+    def compute():
+        return ascon.decrypt_128a(key, nonce, data, enc, tag)
+
+    # ensure decryption works as expected !
+    flag, _ = compute
+
+    assert flag
+
+
 if __name__ == '__main__':
-    print(f'Prefer using `pytest` for selectively running test cases !')
+    print(f'Use `pytest` for running test cases/ benchmarks !')
