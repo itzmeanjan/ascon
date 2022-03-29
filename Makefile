@@ -13,7 +13,7 @@ test_ascon: test/a.out
 	./test/a.out
 
 lib:
-	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(SYCLFLAGS) $(IFLAGS) -fsycl-targets=spir64_x86_64 -fPIC --shared wrapper/hash.cpp -o wrapper/libascon_hash.so
+	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(SYCLFLAGS) $(IFLAGS) -fsycl-targets=spir64_x86_64 -fPIC --shared wrapper/ascon.cpp -o wrapper/libascon.so
 
 clean:
 	find . -name 'a.out' -o -name '*.o' -o -name 'lib*.so' -o -name '__pycache__' | xargs rm -rf
