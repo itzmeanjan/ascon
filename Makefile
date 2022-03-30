@@ -20,3 +20,12 @@ clean:
 
 format:
 	find . -name '*.cpp' -o -name '*.hpp' | xargs clang-format -i --style=Mozilla
+
+kat_test_python:
+	# make sure you've `python3 -m pip install --user pytest`
+	bash test.sh
+
+bench_python:
+	# make sure you've `python3 -m pip install --user pytest`
+	# make sure you've `python3 -m pip install --user pytest-benchmark`
+	bash bench.sh

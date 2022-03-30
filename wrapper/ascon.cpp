@@ -1,5 +1,7 @@
 #include "ascon.hpp"
 
+// Slim `C` wrapper on top of `C++` implementation, so that it can be compiled
+// down to shared library object with `C` ABI
 extern "C"
 {
   void hash(const uint8_t* const __restrict msg,
