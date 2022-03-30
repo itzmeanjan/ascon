@@ -7,13 +7,13 @@ IFLAGS = -I ./include
 all: test_ascon
 
 test/a.out: test/main.cpp include/*.hpp
-	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(SYCLFLAGS) $(IFLAGS) $< -o $@
+	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(IFLAGS) $< -o $@
 
 test_ascon: test/a.out
 	./test/a.out
 
 lib:
-	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(SYCLFLAGS) $(IFLAGS) -fsycl-targets=spir64_x86_64 -fPIC --shared wrapper/ascon.cpp -o wrapper/libascon.so
+	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(IFLAGS) -fPIC --shared wrapper/ascon.cpp -o wrapper/libascon.so
 
 clean:
 	find . -name 'a.out' -o -name '*.o' -o -name 'lib*.so' -o -name '__pycache__' | xargs rm -rf
@@ -29,3 +29,11 @@ bench_python:
 	# make sure you've `python3 -m pip install --user pytest`
 	# make sure you've `python3 -m pip install --user pytest-benchmark`
 	bash bench.sh
+
+bench/a.out: bench/main.cpp include/*.hpp
+	# make sure you've google-benchmark globally installed;
+	# see https://github.com/google/benchmark/tree/60b16f1#installation
+	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(IFLAGS) $< -lbenchmark -lpthread -o $@
+
+bench_cpp: bench/a.out
+	./$<
