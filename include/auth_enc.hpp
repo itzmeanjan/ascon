@@ -18,10 +18,11 @@ static inline const tag_t
 encrypt_128(const secret_key_t& k,
             const nonce_t& n,
             const uint8_t* const __restrict associated_data,
-            const size_t data_len,
+            const size_t data_len, // bytes; can be >= 0
             const uint8_t* const __restrict text,
-            const size_t text_len,
-            uint8_t* const __restrict cipher)
+            const size_t text_len,           // bytes; can be >= 0
+            uint8_t* const __restrict cipher // length same as `text`
+)
 {
   using namespace ascon_cipher;
 
@@ -45,10 +46,11 @@ static inline const tag_t
 encrypt_128a(const secret_key_t& k,
              const nonce_t& n,
              const uint8_t* const __restrict associated_data,
-             const size_t data_len,
+             const size_t data_len, // bytes; can be >= 0
              const uint8_t* const __restrict text,
-             const size_t text_len,
-             uint8_t* const __restrict cipher)
+             const size_t text_len,           // bytes; can be >= 0
+             uint8_t* const __restrict cipher // length same as `text`
+)
 {
   using namespace ascon_cipher;
 

@@ -35,23 +35,11 @@ p_s(uint64_t* const state)
   state[4] ^= state[3];
   state[2] ^= state[1];
 
-  uint64_t t0 = state[0];
-  uint64_t t1 = state[1];
-  uint64_t t2 = state[2];
-  uint64_t t3 = state[3];
-  uint64_t t4 = state[4];
-
-  t0 = ~t0;
-  t1 = ~t1;
-  t2 = ~t2;
-  t3 = ~t3;
-  t4 = ~t4;
-
-  t0 &= state[1];
-  t1 &= state[2];
-  t2 &= state[3];
-  t3 &= state[4];
-  t4 &= state[0];
+  uint64_t t0 = state[1] & ~state[0];
+  uint64_t t1 = state[2] & ~state[1];
+  uint64_t t2 = state[3] & ~state[2];
+  uint64_t t3 = state[4] & ~state[3];
+  uint64_t t4 = state[0] & ~state[4];
 
   state[0] ^= t1;
   state[1] ^= t2;
@@ -135,13 +123,34 @@ p_a(uint64_t* const state) requires(check_a(a))
   permute<11>(state);
 }
 
-// Round count for permutation function `p_b` ∈ {6, 8, 12}; see table 1, 2 Ascon
-// specification
+// Compile-time check that round count for `p_b` permutation is 6
+static inline constexpr bool
+check_b6(const size_t b)
+{
+  return b == 6;
+}
+
+// Compile-time check that round count for `p_b` permutation is 8
+static inline constexpr bool
+check_b8(const size_t b)
+{
+  return b == 8;
+}
+
+// Compile-time check that round count for `p_b` permutation is 12
+static inline constexpr bool
+check_b12(const size_t b)
+{
+  return b == 12;
+}
+
+// Compile-time check that round count for permutation function `p_b` ∈ {6, 8,
+// 12}; see table 1, 2 Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
 static inline constexpr bool
 check_b(const size_t b)
 {
-  return b == 12 || b == 8 || b == 6;
+  return check_b6(b) || check_b8(b) || check_b12(b);
 }
 
 // Permutation p_b to be sequentially applied on state for `b` -many times;
@@ -151,14 +160,14 @@ template<const size_t b>
 static inline void
 p_b(uint64_t* const state) requires(check_b(b))
 {
-  if (b == 6) {
+  if (check_b6(b)) {
     permute<6>(state);
     permute<7>(state);
     permute<8>(state);
     permute<9>(state);
     permute<10>(state);
     permute<11>(state);
-  } else if (b == 8) {
+  } else if (check_b8(b)) {
     permute<4>(state);
     permute<5>(state);
     permute<6>(state);
@@ -167,7 +176,7 @@ p_b(uint64_t* const state) requires(check_b(b))
     permute<9>(state);
     permute<10>(state);
     permute<11>(state);
-  } else if (b == 12) {
+  } else if (check_b12(b)) {
     permute<0>(state);
     permute<1>(state);
     permute<2>(state);
