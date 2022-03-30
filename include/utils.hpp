@@ -1,6 +1,8 @@
 #pragma once
 #include <cstdint>
+#include <iomanip>
 #include <random>
+#include <sstream>
 
 // Utility functions for Ascon Light Weight Cryptography Implementation
 namespace ascon_utils {
@@ -316,6 +318,19 @@ pad_data(
                     (0b1ul << 7) /* padding: '1' ++ '0' <7 bits> */;
       break;
   }
+}
+
+// Converts byte array into hex string; see https://stackoverflow.com/a/14051107
+const std::string
+tohex(const uint8_t* const bytes, const size_t len)
+{
+  std::stringstream ss;
+  ss << std::hex;
+
+  for (size_t i = 0; i < len; i++) {
+    ss << std::setw(2) << std::setfill('0') << (uint32_t)bytes[i];
+  }
+  return ss.str();
 }
 
 }
