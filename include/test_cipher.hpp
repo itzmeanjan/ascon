@@ -9,7 +9,7 @@ namespace ascon_test {
 
 // Test correctness of Ascon-128 authenticated encryption and verified
 // decryption implementation
-void
+static void
 ascon_128(const size_t data_len /* bytes */, const size_t text_len /* bytes */)
 {
   ascon::secret_key_t k;
@@ -56,7 +56,7 @@ ascon_128(const size_t data_len /* bytes */, const size_t text_len /* bytes */)
 
 // Test correctness of Ascon-128a authenticated encryption and verified
 // decryption implementation
-void
+static void
 ascon_128a(const size_t data_len /* bytes */, const size_t text_len /* bytes */)
 {
   ascon::secret_key_t k;

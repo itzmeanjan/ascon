@@ -2,7 +2,7 @@
 #include <iostream>
 
 int
-main(int argc, char** argv)
+main()
 {
   constexpr const size_t msg_len = 1024; // bytes
   constexpr const size_t out_len = 32;   // bytes

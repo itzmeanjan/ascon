@@ -50,8 +50,8 @@ ascon_hash(benchmark::State& state)
     memset(digest, 0, DIG_LEN);
     benchmark::DoNotOptimize(itr++);
   }
-  state.SetBytesProcessed(MSG_LEN * size_t(state.iterations()));
-  state.SetItemsProcessed(itr);
+  state.SetBytesProcessed(static_cast<int64_t>(MSG_LEN * itr));
+  state.SetItemsProcessed(static_cast<int64_t>(itr));
 
   free(msg);
   free(digest);
@@ -76,8 +76,8 @@ ascon_hash_a(benchmark::State& state)
     memset(digest, 0, DIG_LEN);
     benchmark::DoNotOptimize(itr++);
   }
-  state.SetBytesProcessed(MSG_LEN * size_t(state.iterations()));
-  state.SetItemsProcessed(itr);
+  state.SetBytesProcessed(static_cast<int64_t>(MSG_LEN * itr));
+  state.SetItemsProcessed(static_cast<int64_t>(itr));
 
   free(msg);
   free(digest);
@@ -111,8 +111,8 @@ ascon_128_enc(benchmark::State& state)
     DoNotOptimize(encrypt_128(k, n, data, DATA_LEN, text, TEXT_LEN, enc));
     DoNotOptimize(itr++);
   }
-  state.SetBytesProcessed((DATA_LEN + TEXT_LEN) * size_t(state.iterations()));
-  state.SetItemsProcessed(itr);
+  state.SetBytesProcessed(static_cast<int64_t>((DATA_LEN + TEXT_LEN) * itr));
+  state.SetItemsProcessed(static_cast<int64_t>(itr));
 
   free(data);
   free(text);
@@ -150,8 +150,8 @@ ascon_128_dec(benchmark::State& state)
     DoNotOptimize(decrypt_128(k, n, data, DATA_LEN, enc, CIPHER_LEN, dec, t));
     DoNotOptimize(itr++);
   }
-  state.SetBytesProcessed((DATA_LEN + CIPHER_LEN) * size_t(state.iterations()));
-  state.SetItemsProcessed(itr);
+  state.SetBytesProcessed(static_cast<int64_t>((DATA_LEN + CIPHER_LEN) * itr));
+  state.SetItemsProcessed(static_cast<int64_t>(itr));
 
   free(data);
   free(text);
@@ -187,8 +187,8 @@ ascon_128a_enc(benchmark::State& state)
     DoNotOptimize(encrypt_128a(k, n, data, DATA_LEN, text, TEXT_LEN, enc));
     DoNotOptimize(itr++);
   }
-  state.SetBytesProcessed((DATA_LEN + TEXT_LEN) * size_t(state.iterations()));
-  state.SetItemsProcessed(itr);
+  state.SetBytesProcessed(static_cast<int64_t>((DATA_LEN + TEXT_LEN) * itr));
+  state.SetItemsProcessed(static_cast<int64_t>(itr));
 
   free(data);
   free(text);
@@ -226,8 +226,8 @@ ascon_128a_dec(benchmark::State& state)
     DoNotOptimize(decrypt_128a(k, n, data, DATA_LEN, enc, CIPHER_LEN, dec, t));
     DoNotOptimize(itr++);
   }
-  state.SetBytesProcessed((DATA_LEN + CIPHER_LEN) * size_t(state.iterations()));
-  state.SetItemsProcessed(itr);
+  state.SetBytesProcessed(static_cast<int64_t>((DATA_LEN + CIPHER_LEN) * itr));
+  state.SetItemsProcessed(static_cast<int64_t>(itr));
 
   free(data);
   free(text);

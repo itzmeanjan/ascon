@@ -12,7 +12,7 @@ namespace ascon {
 // See parameters in table 1 of Ascon specification
 //
 // Note, use deciphered text only when this function returns true !
-static inline const bool
+static inline constexpr bool
 decrypt_128(const ascon_cipher::secret_key_t& k,
             const ascon_cipher::nonce_t& n,
             const uint8_t* const __restrict associated_data,
@@ -42,7 +42,7 @@ decrypt_128(const ascon_cipher::secret_key_t& k,
 // See parameters in table 1 of Ascon specification
 //
 // Note, use deciphered text only when this function returns true !
-static inline const bool
+static inline constexpr bool
 decrypt_128a(const ascon_cipher::secret_key_t& k,
              const ascon_cipher::nonce_t& n,
              const uint8_t* const __restrict associated_data,

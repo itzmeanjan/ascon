@@ -1,4 +1,5 @@
 #pragma once
+#include <bit>
 #include <cstdint>
 
 using size_t = std::size_t;
@@ -53,31 +54,18 @@ p_s(uint64_t* const state)
   state[2] = ~state[2];
 }
 
-// Just to force compile-time evaluation of template argument to `rotr` function
-static inline constexpr bool
-check_n(const size_t n)
-{
-  return n < 64;
-}
-
-// Circular right shift of `x` by `n` bit positions | 0 <= n < 64
-template<const size_t n>
-static inline const uint64_t
-rotr(const uint64_t x) requires(check_n(n))
-{
-  return (x >> n) | (x << (64 - n));
-}
-
 // Linear diffusion layer; taken from figure 4.b in Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
 static inline void
 p_l(uint64_t* const state)
 {
-  state[0] = state[0] ^ rotr<19>(state[0]) ^ rotr<28>(state[0]);
-  state[1] = state[1] ^ rotr<61>(state[1]) ^ rotr<39>(state[1]);
-  state[2] = state[2] ^ rotr<1>(state[2]) ^ rotr<6>(state[2]);
-  state[3] = state[3] ^ rotr<10>(state[3]) ^ rotr<17>(state[3]);
-  state[4] = state[4] ^ rotr<7>(state[4]) ^ rotr<41>(state[4]);
+  using namespace std;
+
+  state[0] = state[0] ^ rotr(state[0], 19) ^ rotr(state[0], 28);
+  state[1] = state[1] ^ rotr(state[1], 61) ^ rotr(state[1], 39);
+  state[2] = state[2] ^ rotr(state[2], 1) ^ rotr(state[2], 6);
+  state[3] = state[3] ^ rotr(state[3], 10) ^ rotr(state[3], 17);
+  state[4] = state[4] ^ rotr(state[4], 7) ^ rotr(state[4], 41);
 }
 
 // Ascon permutation; taken from section 2.6 of Ascon specification

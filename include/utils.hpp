@@ -9,7 +9,7 @@ namespace ascon_utils {
 
 // Given big-endian byte array of length 8, this function interprets it as
 // 64 -bit unsigned integer
-static inline const uint64_t
+static inline constexpr uint64_t
 from_be_bytes(const uint8_t* const i_bytes)
 {
   return (static_cast<uint64_t>(i_bytes[0]) << 56) |
@@ -65,10 +65,10 @@ random_data(uint8_t* const data, const size_t len)
 // See Ascon-{128, Hash, HashA} padding rule in section 2.4.{2,3} & 2.5.2 of
 // Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-static inline const uint64_t
+static inline constexpr uint64_t
 pad_data(const uint8_t* const data, const size_t pad_byte_len)
 {
-  uint64_t data_blk;
+  uint64_t data_blk = 0ull;
 
   switch (pad_byte_len) {
     case 8:
@@ -321,14 +321,14 @@ pad_data(
 }
 
 // Converts byte array into hex string; see https://stackoverflow.com/a/14051107
-const std::string
+static inline const std::string
 tohex(const uint8_t* const bytes, const size_t len)
 {
   std::stringstream ss;
   ss << std::hex;
 
   for (size_t i = 0; i < len; i++) {
-    ss << std::setw(2) << std::setfill('0') << (uint32_t)bytes[i];
+    ss << std::setw(2) << std::setfill('0') << static_cast<uint32_t>(bytes[i]);
   }
   return ss.str();
 }

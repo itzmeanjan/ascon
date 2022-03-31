@@ -3,7 +3,7 @@
 #include <iostream>
 
 int
-main(int argc, char** argv)
+main()
 {
   constexpr const size_t text_len = 64;      // bytes
   constexpr const size_t data_len = 32;      // bytes

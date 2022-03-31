@@ -9,7 +9,7 @@ namespace ascon_test {
 // XOFA} state; see precomputed hash states for all these hashing algorithms in
 // section 2.5.1 of Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-void
+static void
 p_a()
 {
   {

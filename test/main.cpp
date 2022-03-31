@@ -4,7 +4,7 @@
 #include <iostream>
 
 int
-main(int argc, char** argv)
+main()
 {
   ascon_test::p_a();
   std::cout << "[test] passed ascon permutation `p_a`" << std::endl;
@@ -16,7 +16,6 @@ main(int argc, char** argv)
   std::cout << "[test] passed ascon hashA" << std::endl;
 
   for (size_t data_len = 0; data_len < 32; data_len++) {
-#pragma unroll 8
     for (size_t text_len = 0; text_len < 32; text_len++) {
       ascon_test::ascon_128(data_len, text_len);
       ascon_test::ascon_128a(data_len, text_len);
