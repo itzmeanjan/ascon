@@ -37,3 +37,9 @@ bench/a.out: bench/main.cpp include/*.hpp
 
 bench_cpp: bench/a.out
 	./$<
+
+bench_accel/a.out: bench_accel/main.cpp include/*.hpp
+	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(IFLAGS) $< -o $@
+
+bench_sycl: bench_accel/a.out
+	./$<
