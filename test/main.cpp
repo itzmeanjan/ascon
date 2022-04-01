@@ -1,3 +1,4 @@
+#include "test_accel_cipher.hpp"
 #include "test_accel_hash.hpp"
 #include "test_cipher.hpp"
 #include "test_hash.hpp"
@@ -5,6 +6,8 @@
 #include <iostream>
 
 #define MSG_LEN 64ul  // per work-item input message length ( bytes )
+#define AD_LEN 32ul   // per work-item input associated data length ( bytes )
+#define CT_LEN 512ul  // per work-item input plain/ cipher text length ( bytes )
 #define WI_CNT 1024ul // SYCL work-item count
 #define WI_SIZE 32ul  // SYCL work-group size
 
@@ -40,6 +43,12 @@ main()
 
   accel_ascon_test::hash_a(q, MSG_LEN, WI_CNT, WI_SIZE);
   std::cout << "[test] passed data-parallel ascon-hashA" << std::endl;
+
+  accel_ascon_test::ascon_128(q, AD_LEN, CT_LEN, WI_CNT, WI_SIZE);
+  std::cout << "[test] passed data-parallel ascon-128" << std::endl;
+
+  accel_ascon_test::ascon_128a(q, AD_LEN, CT_LEN, WI_CNT, WI_SIZE);
+  std::cout << "[test] passed data-parallel ascon-128a" << std::endl;
 
   return EXIT_SUCCESS;
 }
