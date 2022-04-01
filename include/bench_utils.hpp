@@ -450,6 +450,8 @@ exec_kernel(sycl::queue& q,
       sycl::free(p_d, q);
       sycl::free(p_h, q);
       sycl::free(e_d, q);
+      sycl::free(d_d, q);
+      sycl::free(d_h, q);
       sycl::free(a_d, q);
       sycl::free(a_h, q);
       sycl::free(k_d, q);
