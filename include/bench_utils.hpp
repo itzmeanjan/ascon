@@ -1,6 +1,5 @@
 #pragma once
 #include "accel_ascon.hpp"
-#include <CL/sycl.hpp>
 
 #define MSG_LEN 4096ul // per work-item input message length ( bytes )
 #define AD_LEN 64ul    // per work-item input associated data length ( bytes )
@@ -18,13 +17,21 @@ enum ascon_variant
 };
 
 // Function prototype declaration
+//
+// Executes accelerated Ascon-{Hash, HashA, 128, 128a} kernels `itr_cnt` -many
+// times and computes average execution time of following SYCL
+// commands ( returned back in order ), in nanosecond level granularity
+//
+// - host -> device input tx time ( total )
+// - kernel execution time
+// - device -> host input tx time ( total )
 void
 exec_kernel(sycl::queue&,
-                   const size_t,
-                   const size_t,
-                   const size_t,
-                   const ascon_variant,
-                   double* const);
+            const size_t,
+            const size_t,
+            const size_t,
+            const ascon_variant,
+            double* const);
 
 // Time execution of SYCL command, whose submission resulted into given SYCL
 // event, in nanosecond level granularity
@@ -33,6 +40,7 @@ exec_kernel(sycl::queue&,
 static inline uint64_t
 time_event(sycl::event& evt)
 {
+  // type aliasing because I wanted to keep them all single line
   using u64 = sycl::cl_ulong;
   using prof_t = sycl::info::event_profiling;
 
@@ -56,23 +64,18 @@ to_readable_timespan(const double ts)
                                            : std::to_string(ts) + " ns";
 }
 
-// Executes accelerated Ascon-{Hash, HashA, 128, 128a} kernels `itr_cnt` -many
-// times and computes average execution time of following SYCL commands
-//
-// - host -> device input tx time ( total )
-// - kernel execution time
-// - device -> host input tx time ( total )
 void
 exec_kernel(sycl::queue& q,
-                   const size_t wi_cnt,
-                   const size_t wg_size,
-                   const size_t itr_cnt,
-                   const ascon_variant av,
-                   double* const ts)
+            const size_t wi_cnt,
+            const size_t wg_size,
+            const size_t itr_cnt,
+            const ascon_variant av,
+            double* const ts)
 {
   // must enable queue profiling !
   assert(q.has_property<sycl::property::queue::enable_profiling>());
 
+  // type aliasing so that I type lesser
   using evt = sycl::event;
   using evts = std::vector<sycl::event>;
 
@@ -87,17 +90,26 @@ exec_kernel(sycl::queue& q,
   for (size_t i = 0; i < itr_cnt; i++) {
     using namespace accel_ascon;
 
+    // dispatch Ascon-Hash/ Ascon-Hasha kernel
     if (av == ascon_variant::ascon_hash || av == ascon_variant::ascon_hashA) {
+      // each work item to consume `MSG_LEN` -bytes
       const size_t m_len = MSG_LEN * wi_cnt;
+      // each work-item to produce 32 -bytes digest
       const size_t d_len = wi_cnt << 5;
 
+      // input message bytes on accelerator
       uint8_t* msg_d = static_cast<uint8_t*>(sycl::malloc_device(m_len, q));
+      // input message bytes on host
       uint8_t* msg_h = static_cast<uint8_t*>(sycl::malloc_host(m_len, q));
+      // output digest bytes on accelerator
       uint8_t* dig_d = static_cast<uint8_t*>(sycl::malloc_device(d_len, q));
+      // output digest bytes on host
       uint8_t* dig_h = static_cast<uint8_t*>(sycl::malloc_host(d_len, q));
 
+      // prepare random messge bytes on host
       ascon_utils::random_data(msg_h, m_len);
 
+      // copy input message bytes to accelerator
       evt e0 = q.memcpy(msg_d, msg_h, m_len);
       evt e1 = q.memset(dig_d, 0, d_len);
       evt e2 = q.memset(dig_h, 0, d_len);
@@ -116,43 +128,73 @@ exec_kernel(sycl::queue& q,
         h.memcpy(dig_h, dig_d, d_len);
       });
 
-      e5.wait();
+      e5.wait(); // host synchronization
 
-      ts_sum[0] += time_event(e0);
-      ts_sum[1] += time_event(e4);
-      ts_sum[2] += time_event(e5);
+      ts_sum[0] += time_event(e0); // host -> device data tx time
+      ts_sum[1] += time_event(e4); // kernel execution time
+      ts_sum[2] += time_event(e5); // device -> host data tx time
 
+      // release all resources managed by SYCL runtime
       sycl::free(msg_d, q);
       sycl::free(msg_h, q);
       sycl::free(dig_d, q);
       sycl::free(dig_h, q);
-    } else if (av == ascon_variant::ascon_128_encrypt ||
-               av == ascon_variant::ascon_128a_encrypt) {
+
+    }
+    // dispatch Ascon-128/ Ascon-128a encryption kernel
+    else if (av == ascon_variant::ascon_128_encrypt ||
+             av == ascon_variant::ascon_128a_encrypt) {
+      // each work-item to encrypt `CT_LEN` -bytes plain text
+      // and will produce same number of cipher text bytes
       const size_t ct_len = CT_LEN * wi_cnt;
+      // each work-item to consume `AD_LEN` -bytes associated data
       const size_t ad_len = AD_LEN * wi_cnt;
+      // secret key, nonce & authentication tag --- all are each of 16 -bytes
+      // wide; each work-item to use single secret key, nonce & produce
+      // single authentication tag
       const size_t knt_len = (sizeof(uint64_t) << 1) * wi_cnt;
 
+      // plain text memory allocated on accelerator
       uint8_t* p_d = static_cast<uint8_t*>(sycl::malloc_device(ct_len, q));
+      // plain text memory allocated on host
       uint8_t* p_h = static_cast<uint8_t*>(sycl::malloc_host(ct_len, q));
+      // encrypted text memory allocated on accelerator
       uint8_t* e_d = static_cast<uint8_t*>(sycl::malloc_device(ct_len, q));
+      // encrypted text memory allocated on host
       uint8_t* e_h = static_cast<uint8_t*>(sycl::malloc_host(ct_len, q));
+      // associated data memory allocated on accelerator
       uint8_t* a_d = static_cast<uint8_t*>(sycl::malloc_device(ad_len, q));
+      // associated data memory allocated on host
       uint8_t* a_h = static_cast<uint8_t*>(sycl::malloc_host(ad_len, q));
+      // secret key memory allocated on accelerator
       uint64_t* k_d = static_cast<uint64_t*>(sycl::malloc_device(knt_len, q));
+      // secret key memory allocated on host
       uint64_t* k_h = static_cast<uint64_t*>(sycl::malloc_host(knt_len, q));
+      // pubic message nonce memory allocated on accelerator
       uint64_t* n_d = static_cast<uint64_t*>(sycl::malloc_device(knt_len, q));
+      // pubic message nonce memory allocated on host
       uint64_t* n_h = static_cast<uint64_t*>(sycl::malloc_host(knt_len, q));
+      // authentication tag memory allocated on accelerator
       uint64_t* t_d = static_cast<uint64_t*>(sycl::malloc_device(knt_len, q));
+      // authentication tag memory allocated on host
       uint64_t* t_h = static_cast<uint64_t*>(sycl::malloc_host(knt_len, q));
 
+      // generate random plain text on host
       ascon_utils::random_data(p_h, ct_len);
+      // generate random associated data on host
       ascon_utils::random_data(a_h, ad_len);
+      // generate random secret keys on host
       ascon_utils::random_data(k_h, wi_cnt << 1);
+      // generate random public message nonces on host
       ascon_utils::random_data(n_h, wi_cnt << 1);
 
+      // copy plain text to accelerator memory
       evt e0 = q.memcpy(p_d, p_h, ct_len);
+      // copy associated data to accelerator memory
       evt e1 = q.memcpy(a_d, a_h, ad_len);
+      // copy secret keys to accelerator memory
       evt e2 = q.memcpy(k_d, k_h, knt_len);
+      // copy public message nonces to accelerator memory
       evt e3 = q.memcpy(n_d, n_h, knt_len);
 
       evt e4 = q.memset(e_d, 0, ct_len);
@@ -197,11 +239,13 @@ exec_kernel(sycl::queue& q,
                           { e0, e1, e2, e3, e4, e6 });
       }
 
+      // copy cipher text back to host
       evt e9 = q.submit([&](sycl::handler& h) {
         h.depends_on({ e5, e8 });
         h.memcpy(e_h, e_d, ct_len);
       });
 
+      // copy authentication tags back to host
       evt e10 = q.submit([&](sycl::handler& h) {
         h.depends_on({ e7, e8 });
         h.memcpy(t_h, t_d, knt_len);
@@ -209,15 +253,19 @@ exec_kernel(sycl::queue& q,
 
       evt e11 = q.ext_oneapi_submit_barrier({ e9, e10 });
 
-      e11.wait();
+      e11.wait(); // host synchronization
 
       const uint64_t ts0 = time_event(e0) + time_event(e1);
       const uint64_t ts1 = time_event(e2) + time_event(e3);
 
+      // host -> device data tx time
       ts_sum[0] += (ts0 + ts1);
+      // kernel execution time
       ts_sum[1] += time_event(e8);
+      // device -> host data tx time
       ts_sum[2] += (time_event(e9) + time_event(e10));
 
+      // deallocate all resources which are managed by SYCL runtime
       sycl::free(p_d, q);
       sycl::free(p_h, q);
       sycl::free(e_d, q);
@@ -230,67 +278,96 @@ exec_kernel(sycl::queue& q,
       sycl::free(n_h, q);
       sycl::free(t_d, q);
       sycl::free(t_h, q);
-    } else if (av == ascon_variant::ascon_128_decrypt ||
-               av == ascon_variant::ascon_128a_decrypt) {
+    }
+    // dispatch Ascon-128/ Ascon-128a decryption kernel
+    else if (av == ascon_variant::ascon_128_decrypt ||
+             av == ascon_variant::ascon_128a_decrypt) {
+      // each work-item to decrypt `CT_LEN` -bytes and produce same number of
+      // plain text bytes
       const size_t ct_len = CT_LEN * wi_cnt;
+      // each work-item to consume `AD_LEN` -bytes associated data
       const size_t ad_len = AD_LEN * wi_cnt;
+      // secret key, nonce & authentication tags --- all are 16 -bytes wide
       const size_t knt_len = (sizeof(uint64_t) << 1) * wi_cnt;
+      // each work-item to write single boolean flag back to global memory,
+      // denoting status of verified decryption process
       const size_t flg_len = sizeof(bool) * wi_cnt;
 
+      // plain text memory allocated on accelerator
       uint8_t* p_d = static_cast<uint8_t*>(sycl::malloc_device(ct_len, q));
+      // plain text memory allocated on host
       uint8_t* p_h = static_cast<uint8_t*>(sycl::malloc_host(ct_len, q));
+      // encrypted text memory allocated on accelerator
       uint8_t* e_d = static_cast<uint8_t*>(sycl::malloc_device(ct_len, q));
-      uint8_t* e_h = static_cast<uint8_t*>(sycl::malloc_host(ct_len, q));
+      // decrypted text memory allocated on accelerator
+      uint8_t* d_d = static_cast<uint8_t*>(sycl::malloc_device(ct_len, q));
+      // decrypted text memory allocated on host
+      uint8_t* d_h = static_cast<uint8_t*>(sycl::malloc_host(ct_len, q));
+      // associated data memory allocated on accelerator
       uint8_t* a_d = static_cast<uint8_t*>(sycl::malloc_device(ad_len, q));
+      // associated data memory allocated on host
       uint8_t* a_h = static_cast<uint8_t*>(sycl::malloc_host(ad_len, q));
+      // secret key memory allocated on accelerator
       uint64_t* k_d = static_cast<uint64_t*>(sycl::malloc_device(knt_len, q));
+      // secret key memory allocated on host
       uint64_t* k_h = static_cast<uint64_t*>(sycl::malloc_host(knt_len, q));
+      // pubic message nonce memory allocated on accelerator
       uint64_t* n_d = static_cast<uint64_t*>(sycl::malloc_device(knt_len, q));
+      // pubic message nonce memory allocated on host
       uint64_t* n_h = static_cast<uint64_t*>(sycl::malloc_host(knt_len, q));
+      // authentication tag memory allocated on accelerator
       uint64_t* t_d = static_cast<uint64_t*>(sycl::malloc_device(knt_len, q));
-      uint64_t* t_h = static_cast<uint64_t*>(sycl::malloc_host(knt_len, q));
+      // verified decryption status flags, allocated on accelerator
       bool* f_d = static_cast<bool*>(sycl::malloc_device(flg_len, q));
+      // verified decryption status flags, allocated on host
       bool* f_h = static_cast<bool*>(sycl::malloc_host(flg_len, q));
 
-      ascon_utils::random_data(e_h, ct_len);
+      // generate random plain text on host
+      ascon_utils::random_data(p_h, ct_len);
+      // generate random associated data on host
       ascon_utils::random_data(a_h, ad_len);
+      // generate random secret keys on host
       ascon_utils::random_data(k_h, wi_cnt << 1);
+      // generate random public message nonces on host
       ascon_utils::random_data(n_h, wi_cnt << 1);
-      ascon_utils::random_data(t_h, wi_cnt << 1);
 
-      evt e0 = q.memcpy(e_d, e_h, ct_len);
+      // copy plain text to accelerator memory
+      evt e0 = q.memcpy(p_d, p_h, ct_len);
+      // copy associated data to accelerator memory
       evt e1 = q.memcpy(a_d, a_h, ad_len);
+      // copy secret keys to accelerator memory
       evt e2 = q.memcpy(k_d, k_h, knt_len);
+      // copy public message nonces to accelerator memory
       evt e3 = q.memcpy(n_d, n_h, knt_len);
-      evt e4 = q.memcpy(t_d, t_h, knt_len);
 
-      evt e5 = q.memset(p_d, 0, ct_len);
-      evt e6 = q.memset(p_h, 0, ct_len);
-      evt e7 = q.memset(f_d, 0, flg_len);
-      evt e8 = q.memset(f_h, 0, flg_len);
-      evt e9;
+      evt e4 = q.memset(e_d, 0, ct_len);
+      evt e5 = q.memset(t_d, 0, knt_len);
+      evt e6 = q.memset(d_d, 0, ct_len);
+      evt e7 = q.memset(d_h, 0, ct_len);
+      evt e8 = q.memset(f_d, 0, flg_len);
+      evt e9 = q.memset(f_h, 0, flg_len);
+      evt e11;
 
+      // first encrypt then decrypt; while timing command execution ignore
+      // time required to compute encrypted data & authentication tags
       if (av == ascon_variant::ascon_128_decrypt) {
-        e9 = decrypt_128(q,
-                         k_d,
-                         knt_len,
-                         n_d,
-                         knt_len,
-                         a_d,
-                         ad_len,
-                         e_d,
-                         ct_len,
-                         t_d,
-                         knt_len,
-                         p_d,
-                         ct_len,
-                         f_d,
-                         flg_len,
-                         wi_cnt,
-                         wg_size,
-                         { e0, e1, e2, e3, e4, e5, e7 });
-      } else if (av == ascon_variant::ascon_128a_decrypt) {
-        e9 = decrypt_128a(q,
+        evt e10 = encrypt_128(q,
+                              k_d,
+                              knt_len,
+                              n_d,
+                              knt_len,
+                              a_d,
+                              ad_len,
+                              p_d,
+                              ct_len,
+                              e_d,
+                              ct_len,
+                              t_d,
+                              knt_len,
+                              wi_cnt,
+                              wg_size,
+                              { e0, e1, e2, e3, e4, e5 });
+        e11 = decrypt_128(q,
                           k_d,
                           knt_len,
                           n_d,
@@ -301,40 +378,78 @@ exec_kernel(sycl::queue& q,
                           ct_len,
                           t_d,
                           knt_len,
-                          p_d,
+                          d_d,
                           ct_len,
                           f_d,
                           flg_len,
                           wi_cnt,
                           wg_size,
-                          { e0, e1, e2, e3, e4, e5, e7 });
+                          { e6, e8, e10 });
+      } else if (av == ascon_variant::ascon_128a_decrypt) {
+        evt e10 = encrypt_128a(q,
+                               k_d,
+                               knt_len,
+                               n_d,
+                               knt_len,
+                               a_d,
+                               ad_len,
+                               p_d,
+                               ct_len,
+                               e_d,
+                               ct_len,
+                               t_d,
+                               knt_len,
+                               wi_cnt,
+                               wg_size,
+                               { e0, e1, e2, e3, e4, e5 });
+        e11 = decrypt_128a(q,
+                           k_d,
+                           knt_len,
+                           n_d,
+                           knt_len,
+                           a_d,
+                           ad_len,
+                           e_d,
+                           ct_len,
+                           t_d,
+                           knt_len,
+                           d_d,
+                           ct_len,
+                           f_d,
+                           flg_len,
+                           wi_cnt,
+                           wg_size,
+                           { e6, e8, e10 });
       }
 
-      evt e10 = q.submit([&](sycl::handler& h) {
-        h.depends_on({ e6, e9 });
-        h.memcpy(p_h, p_d, ct_len);
+      evt e12 = q.submit([&](sycl::handler& h) {
+        h.depends_on({ e7, e11 });
+        h.memcpy(d_h, d_d, ct_len);
       });
 
-      evt e11 = q.submit([&](sycl::handler& h) {
-        h.depends_on({ e8, e9 });
+      evt e13 = q.submit([&](sycl::handler& h) {
+        h.depends_on({ e9, e11 });
         h.memcpy(f_h, f_d, flg_len);
       });
 
-      evt e12 = q.ext_oneapi_submit_barrier({ e9, e10 });
+      evt e14 = q.ext_oneapi_submit_barrier({ e12, e13 });
 
-      e12.wait();
+      e14.wait();
 
       const uint64_t ts0 = time_event(e0) + time_event(e1);
-      const uint64_t ts1 = time_event(e2) + time_event(e3);
+      const uint64_t ts1 = time_event(e2) + time_event(e3) * 2;
 
-      ts_sum[0] += (ts0 + ts1 + time_event(e4));
-      ts_sum[1] += time_event(e9);
-      ts_sum[2] += (time_event(e10) + time_event(e11));
+      // host -> device data tx time
+      ts_sum[0] += (ts0 + ts1);
+      // Ascon-{128,128a} decryption kernel execution time
+      ts_sum[1] += time_event(e11);
+      // device -> host data tx time
+      ts_sum[2] += (time_event(e12) + time_event(e13));
 
+      // release all resources which are managed by SYCL runtime
       sycl::free(p_d, q);
       sycl::free(p_h, q);
       sycl::free(e_d, q);
-      sycl::free(e_h, q);
       sycl::free(a_d, q);
       sycl::free(a_h, q);
       sycl::free(k_d, q);
@@ -342,7 +457,6 @@ exec_kernel(sycl::queue& q,
       sycl::free(n_d, q);
       sycl::free(n_h, q);
       sycl::free(t_d, q);
-      sycl::free(t_h, q);
       sycl::free(f_d, q);
       sycl::free(f_h, q);
     }
