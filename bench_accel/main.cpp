@@ -1,4 +1,5 @@
 #include "bench_utils.hpp"
+#include "table.hpp" // taken from https://github.com/haarcuba/cpp-text-table/blob/f217b3d/TextTable.h
 #include <iostream>
 
 int
@@ -24,11 +25,14 @@ main()
   double* ts = static_cast<double*>(std::malloc(sizeof(double) * 3));
 
   std::cout << "Benchmarking Ascon-Hash" << std::endl << std::endl;
-  std::cout << std::setw(24) << std::right << "work items"
-            << "\t\t" << std::setw(24) << std::right << "host-to-device b/w"
-            << "\t\t" << std::setw(18) << std::right << "kernel b/w"
-            << "\t\t" << std::setw(24) << std::right << "device-to-host b/w"
-            << std::endl;
+
+  TextTable t0('-', '|', '+');
+
+  t0.add("work items");
+  t0.add("host-to-device b/w ( MB/ s )");
+  t0.add("kernel b/w ( MB/ s )");
+  t0.add("device-to-host b/w ( MB/ s )");
+  t0.endOfRow();
 
   for (size_t wi = 1ul << 16; wi <= 1ul << 18; wi <<= 1) {
     exec_kernel(q, wi, wg_size, itr_cnt, ascon_variant::ascon_hash, ts);
@@ -40,21 +44,29 @@ main()
     const double bw1 = i_size / (ts[1] * 1e-9); // MB/s
     const double bw2 = o_size / (ts[2] * 1e-9); // MB/s
 
-    std::cout << std::setw(20) << std::right << wi << "\t\t" << std::setw(22)
-              << std::right << bw0 << " MB/ s"
-              << "\t\t" << std::setw(22) << std::right << bw1 << " MB/ s"
-              << "\t\t" << std::setw(16) << std::right << bw2 << " MB/ s"
-              << std::endl;
+    t0.add(std::to_string(wi));
+    t0.add(std::to_string(bw0));
+    t0.add(std::to_string(bw1));
+    t0.add(std::to_string(bw2));
+    t0.endOfRow();
   }
+
+  t0.setAlignment(1, TextTable::Alignment::RIGHT);
+  t0.setAlignment(2, TextTable::Alignment::RIGHT);
+  t0.setAlignment(3, TextTable::Alignment::RIGHT);
+  std::cout << t0;
 
   std::cout << std::endl
             << "Benchmarking Ascon-HashA" << std::endl
             << std::endl;
-  std::cout << std::setw(24) << std::right << "work items"
-            << "\t\t" << std::setw(24) << std::right << "host-to-device b/w"
-            << "\t\t" << std::setw(18) << std::right << "kernel b/w"
-            << "\t\t" << std::setw(24) << std::right << "device-to-host b/w"
-            << std::endl;
+
+  TextTable t1('-', '|', '+');
+
+  t1.add("work items");
+  t1.add("host-to-device b/w ( MB/ s )");
+  t1.add("kernel b/w ( MB/ s )");
+  t1.add("device-to-host b/w ( MB/ s )");
+  t1.endOfRow();
 
   for (size_t wi = 1ul << 16; wi <= 1ul << 18; wi <<= 1) {
     exec_kernel(q, wi, wg_size, itr_cnt, ascon_variant::ascon_hashA, ts);
@@ -66,21 +78,29 @@ main()
     const double bw1 = i_size / (ts[1] * 1e-9); // MB/s
     const double bw2 = o_size / (ts[2] * 1e-9); // MB/s
 
-    std::cout << std::setw(20) << std::right << wi << "\t\t" << std::setw(22)
-              << std::right << bw0 << " MB/ s"
-              << "\t\t" << std::setw(22) << std::right << bw1 << " MB/ s"
-              << "\t\t" << std::setw(16) << std::right << bw2 << " MB/ s"
-              << std::endl;
+    t1.add(std::to_string(wi));
+    t1.add(std::to_string(bw0));
+    t1.add(std::to_string(bw1));
+    t1.add(std::to_string(bw2));
+    t1.endOfRow();
   }
+
+  t1.setAlignment(1, TextTable::Alignment::RIGHT);
+  t1.setAlignment(2, TextTable::Alignment::RIGHT);
+  t1.setAlignment(3, TextTable::Alignment::RIGHT);
+  std::cout << t1;
 
   std::cout << std::endl
             << "Benchmarking Ascon-128 Encrypt" << std::endl
             << std::endl;
-  std::cout << std::setw(24) << std::right << "work items"
-            << "\t\t" << std::setw(24) << std::right << "host-to-device b/w"
-            << "\t\t" << std::setw(18) << std::right << "kernel b/w"
-            << "\t\t" << std::setw(24) << std::right << "device-to-host b/w"
-            << std::endl;
+
+  TextTable t2('-', '|', '+');
+
+  t2.add("work items");
+  t2.add("host-to-device b/w ( MB/ s )");
+  t2.add("kernel b/w ( MB/ s )");
+  t2.add("device-to-host b/w ( MB/ s )");
+  t2.endOfRow();
 
   for (size_t wi = 1ul << 16; wi <= 1ul << 18; wi <<= 1) {
     exec_kernel(q, wi, wg_size, itr_cnt, ascon_variant::ascon_128_encrypt, ts);
@@ -96,21 +116,29 @@ main()
     const double bw1 = i_size0 / (ts[1] * 1e-9); // MB/s
     const double bw2 = o_size / (ts[2] * 1e-9);  // MB/s
 
-    std::cout << std::setw(20) << std::right << wi << "\t\t" << std::setw(22)
-              << std::right << bw0 << " MB/ s"
-              << "\t\t" << std::setw(22) << std::right << bw1 << " MB/ s"
-              << "\t\t" << std::setw(16) << std::right << bw2 << " MB/ s"
-              << std::endl;
+    t2.add(std::to_string(wi));
+    t2.add(std::to_string(bw0));
+    t2.add(std::to_string(bw1));
+    t2.add(std::to_string(bw2));
+    t2.endOfRow();
   }
+
+  t2.setAlignment(1, TextTable::Alignment::RIGHT);
+  t2.setAlignment(2, TextTable::Alignment::RIGHT);
+  t2.setAlignment(3, TextTable::Alignment::RIGHT);
+  std::cout << t2;
 
   std::cout << std::endl
             << "Benchmarking Ascon-128 Decrypt" << std::endl
             << std::endl;
-  std::cout << std::setw(24) << std::right << "work items"
-            << "\t\t" << std::setw(24) << std::right << "host-to-device b/w"
-            << "\t\t" << std::setw(18) << std::right << "kernel b/w"
-            << "\t\t" << std::setw(24) << std::right << "device-to-host b/w"
-            << std::endl;
+
+  TextTable t3('-', '|', '+');
+
+  t3.add("work items");
+  t3.add("host-to-device b/w ( MB/ s )");
+  t3.add("kernel b/w ( MB/ s )");
+  t3.add("device-to-host b/w ( MB/ s )");
+  t3.endOfRow();
 
   for (size_t wi = 1ul << 16; wi <= 1ul << 18; wi <<= 1) {
     exec_kernel(q, wi, wg_size, itr_cnt, ascon_variant::ascon_128_decrypt, ts);
@@ -127,21 +155,29 @@ main()
     const double bw1 = i_size0 / (ts[1] * 1e-9); // MB/s
     const double bw2 = o_size / (ts[2] * 1e-9);  // MB/s
 
-    std::cout << std::setw(20) << std::right << wi << "\t\t" << std::setw(22)
-              << std::right << bw0 << " MB/ s"
-              << "\t\t" << std::setw(22) << std::right << bw1 << " MB/ s"
-              << "\t\t" << std::setw(16) << std::right << bw2 << " MB/ s"
-              << std::endl;
+    t3.add(std::to_string(wi));
+    t3.add(std::to_string(bw0));
+    t3.add(std::to_string(bw1));
+    t3.add(std::to_string(bw2));
+    t3.endOfRow();
   }
+
+  t3.setAlignment(1, TextTable::Alignment::RIGHT);
+  t3.setAlignment(2, TextTable::Alignment::RIGHT);
+  t3.setAlignment(3, TextTable::Alignment::RIGHT);
+  std::cout << t3;
 
   std::cout << std::endl
             << "Benchmarking Ascon-128a Encrypt" << std::endl
             << std::endl;
-  std::cout << std::setw(24) << std::right << "work items"
-            << "\t\t" << std::setw(24) << std::right << "host-to-device b/w"
-            << "\t\t" << std::setw(18) << std::right << "kernel b/w"
-            << "\t\t" << std::setw(24) << std::right << "device-to-host b/w"
-            << std::endl;
+
+  TextTable t4('-', '|', '+');
+
+  t4.add("work items");
+  t4.add("host-to-device b/w ( MB/ s )");
+  t4.add("kernel b/w ( MB/ s )");
+  t4.add("device-to-host b/w ( MB/ s )");
+  t4.endOfRow();
 
   for (size_t wi = 1ul << 16; wi <= 1ul << 18; wi <<= 1) {
     exec_kernel(q, wi, wg_size, itr_cnt, ascon_variant::ascon_128a_encrypt, ts);
@@ -157,21 +193,29 @@ main()
     const double bw1 = i_size0 / (ts[1] * 1e-9); // MB/s
     const double bw2 = o_size / (ts[2] * 1e-9);  // MB/s
 
-    std::cout << std::setw(20) << std::right << wi << "\t\t" << std::setw(22)
-              << std::right << bw0 << " MB/ s"
-              << "\t\t" << std::setw(22) << std::right << bw1 << " MB/ s"
-              << "\t\t" << std::setw(16) << std::right << bw2 << " MB/ s"
-              << std::endl;
+    t4.add(std::to_string(wi));
+    t4.add(std::to_string(bw0));
+    t4.add(std::to_string(bw1));
+    t4.add(std::to_string(bw2));
+    t4.endOfRow();
   }
+
+  t4.setAlignment(1, TextTable::Alignment::RIGHT);
+  t4.setAlignment(2, TextTable::Alignment::RIGHT);
+  t4.setAlignment(3, TextTable::Alignment::RIGHT);
+  std::cout << t4;
 
   std::cout << std::endl
             << "Benchmarking Ascon-128a Decrypt" << std::endl
             << std::endl;
-  std::cout << std::setw(24) << std::right << "work items"
-            << "\t\t" << std::setw(24) << std::right << "host-to-device b/w"
-            << "\t\t" << std::setw(18) << std::right << "kernel b/w"
-            << "\t\t" << std::setw(24) << std::right << "device-to-host b/w"
-            << std::endl;
+
+  TextTable t5('-', '|', '+');
+
+  t5.add("work items");
+  t5.add("host-to-device b/w ( MB/ s )");
+  t5.add("kernel b/w ( MB/ s )");
+  t5.add("device-to-host b/w ( MB/ s )");
+  t5.endOfRow();
 
   for (size_t wi = 1ul << 16; wi <= 1ul << 18; wi <<= 1) {
     exec_kernel(q, wi, wg_size, itr_cnt, ascon_variant::ascon_128a_decrypt, ts);
@@ -188,12 +232,17 @@ main()
     const double bw1 = i_size0 / (ts[1] * 1e-9); // MB/s
     const double bw2 = o_size / (ts[2] * 1e-9);  // MB/s
 
-    std::cout << std::setw(20) << std::right << wi << "\t\t" << std::setw(22)
-              << std::right << bw0 << " MB/ s"
-              << "\t\t" << std::setw(22) << std::right << bw1 << " MB/ s"
-              << "\t\t" << std::setw(16) << std::right << bw2 << " MB/ s"
-              << std::endl;
+    t5.add(std::to_string(wi));
+    t5.add(std::to_string(bw0));
+    t5.add(std::to_string(bw1));
+    t5.add(std::to_string(bw2));
+    t5.endOfRow();
   }
+
+  t5.setAlignment(1, TextTable::Alignment::RIGHT);
+  t5.setAlignment(2, TextTable::Alignment::RIGHT);
+  t5.setAlignment(3, TextTable::Alignment::RIGHT);
+  std::cout << t5;
 
   std::free(ts);
 
