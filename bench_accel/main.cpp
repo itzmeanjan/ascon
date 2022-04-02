@@ -199,10 +199,10 @@ main()
     // device -> host bytes
     const size_t d2h_size = ct_size + knt_size;
 
-    t0.add(std::to_string(wi));
-    t0.add(to_readable_bandwidth(h2d_size, ts[0]));
-    t0.add(to_readable_bandwidth(krnl_size, ts[1]));
-    t0.add(to_readable_bandwidth(d2h_size, ts[2]));
+    t4.add(std::to_string(wi));
+    t4.add(to_readable_bandwidth(h2d_size, ts[0]));
+    t4.add(to_readable_bandwidth(krnl_size, ts[1]));
+    t4.add(to_readable_bandwidth(d2h_size, ts[2]));
     t4.endOfRow();
   }
 
