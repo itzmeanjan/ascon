@@ -143,10 +143,11 @@ ascon_128a(sycl::queue& q,
 
   evt e0 = q.memset(enc, 0, ct_len);
   evt e1 = q.memset(tag, 0, knt_len);
-  evt e2 = q.memset(flag, 0, flag_len);
+  evt e2 = q.memset(dec, 0, ct_len);
+  evt e3 = q.memset(flag, 0, flag_len);
 
   // first encrypt N -many independent plain text slice using Ascon-128a
-  evt e3 = accel_ascon::encrypt_128a(q,
+  evt e4 = accel_ascon::encrypt_128a(q,
                                      key,
                                      knt_len,
                                      nonce,
@@ -164,7 +165,7 @@ ascon_128a(sycl::queue& q,
                                      { e0, e1 });
 
   // then decrypt N -many independent cipher text slice using Ascon-128a
-  evt e4 = accel_ascon::decrypt_128a(q,
+  evt e5 = accel_ascon::decrypt_128a(q,
                                      key,
                                      knt_len,
                                      nonce,
@@ -181,13 +182,19 @@ ascon_128a(sycl::queue& q,
                                      flag_len,
                                      wi_cnt,
                                      wg_size,
-                                     { e2, e3 });
+                                     { e2, e3, e4 });
 
-  e4.wait();
+  e5.wait();
 
   // ensure verified decryption happened as expected !
   for (size_t i = 0; i < wi_cnt; i++) {
     assert(flag[i]);
+
+    // do a byte-by-byte comparison between original plain text & deciphered text
+    const size_t ct_offset = i * per_wi_ct_len;
+    for (size_t j = 0; j < per_wi_ct_len; j++) {
+      assert(txt[ct_offset + j] == dec[ct_offset + j]);
+    }
   }
 
   // release all resources

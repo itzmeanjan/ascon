@@ -453,6 +453,11 @@ exec_kernel(sycl::queue& q,
 
       e14.wait();
 
+      // ensure that verified decryption occurred !
+      for (size_t j = 0; j < wi_cnt; j++) {
+        assert(f_h[j]);
+      }
+
       const uint64_t ts0 = time_event(e0) + time_event(e1);
       const uint64_t ts1 = time_event(e2) + time_event(e3) * 2;
 
