@@ -35,7 +35,7 @@ main()
 
   sycl::default_selector s{};
   sycl::device d{ s };
-  sycl::context c{};
+  sycl::context c{ d };
   sycl::queue q{ c, d };
 
   accel_ascon_test::hash(q, MSG_LEN, WI_CNT, WI_SIZE);

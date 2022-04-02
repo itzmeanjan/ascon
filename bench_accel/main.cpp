@@ -19,7 +19,7 @@ main()
 #endif
 
   sycl::device d{ s };
-  sycl::context c{};
+  sycl::context c{ d };
   // must enable queue profiling !
   sycl::queue q{ c, d, sycl::property::queue::enable_profiling{} };
 
