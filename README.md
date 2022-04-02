@@ -14,9 +14,18 @@ Accelerating Ascon: Light Weight Cryptography
 
 > While working on this project, I've relied on Ascon [specification](https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf)
 
-This implementation doesn't depend on anything else, except C++ standard library. I've also written Python interface to C++ implementation using `ctypes`, which is used for testing functional correctness using Known Answer Tests provided with NIST LWC submission package of `ascon`. Benchmarking C++ interface makes use of `google-benchmark` library; see below. While it's also possible to benchmark Python wrapper API using `pytest-benchmark`; details below.
+This implementation doesn't depend on anything else, except C++ standard library ( which implements C++20 specification ). I've also written Python interface to C++ implementation using `ctypes`, which is used for testing functional correctness using Known Answer Tests provided with NIST LWC submission package of `ascon`. Benchmarking C++ interface makes use of `google-benchmark` library; see below. While it's also possible to benchmark Python wrapper API using `pytest-benchmark`; details below.
 
-Eventually I'd like to integrate `ascon` with SYCL heterogeneous data parallel API ( invoking from SYCL kernels ) for accelerating cryptographic hashing, authenticated encryption & verified decryption using `ascon` --- running it on CPUs, GPUs & FPGAs. Note, `ascon` itself is pretty light weight, so speed up obtained when running multiple instances of `ascon` LWC suite in data parallel fashion, on high-end GPU, should be impressive [ **WIP** ]
+Other than lean & simple Ascon implementation, I've also written SYCL kernels which can be used for data-parallelly computing
+
+- Ascon-Hash of N -many independent, equal length byte slices
+- Ascon-HashA of N -many independent, equal length byte slices
+- N -many independent, equal length cipher text slices and authentication tags ( 128 -bit each ) using Ascon-128 authenticated encryption algorithm
+- N -many independent, equal length plain text slices and verification flags ( boolean ) using Ascon-128 verified decryption algorithm
+- N -many independent, equal length cipher text slices and authentication tags ( 128 -bit each ) using Ascon-128a authenticated encryption algorithm
+- N -many independent, equal length plain text slices and verification flags ( boolean ) using Ascon-128a verified decryption algorithm
+
+on heterogeneous accelerator devices i.e. multi-core CPUs, GPGPUs etc. Benchmark results on multiple accelerator devices can be found below.
 
 ## Prerequisites
 
@@ -31,6 +40,17 @@ Intel(R) oneAPI DPC++/C++ Compiler 2022.0.0 (2022.0.0.20211123)
 Target: x86_64-unknown-linux-gnu
 Thread model: posix
 InstalledDir: /opt/intel/oneapi/compiler/2022.0.2/linux/bin-llvm
+```
+
+> When targeting Nvidia CUDA devices for accelerated Ascon kernels, I'm using Intel's `clang++`, compiled from source with `--cuda` support; find more [here](https://intel.github.io/llvm-docs/GetStartedGuide.html#prerequisites)
+
+```bash
+$ clang++ --version
+
+clang version 15.0.0 (https://github.com/intel/llvm ff254ca03f514222a32694dd3e3b421a2903cce8)
+Target: x86_64-unknown-linux-gnu
+Thread model: posix
+InstalledDir: /home/ubuntu/sycl_workspace/llvm/build/bin
 ```
 
 - System development utilities like `make`, `cmake` will be required for ease of building library/ testing/ benchmarking
@@ -245,3 +265,23 @@ $ popd
 > I suggest you read `ascon` Python API documentation [here](https://github.com/itzmeanjan/ascon/blob/92f218b/wrapper/python/ascon.py).
 
 > Going through Python API benchmark file should give you good overview of how to use `ascon`; follow [this](https://github.com/itzmeanjan/ascon/blob/92f218b/wrapper/python/test_ascon.py#L212-L343)
+
+## Benchmark SYCL accelerated Ascon
+
+I've written SYCL kernels which can be used for computing Ascon-Hash digest/ Ascon-HashA digest/ encrypted bytes & authentication tags using Ascon-128, Ascon-128a/ decrypted text & verification flags using Ascon-128, Ascon-128a, in data-parallel fashion on accelerator devices like multi-core CPUs, GPGPUs.
+
+These kernels themselves are pretty simple as they import standard Ascon cryptographic suite ( read `ascon::` namespace ) and invoke N -many instances of them on N -many independent input byte slices producing N -many independent output bytes --- meaning N -many SYCL work-items are dispatched for some kernel ( say Ascon-Hash ) and without any in work-group communication/ synchronization N -many Ascon-Hash digests ( each 32 -bytes wide ) are computed & placed in respective memory locations, in contiguous fashion. These digests can now be transferred back to host & consumed for other purposes.
+
+Similarly for Ascon-128 encryption algorithm, N -many independent, equal length plain text slices are encrypted to N -many equal length cipher slices, also computing N -many authentication tags ( each 128 -bit wide ) while also using independent secret keys ( N -many ), public message nonces ( N -many ) & associated data byte slices ( each slice of same length, total N -many ) as input to encryption algorithm. These encrypted message slices can now be data-parallelly decrypted by dispatching N -many SYCL work-items while each of these work-items to consume respective secret key ( 128 -bit ), public message nonce ( 128 -bit ), authentication tag ( 128 -bit ), ciphered bytes & associated data bytes, producing plain text bytes and boolean flag denoting verification status of decryption process.
+
+Here I keep minimal benchmark results of SYCL kernels implementing following functionalities.
+
+- [Ascon-Hash/ Ascon-HashA](https://github.com/itzmeanjan/ascon/blob/ee890f9/include/bench_utils.hpp#L110-L160)
+- [Ascon-128 Encrypt/ Ascon-128a Encrypt](https://github.com/itzmeanjan/ascon/blob/ee890f9/include/bench_utils.hpp#L161-L298)
+- [Ascon-128 Decrypt/ Ascon-128a Decrypt](https://github.com/itzmeanjan/ascon/blob/ee890f9/include/bench_utils.hpp#L299-L481)
+
+Browse through results & respective build commands
+
+- [Nvidia GPU](./results/gpu/nvidia.md)
+- [Intel CPU](./results/cpu/intel.md)
+- [Intel GPU](./results/gpu/intel.md)
