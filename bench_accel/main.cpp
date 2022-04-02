@@ -5,7 +5,19 @@
 int
 main()
 {
+
+// Which one of available accelerator devices to be chosen in runtime
+#if defined SYCL_TARGET_CPU
+  sycl::cpu_selector s{};
+#pragma message("Using SYCL cpu selector !")
+#elif defined SYCL_TARGET_GPU
+  sycl::gpu_selector s{};
+#pragma message("Using SYCL gpu selector !")
+#else
   sycl::default_selector s{};
+#pragma message("Using SYCL default selector !")
+#endif
+
   sycl::device d{ s };
   sycl::context c{};
   // must enable queue profiling !
@@ -28,26 +40,23 @@ main()
 
   TextTable t0('-', '|', '+');
 
-  t0.add("work items");
-  t0.add("host-to-device b/w ( MB/ s )");
-  t0.add("kernel b/w ( MB/ s )");
-  t0.add("device-to-host b/w ( MB/ s )");
+  t0.add("SYCL work-items");
+  t0.add("host-to-device b/w");
+  t0.add("kernel b/w");
+  t0.add("device-to-host b/w");
   t0.endOfRow();
 
   for (size_t wi = 1ul << 16; wi <= 1ul << 18; wi <<= 1) {
     exec_kernel(q, wi, wg_size, itr_cnt, ascon_variant::ascon_hash, ts);
 
-    const double i_size = static_cast<double>((wi * MSG_LEN) >> 20); // MB
-    const double o_size = static_cast<double>((wi << 5) >> 20);      // MB
-
-    const double bw0 = i_size / (ts[0] * 1e-9); // MB/s
-    const double bw1 = i_size / (ts[1] * 1e-9); // MB/s
-    const double bw2 = o_size / (ts[2] * 1e-9); // MB/s
+    const size_t h2d_size = wi * MSG_LEN;  // host -> device bytes
+    const size_t krnl_size = wi * MSG_LEN; // kernel consumed bytes
+    const size_t d2h_size = wi << 5;       // device -> host bytes
 
     t0.add(std::to_string(wi));
-    t0.add(std::to_string(bw0));
-    t0.add(std::to_string(bw1));
-    t0.add(std::to_string(bw2));
+    t0.add(to_readable_bandwidth(h2d_size, ts[0]));
+    t0.add(to_readable_bandwidth(krnl_size, ts[1]));
+    t0.add(to_readable_bandwidth(d2h_size, ts[2]));
     t0.endOfRow();
   }
 
@@ -62,26 +71,23 @@ main()
 
   TextTable t1('-', '|', '+');
 
-  t1.add("work items");
-  t1.add("host-to-device b/w ( MB/ s )");
-  t1.add("kernel b/w ( MB/ s )");
-  t1.add("device-to-host b/w ( MB/ s )");
+  t1.add("SYCL work-items");
+  t1.add("host-to-device b/w");
+  t1.add("kernel b/w");
+  t1.add("device-to-host b/w");
   t1.endOfRow();
 
   for (size_t wi = 1ul << 16; wi <= 1ul << 18; wi <<= 1) {
     exec_kernel(q, wi, wg_size, itr_cnt, ascon_variant::ascon_hashA, ts);
 
-    const double i_size = static_cast<double>((wi * MSG_LEN) >> 20); // MB
-    const double o_size = static_cast<double>((wi << 5) >> 20);      // MB
-
-    const double bw0 = i_size / (ts[0] * 1e-9); // MB/s
-    const double bw1 = i_size / (ts[1] * 1e-9); // MB/s
-    const double bw2 = o_size / (ts[2] * 1e-9); // MB/s
+    const size_t h2d_size = wi * MSG_LEN;  // host -> device bytes
+    const size_t krnl_size = wi * MSG_LEN; // kernel consumed bytes
+    const size_t d2h_size = wi << 5;       // device -> host bytes
 
     t1.add(std::to_string(wi));
-    t1.add(std::to_string(bw0));
-    t1.add(std::to_string(bw1));
-    t1.add(std::to_string(bw2));
+    t1.add(to_readable_bandwidth(h2d_size, ts[0]));
+    t1.add(to_readable_bandwidth(krnl_size, ts[1]));
+    t1.add(to_readable_bandwidth(d2h_size, ts[2]));
     t1.endOfRow();
   }
 
@@ -96,30 +102,30 @@ main()
 
   TextTable t2('-', '|', '+');
 
-  t2.add("work items");
-  t2.add("host-to-device b/w ( MB/ s )");
-  t2.add("kernel b/w ( MB/ s )");
-  t2.add("device-to-host b/w ( MB/ s )");
+  t2.add("SYCL work-items");
+  t2.add("host-to-device b/w");
+  t2.add("kernel b/w");
+  t2.add("device-to-host b/w");
   t2.endOfRow();
 
   for (size_t wi = 1ul << 16; wi <= 1ul << 18; wi <<= 1) {
     exec_kernel(q, wi, wg_size, itr_cnt, ascon_variant::ascon_128_encrypt, ts);
 
-    const double ct_size = static_cast<double>((wi * CT_LEN) >> 20);    // MB
-    const double ad_size = static_cast<double>((wi * AD_LEN) >> 20);    // MB
-    const size_t knt_size = (2 * wi * (sizeof(uint64_t) << 1)) >> 20;   // MB
-    const double i_size0 = ct_size + ad_size;                           // MB
-    const double i_size1 = i_size0 + static_cast<double>(knt_size);     // MB
-    const double o_size = ct_size + static_cast<double>(knt_size >> 1); // MB
+    const size_t ct_size = wi * CT_LEN;
+    const size_t ad_size = wi * AD_LEN;
+    const size_t knt_size = wi * (sizeof(uint64_t) << 1);
 
-    const double bw0 = i_size1 / (ts[0] * 1e-9); // MB/s
-    const double bw1 = i_size0 / (ts[1] * 1e-9); // MB/s
-    const double bw2 = o_size / (ts[2] * 1e-9);  // MB/s
+    // host -> device bytes
+    const size_t h2d_size = ct_size + ad_size + (knt_size << 1);
+    // kernel consumed bytes
+    const size_t krnl_size = ct_size + ad_size;
+    // device -> host bytes
+    const size_t d2h_size = ct_size + knt_size;
 
     t2.add(std::to_string(wi));
-    t2.add(std::to_string(bw0));
-    t2.add(std::to_string(bw1));
-    t2.add(std::to_string(bw2));
+    t2.add(to_readable_bandwidth(h2d_size, ts[0]));
+    t2.add(to_readable_bandwidth(krnl_size, ts[1]));
+    t2.add(to_readable_bandwidth(d2h_size, ts[2]));
     t2.endOfRow();
   }
 
@@ -134,31 +140,31 @@ main()
 
   TextTable t3('-', '|', '+');
 
-  t3.add("work items");
-  t3.add("host-to-device b/w ( MB/ s )");
-  t3.add("kernel b/w ( MB/ s )");
-  t3.add("device-to-host b/w ( MB/ s )");
+  t3.add("SYCL work-items");
+  t3.add("host-to-device b/w");
+  t3.add("kernel b/w");
+  t3.add("device-to-host b/w");
   t3.endOfRow();
 
   for (size_t wi = 1ul << 16; wi <= 1ul << 18; wi <<= 1) {
     exec_kernel(q, wi, wg_size, itr_cnt, ascon_variant::ascon_128_decrypt, ts);
 
-    const double ct_size = static_cast<double>((wi * CT_LEN) >> 20);       // MB
-    const double ad_size = static_cast<double>((wi * AD_LEN) >> 20);       // MB
-    const double f_sz = static_cast<double>(wi * sizeof(bool)) / 1048576.; // MB
-    const size_t knt_size = (3 * wi * (sizeof(uint64_t) << 1)) >> 20;      // MB
-    const double i_size0 = ct_size + ad_size;                              // MB
-    const double i_size1 = i_size0 + static_cast<double>(knt_size);        // MB
-    const double o_size = ct_size + f_sz;                                  // MB
+    const size_t ct_size = wi * CT_LEN;
+    const size_t ad_size = wi * AD_LEN;
+    const size_t knt_size = wi * (sizeof(uint64_t) << 1);
+    const size_t flg_size = wi * sizeof(bool);
 
-    const double bw0 = i_size1 / (ts[0] * 1e-9); // MB/s
-    const double bw1 = i_size0 / (ts[1] * 1e-9); // MB/s
-    const double bw2 = o_size / (ts[2] * 1e-9);  // MB/s
+    // host -> device bytes
+    const size_t h2d_size = ct_size + ad_size + knt_size * 3;
+    // kernel consumed bytes
+    const size_t krnl_size = ct_size + ad_size;
+    // device -> host bytes
+    const size_t d2h_size = ct_size + flg_size;
 
     t3.add(std::to_string(wi));
-    t3.add(std::to_string(bw0));
-    t3.add(std::to_string(bw1));
-    t3.add(std::to_string(bw2));
+    t3.add(to_readable_bandwidth(h2d_size, ts[0]));
+    t3.add(to_readable_bandwidth(krnl_size, ts[1]));
+    t3.add(to_readable_bandwidth(d2h_size, ts[2]));
     t3.endOfRow();
   }
 
@@ -173,30 +179,30 @@ main()
 
   TextTable t4('-', '|', '+');
 
-  t4.add("work items");
-  t4.add("host-to-device b/w ( MB/ s )");
-  t4.add("kernel b/w ( MB/ s )");
-  t4.add("device-to-host b/w ( MB/ s )");
+  t4.add("SYCL work-items");
+  t4.add("host-to-device b/w");
+  t4.add("kernel b/w");
+  t4.add("device-to-host b/w");
   t4.endOfRow();
 
   for (size_t wi = 1ul << 16; wi <= 1ul << 18; wi <<= 1) {
     exec_kernel(q, wi, wg_size, itr_cnt, ascon_variant::ascon_128a_encrypt, ts);
 
-    const double ct_size = static_cast<double>((wi * CT_LEN) >> 20);    // MB
-    const double ad_size = static_cast<double>((wi * AD_LEN) >> 20);    // MB
-    const size_t knt_size = (2 * wi * (sizeof(uint64_t) << 1)) >> 20;   // MB
-    const double i_size0 = ct_size + ad_size;                           // MB
-    const double i_size1 = i_size0 + static_cast<double>(knt_size);     // MB
-    const double o_size = ct_size + static_cast<double>(knt_size >> 1); // MB
+    const size_t ct_size = wi * CT_LEN;
+    const size_t ad_size = wi * AD_LEN;
+    const size_t knt_size = wi * (sizeof(uint64_t) << 1);
 
-    const double bw0 = i_size1 / (ts[0] * 1e-9); // MB/s
-    const double bw1 = i_size0 / (ts[1] * 1e-9); // MB/s
-    const double bw2 = o_size / (ts[2] * 1e-9);  // MB/s
+    // host -> device bytes
+    const size_t h2d_size = ct_size + ad_size + (knt_size << 1);
+    // kernel consumed bytes
+    const size_t krnl_size = ct_size + ad_size;
+    // device -> host bytes
+    const size_t d2h_size = ct_size + knt_size;
 
-    t4.add(std::to_string(wi));
-    t4.add(std::to_string(bw0));
-    t4.add(std::to_string(bw1));
-    t4.add(std::to_string(bw2));
+    t0.add(std::to_string(wi));
+    t0.add(to_readable_bandwidth(h2d_size, ts[0]));
+    t0.add(to_readable_bandwidth(krnl_size, ts[1]));
+    t0.add(to_readable_bandwidth(d2h_size, ts[2]));
     t4.endOfRow();
   }
 
@@ -211,31 +217,31 @@ main()
 
   TextTable t5('-', '|', '+');
 
-  t5.add("work items");
-  t5.add("host-to-device b/w ( MB/ s )");
-  t5.add("kernel b/w ( MB/ s )");
-  t5.add("device-to-host b/w ( MB/ s )");
+  t5.add("SYCL work-items");
+  t5.add("host-to-device b/w");
+  t5.add("kernel b/w");
+  t5.add("device-to-host b/w");
   t5.endOfRow();
 
   for (size_t wi = 1ul << 16; wi <= 1ul << 18; wi <<= 1) {
     exec_kernel(q, wi, wg_size, itr_cnt, ascon_variant::ascon_128a_decrypt, ts);
 
-    const double ct_size = static_cast<double>((wi * CT_LEN) >> 20);       // MB
-    const double ad_size = static_cast<double>((wi * AD_LEN) >> 20);       // MB
-    const double f_sz = static_cast<double>(wi * sizeof(bool)) / 1048576.; // MB
-    const size_t knt_size = (3 * wi * (sizeof(uint64_t) << 1)) >> 20;      // MB
-    const double i_size0 = ct_size + ad_size;                              // MB
-    const double i_size1 = i_size0 + static_cast<double>(knt_size);        // MB
-    const double o_size = ct_size + f_sz;                                  // MB
+    const size_t ct_size = wi * CT_LEN;
+    const size_t ad_size = wi * AD_LEN;
+    const size_t knt_size = wi * (sizeof(uint64_t) << 1);
+    const size_t flg_size = wi * sizeof(bool);
 
-    const double bw0 = i_size1 / (ts[0] * 1e-9); // MB/s
-    const double bw1 = i_size0 / (ts[1] * 1e-9); // MB/s
-    const double bw2 = o_size / (ts[2] * 1e-9);  // MB/s
+    // host -> device bytes
+    const size_t h2d_size = ct_size + ad_size + knt_size * 3;
+    // kernel consumed bytes
+    const size_t krnl_size = ct_size + ad_size;
+    // device -> host bytes
+    const size_t d2h_size = ct_size + flg_size;
 
     t5.add(std::to_string(wi));
-    t5.add(std::to_string(bw0));
-    t5.add(std::to_string(bw1));
-    t5.add(std::to_string(bw2));
+    t5.add(to_readable_bandwidth(h2d_size, ts[0]));
+    t5.add(to_readable_bandwidth(krnl_size, ts[1]));
+    t5.add(to_readable_bandwidth(d2h_size, ts[2]));
     t5.endOfRow();
   }
 

@@ -1,9 +1,15 @@
 #pragma once
 #include "accel_ascon.hpp"
+#include <iomanip>
+#include <sstream>
 
 #define MSG_LEN 4096ul // per work-item input message length ( bytes )
 #define AD_LEN 64ul    // per work-item input associated data length ( bytes )
 #define CT_LEN 4096ul // per work-item input plain/ cipher text length ( bytes )
+
+#define GB 1073741824. // 1 << 30 bytes
+#define MB 1048576.    // 1 << 20 bytes
+#define KB 1024.       // 1 << 10 bytes
 
 // Choose which data-parallel ascon variant to benchmark
 enum ascon_variant
@@ -53,15 +59,26 @@ time_event(sycl::event& evt)
   return static_cast<uint64_t>(end - beg);
 }
 
-// Convert nanosecond granularity execution time to readable string i.e. in
-// terms of seconds/ milliseconds/ microseconds/ nanoseconds
+// Convert how many bytes processed in how long timespan ( given in nanosecond
+// level granularity ) to more human digestable
+// format ( i.e. GB/ s or MB/ s or KB/ s or B/ s )
 static inline const std::string
-to_readable_timespan(const double ts)
+to_readable_bandwidth(const size_t bytes, // bytes
+                      const double ts     // nanoseconds
+)
 {
-  return ts >= 1e9 ? std::to_string(ts * 1e-9) + " s"
-                   : ts >= 1e6 ? std::to_string(ts * 1e-6) + " ms"
-                               : ts >= 1e3 ? std::to_string(ts * 1e-3) + " us"
-                                           : std::to_string(ts) + " ns";
+  const double bytes_ = static_cast<double>(bytes);
+  const double ts_ = ts * 1e-9;    // seconds
+  const double bps = bytes_ / ts_; // bytes/ sec
+
+  std::stringstream ss;
+  ss << std::setprecision(2);
+
+  bps >= GB ? ss << (bps / GB) << " GB/ s"
+            : bps >= MB ? ss << (bps / MB) << " MB/ s"
+                        : bps >= KB ? ss << (bps / KB) << " KB/ s"
+                                    : ss << bps << " B/ s";
+  return ss.str();
 }
 
 void
