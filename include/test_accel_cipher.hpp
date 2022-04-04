@@ -190,7 +190,8 @@ ascon_128a(sycl::queue& q,
   for (size_t i = 0; i < wi_cnt; i++) {
     assert(flag[i]);
 
-    // do a byte-by-byte comparison between original plain text & deciphered text
+    // do a byte-by-byte comparison between original plain text & deciphered
+    // text
     const size_t ct_offset = i * per_wi_ct_len;
     for (size_t j = 0; j < per_wi_ct_len; j++) {
       assert(txt[ct_offset + j] == dec[ct_offset + j]);
