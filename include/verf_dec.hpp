@@ -69,7 +69,7 @@ decrypt_128a(const ascon_cipher::secret_key_128_t& k,
 // algorithm 1 of Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
 //
-// See parameters in ast paragraph of section 2.2 in Ascon specification
+// See parameters in last paragraph of section 2.2 in Ascon specification
 //
 // Note, use deciphered text only when this function returns true !
 static inline constexpr bool
