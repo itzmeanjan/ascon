@@ -10,12 +10,12 @@ namespace ascon_perm {
 
 // Ascon  permutation round constants; taken from table 4 in Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-constexpr uint64_t RC[12] = { 0x00000000000000f0, 0x00000000000000e1,
-                              0x00000000000000d2, 0x00000000000000c3,
-                              0x00000000000000b4, 0x00000000000000a5,
-                              0x0000000000000096, 0x0000000000000087,
-                              0x0000000000000078, 0x0000000000000069,
-                              0x000000000000005a, 0x000000000000004b };
+constexpr uint64_t RC[12] = { 0x00000000000000f0ul, 0x00000000000000e1ul,
+                              0x00000000000000d2ul, 0x00000000000000c3ul,
+                              0x00000000000000b4ul, 0x00000000000000a5ul,
+                              0x0000000000000096ul, 0x0000000000000087ul,
+                              0x0000000000000078ul, 0x0000000000000069ul,
+                              0x000000000000005aul, 0x000000000000004bul };
 
 // Addition of constants step; see section 2.6.1 of Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
