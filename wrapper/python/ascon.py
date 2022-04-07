@@ -22,7 +22,7 @@ assert exists(SO_PATH), '`make lib` to generate shared library !'
 SO_LIB: ct.CDLL = ct.CDLL(SO_PATH)
 
 
-class secret_key_t(ct.Structure):
+class secret_key_128_t(ct.Structure):
     '''
     128 -bit Ascon secret key; see table 1 of Ascon specification 
     https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
@@ -56,7 +56,7 @@ data_t = np.ctypeslib.ndpointer(dtype=np.uint8, ndim=1, flags='CONTIGUOUS')
 text_t = np.ctypeslib.ndpointer(dtype=np.uint8, ndim=1, flags='CONTIGUOUS')
 cipher_t = np.ctypeslib.ndpointer(dtype=np.uint8, ndim=1, flags='CONTIGUOUS')
 
-secret_key_tp = ct.POINTER(secret_key_t)
+secret_key_128_tp = ct.POINTER(secret_key_128_t)
 nonce_tp = ct.POINTER(nonce_t)
 tag_tp = ct.POINTER(tag_t)
 
@@ -135,7 +135,7 @@ def encrypt_128(key: bytes, nonce: bytes, data: np.ndarray, text: np.ndarray) ->
     l0 = int.from_bytes(key[:8], 'big', signed=False)
     l1 = int.from_bytes(key[8:], 'big', signed=False)
 
-    key_ = secret_key_t(limbs=(l0, l1))
+    key_ = secret_key_128_t(limbs=(l0, l1))
     key_ = ct.byref(key_)
 
     l0 = int.from_bytes(nonce[:8], 'big', signed=False)
@@ -144,7 +144,7 @@ def encrypt_128(key: bytes, nonce: bytes, data: np.ndarray, text: np.ndarray) ->
     nonce_ = nonce_t(limbs=(l0, l1))
     nonce_ = ct.byref(nonce_)
 
-    args = [secret_key_tp, nonce_tp, data_t, len_t, text_t, len_t, cipher_t]
+    args = [secret_key_128_tp, nonce_tp, data_t, len_t, text_t, len_t, cipher_t]
 
     # set function return type
     SO_LIB.encrypt_128.restype = tag_t
@@ -194,7 +194,7 @@ def decrypt_128(key: bytes, nonce: bytes, data: np.ndarray, cipher: np.ndarray, 
     l0 = int.from_bytes(key[:8], 'big', signed=False)
     l1 = int.from_bytes(key[8:], 'big', signed=False)
 
-    key_ = secret_key_t(limbs=(l0, l1))
+    key_ = secret_key_128_t(limbs=(l0, l1))
     key_ = ct.byref(key_)
 
     l0 = int.from_bytes(nonce[:8], 'big', signed=False)
@@ -209,7 +209,7 @@ def decrypt_128(key: bytes, nonce: bytes, data: np.ndarray, cipher: np.ndarray, 
     tag_ = tag_t(limbs=(l0, l1))
     tag_ = ct.byref(tag_)
 
-    args = [secret_key_tp, nonce_tp, data_t,
+    args = [secret_key_128_tp, nonce_tp, data_t,
             len_t, cipher_t, len_t, text_t, tag_tp]
 
     # set function return type
@@ -257,7 +257,7 @@ def encrypt_128a(key: bytes, nonce: bytes, data: np.ndarray, text: np.ndarray) -
     l0 = int.from_bytes(key[:8], 'big', signed=False)
     l1 = int.from_bytes(key[8:], 'big', signed=False)
 
-    key_ = secret_key_t(limbs=(l0, l1))
+    key_ = secret_key_128_t(limbs=(l0, l1))
     key_ = ct.byref(key_)
 
     l0 = int.from_bytes(nonce[:8], 'big', signed=False)
@@ -266,7 +266,7 @@ def encrypt_128a(key: bytes, nonce: bytes, data: np.ndarray, text: np.ndarray) -
     nonce_ = nonce_t(limbs=(l0, l1))
     nonce_ = ct.byref(nonce_)
 
-    args = [secret_key_tp, nonce_tp, data_t, len_t, text_t, len_t, cipher_t]
+    args = [secret_key_128_tp, nonce_tp, data_t, len_t, text_t, len_t, cipher_t]
 
     # set function return type
     SO_LIB.encrypt_128a.restype = tag_t
@@ -316,7 +316,7 @@ def decrypt_128a(key: bytes, nonce: bytes, data: np.ndarray, cipher: np.ndarray,
     l0 = int.from_bytes(key[:8], 'big', signed=False)
     l1 = int.from_bytes(key[8:], 'big', signed=False)
 
-    key_ = secret_key_t(limbs=(l0, l1))
+    key_ = secret_key_128_t(limbs=(l0, l1))
     key_ = ct.byref(key_)
 
     l0 = int.from_bytes(nonce[:8], 'big', signed=False)
@@ -331,7 +331,7 @@ def decrypt_128a(key: bytes, nonce: bytes, data: np.ndarray, cipher: np.ndarray,
     tag_ = tag_t(limbs=(l0, l1))
     tag_ = ct.byref(tag_)
 
-    args = [secret_key_tp, nonce_tp, data_t,
+    args = [secret_key_128_tp, nonce_tp, data_t,
             len_t, cipher_t, len_t, text_t, tag_tp]
 
     # set function return type

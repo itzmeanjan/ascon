@@ -88,7 +88,7 @@ ascon_hash_a(benchmark::State& state)
 static void
 ascon_128_enc(benchmark::State& state)
 {
-  ascon::secret_key_t k;
+  ascon::secret_key_128_t k;
   ascon::nonce_t n;
 
   uint8_t* data = static_cast<uint8_t*>(malloc(DATA_LEN));
@@ -124,7 +124,7 @@ ascon_128_enc(benchmark::State& state)
 static void
 ascon_128_dec(benchmark::State& state)
 {
-  ascon::secret_key_t k;
+  ascon::secret_key_128_t k;
   ascon::nonce_t n;
 
   uint8_t* data = static_cast<uint8_t*>(malloc(DATA_LEN));
@@ -164,7 +164,7 @@ ascon_128_dec(benchmark::State& state)
 static void
 ascon_128a_enc(benchmark::State& state)
 {
-  ascon::secret_key_t k;
+  ascon::secret_key_128_t k;
   ascon::nonce_t n;
 
   uint8_t* data = static_cast<uint8_t*>(malloc(DATA_LEN));
@@ -200,7 +200,7 @@ ascon_128a_enc(benchmark::State& state)
 static void
 ascon_128a_dec(benchmark::State& state)
 {
-  ascon::secret_key_t k;
+  ascon::secret_key_128_t k;
   ascon::nonce_t n;
 
   uint8_t* data = static_cast<uint8_t*>(malloc(DATA_LEN));

@@ -22,7 +22,7 @@ constexpr uint64_t MAX_ULONG = 0xfffffffffffffffful;
 // 128 -bit Ascon secret key, used for authenticated encryption/ decryption;
 // see table 1 in section 2.2 of Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-struct secret_key_t
+struct secret_key_128_t
 {
   uint64_t limbs[2];
 };
@@ -59,9 +59,9 @@ check_iv(const uint64_t iv)
 // it's parameterized
 template<const uint64_t IV, const size_t a>
 static inline void
-initialize(uint64_t* const state, // uninitialized hash state
-           const secret_key_t& k, // 128 -bit secret key
-           const nonce_t& n       // 128 -bit nonce
+initialize(uint64_t* const state,     // uninitialized hash state
+           const secret_key_128_t& k, // 128 -bit secret key
+           const nonce_t& n           // 128 -bit nonce
            ) requires(ascon_perm::check_a(a) && check_iv(IV))
 {
   state[0] = IV;
@@ -367,7 +367,7 @@ process_ciphertext(uint64_t* const __restrict state,
 template<const size_t a, const size_t r>
 static inline const tag_t
 finalize(uint64_t* const state,
-         const secret_key_t& k // 128 -bit secret key
+         const secret_key_128_t& k // 128 -bit secret key
          ) requires(ascon_perm::check_a(a) && check_r(r))
 {
   if (check_r64(r)) {

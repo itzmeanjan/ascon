@@ -12,7 +12,7 @@ namespace ascon_test {
 static void
 ascon_128(const size_t data_len /* bytes */, const size_t text_len /* bytes */)
 {
-  ascon::secret_key_t k;
+  ascon::secret_key_128_t k;
   ascon_utils::random_data(k.limbs, 2);
 
   ascon::nonce_t n;
@@ -59,7 +59,7 @@ ascon_128(const size_t data_len /* bytes */, const size_t text_len /* bytes */)
 static void
 ascon_128a(const size_t data_len /* bytes */, const size_t text_len /* bytes */)
 {
-  ascon::secret_key_t k;
+  ascon::secret_key_128_t k;
   ascon_utils::random_data(k.limbs, 2);
 
   ascon::nonce_t n;

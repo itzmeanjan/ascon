@@ -98,7 +98,7 @@ decrypt_128(
         const size_t ct_offset = idx * per_wi_ct_len;
 
         // wrap secret key the way it's expected by decrypt routine
-        const ascon::secret_key_t k{ { sec_key[knt_offset + 0],
+        const ascon::secret_key_128_t k{ { sec_key[knt_offset + 0],
                                        sec_key[knt_offset + 1] } };
         // wrap nonce the way it's expected by decrypt routine
         const ascon::nonce_t n{ { nonce[knt_offset + 0],
@@ -221,7 +221,7 @@ decrypt_128a(
         const size_t ct_offset = idx * per_wi_ct_len;
 
         // wrap secret key the way it's expected by decrypt routine
-        const ascon::secret_key_t k{ { sec_key[knt_offset + 0],
+        const ascon::secret_key_128_t k{ { sec_key[knt_offset + 0],
                                        sec_key[knt_offset + 1] } };
         // wrap nonce the way it's expected by decrypt routine
         const ascon::nonce_t n{ { nonce[knt_offset + 0],

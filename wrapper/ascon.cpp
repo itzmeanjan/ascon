@@ -12,7 +12,7 @@ extern "C"
               const size_t,
               uint8_t* const __restrict);
 
-  ascon::tag_t encrypt_128(const ascon::secret_key_t&,
+  ascon::tag_t encrypt_128(const ascon::secret_key_128_t&,
                            const ascon::nonce_t&,
                            const uint8_t* const __restrict,
                            const size_t,
@@ -20,7 +20,7 @@ extern "C"
                            const size_t,
                            uint8_t* const __restrict);
 
-  ascon::tag_t encrypt_128a(const ascon::secret_key_t&,
+  ascon::tag_t encrypt_128a(const ascon::secret_key_128_t&,
                             const ascon::nonce_t&,
                             const uint8_t* const __restrict,
                             const size_t,
@@ -28,7 +28,7 @@ extern "C"
                             const size_t,
                             uint8_t* const __restrict);
 
-  bool decrypt_128(const ascon::secret_key_t&,
+  bool decrypt_128(const ascon::secret_key_128_t&,
                    const ascon::nonce_t&,
                    const uint8_t* const __restrict,
                    const size_t,
@@ -37,7 +37,7 @@ extern "C"
                    uint8_t* const __restrict,
                    const ascon::tag_t&);
 
-  bool decrypt_128a(const ascon::secret_key_t&,
+  bool decrypt_128a(const ascon::secret_key_128_t&,
                     const ascon::nonce_t&,
                     const uint8_t* const __restrict,
                     const size_t,
@@ -65,7 +65,7 @@ extern "C"
     ascon::hash_a(msg, msg_len, digest);
   }
 
-  ascon::tag_t encrypt_128(const ascon::secret_key_t& k,
+  ascon::tag_t encrypt_128(const ascon::secret_key_128_t& k,
                            const ascon::nonce_t& n,
                            const uint8_t* const __restrict data,
                            const size_t data_len,
@@ -76,7 +76,7 @@ extern "C"
     return ascon::encrypt_128(k, n, data, data_len, text, text_len, cipher);
   }
 
-  ascon::tag_t encrypt_128a(const ascon::secret_key_t& k,
+  ascon::tag_t encrypt_128a(const ascon::secret_key_128_t& k,
                             const ascon::nonce_t& n,
                             const uint8_t* const __restrict data,
                             const size_t data_len,
@@ -87,7 +87,7 @@ extern "C"
     return ascon::encrypt_128a(k, n, data, data_len, text, text_len, cipher);
   }
 
-  bool decrypt_128(const ascon::secret_key_t& k,
+  bool decrypt_128(const ascon::secret_key_128_t& k,
                    const ascon::nonce_t& n,
                    const uint8_t* const __restrict data,
                    const size_t data_len,
@@ -99,7 +99,7 @@ extern "C"
     return ascon::decrypt_128(k, n, data, data_len, enc, enc_len, text, t);
   }
 
-  bool decrypt_128a(const ascon::secret_key_t& k,
+  bool decrypt_128a(const ascon::secret_key_128_t& k,
                     const ascon::nonce_t& n,
                     const uint8_t* const __restrict data,
                     const size_t data_len,
