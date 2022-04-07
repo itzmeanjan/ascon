@@ -235,6 +235,82 @@ ascon_128a_dec(benchmark::State& state)
   free(dec);
 }
 
+// Benchmark Ascon-80pq authenticated encryption
+// https://github.com/itzmeanjan/ascon/blob/970c29902474eb55777761990eedf47189c75ff4/include/auth_enc.hpp#L12-L38
+static void
+ascon_80pq_enc(benchmark::State& state)
+{
+  ascon::secret_key_160_t k;
+  ascon::nonce_t n;
+
+  uint8_t* data = static_cast<uint8_t*>(malloc(DATA_LEN));
+  uint8_t* text = static_cast<uint8_t*>(malloc(TEXT_LEN));
+  uint8_t* enc = static_cast<uint8_t*>(malloc(CIPHER_LEN));
+
+  ascon_utils::random_data(k.limbs, 3);
+  ascon_utils::random_data(n.limbs, 2);
+
+  ascon_utils::random_data(data, DATA_LEN);
+  ascon_utils::random_data(text, TEXT_LEN);
+
+  memset(enc, 0, CIPHER_LEN);
+
+  using namespace ascon;
+  using namespace benchmark;
+
+  size_t itr = 0;
+  for (auto _ : state) {
+    DoNotOptimize(encrypt_80pq(k, n, data, DATA_LEN, text, TEXT_LEN, enc));
+    DoNotOptimize(itr++);
+  }
+  state.SetBytesProcessed(static_cast<int64_t>((DATA_LEN + TEXT_LEN) * itr));
+  state.SetItemsProcessed(static_cast<int64_t>(itr));
+
+  free(data);
+  free(text);
+  free(enc);
+}
+
+// Benchmark Ascon-80pq verified decryption
+// https://github.com/itzmeanjan/ascon/blob/970c29902474eb55777761990eedf47189c75ff4/include/verf_dec.hpp#L8-L36
+static void
+ascon_80pq_dec(benchmark::State& state)
+{
+  ascon::secret_key_160_t k;
+  ascon::nonce_t n;
+
+  uint8_t* data = static_cast<uint8_t*>(malloc(DATA_LEN));
+  uint8_t* text = static_cast<uint8_t*>(malloc(TEXT_LEN));
+  uint8_t* enc = static_cast<uint8_t*>(malloc(CIPHER_LEN));
+  uint8_t* dec = static_cast<uint8_t*>(malloc(TEXT_LEN));
+
+  ascon_utils::random_data(k.limbs, 3);
+  ascon_utils::random_data(n.limbs, 2);
+
+  ascon_utils::random_data(data, DATA_LEN);
+  ascon_utils::random_data(text, TEXT_LEN);
+
+  memset(enc, 0, CIPHER_LEN);
+  memset(dec, 0, TEXT_LEN);
+
+  using namespace benchmark;
+  using namespace ascon;
+  const tag_t t = encrypt_80pq(k, n, data, DATA_LEN, text, TEXT_LEN, enc);
+
+  size_t itr = 0;
+  for (auto _ : state) {
+    DoNotOptimize(decrypt_80pq(k, n, data, DATA_LEN, enc, CIPHER_LEN, dec, t));
+    DoNotOptimize(itr++);
+  }
+  state.SetBytesProcessed(static_cast<int64_t>((DATA_LEN + CIPHER_LEN) * itr));
+  state.SetItemsProcessed(static_cast<int64_t>(itr));
+
+  free(data);
+  free(text);
+  free(enc);
+  free(dec);
+}
+
 // register for benchmarking
 BENCHMARK(ascon_hash);
 BENCHMARK(ascon_hash_a);
@@ -242,6 +318,8 @@ BENCHMARK(ascon_128_enc);
 BENCHMARK(ascon_128_dec);
 BENCHMARK(ascon_128a_enc);
 BENCHMARK(ascon_128a_dec);
+BENCHMARK(ascon_80pq_enc);
+BENCHMARK(ascon_80pq_dec);
 
 // main function to make this program executable
 BENCHMARK_MAIN();
