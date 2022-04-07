@@ -88,6 +88,26 @@ popd
 
 # --- --- ---- --- --- #
 
+# generate KAT for Ascon-80pq
+pushd pyascon
+
+python3 genkat.py Ascon-80pq
+mv LWC_AEAD_KAT_160_128.txt ..
+
+popd
+
+mv LWC_AEAD_KAT_160_128.txt wrapper/python
+
+# test Ascon-80pq implementation
+pushd wrapper/python
+
+pytest -k ascon_80pq_kat --cache-clear -v -s
+rm LWC_AEAD_KAT_160_128.txt
+
+popd
+
+# --- --- ---- --- --- #
+
 # clean it up
 rm -rf pyascon
 make clean
