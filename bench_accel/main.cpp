@@ -252,5 +252,86 @@ main()
 
   std::free(ts);
 
+  std::cout << std::endl
+            << "Benchmarking Ascon-80pq Encrypt" << std::endl
+            << std::endl;
+
+  TextTable t6('-', '|', '+');
+
+  t6.add("SYCL work-items");
+  t6.add("host-to-device b/w");
+  t6.add("kernel b/w");
+  t6.add("device-to-host b/w");
+  t6.endOfRow();
+
+  for (size_t wi = 1ul << 16; wi <= 1ul << 18; wi <<= 1) {
+    exec_kernel(q, wi, wg_size, itr_cnt, ascon_variant::ascon_80pq_encrypt, ts);
+
+    const size_t ct_size = wi * CT_LEN;
+    const size_t ad_size = wi * AD_LEN;
+    const size_t k_size = wi * 20ul;
+    const size_t nt_size = wi * (sizeof(uint64_t) << 1);
+
+    // host -> device bytes
+    const size_t h2d_size = ct_size + ad_size + k_size + nt_size;
+    // kernel consumed bytes
+    const size_t krnl_size = ct_size + ad_size;
+    // device -> host bytes
+    const size_t d2h_size = ct_size + nt_size;
+
+    t6.add(std::to_string(wi));
+    t6.add(to_readable_bandwidth(h2d_size, ts[0]));
+    t6.add(to_readable_bandwidth(krnl_size, ts[1]));
+    t6.add(to_readable_bandwidth(d2h_size, ts[2]));
+    t6.endOfRow();
+  }
+
+  t6.setAlignment(1, TextTable::Alignment::RIGHT);
+  t6.setAlignment(2, TextTable::Alignment::RIGHT);
+  t6.setAlignment(3, TextTable::Alignment::RIGHT);
+  std::cout << t6;
+
+  std::cout << std::endl
+            << "Benchmarking Ascon-80pq Decrypt" << std::endl
+            << std::endl;
+
+  TextTable t7('-', '|', '+');
+
+  t7.add("SYCL work-items");
+  t7.add("host-to-device b/w");
+  t7.add("kernel b/w");
+  t7.add("device-to-host b/w");
+  t7.endOfRow();
+
+  for (size_t wi = 1ul << 16; wi <= 1ul << 18; wi <<= 1) {
+    exec_kernel(q, wi, wg_size, itr_cnt, ascon_variant::ascon_80pq_decrypt, ts);
+
+    const size_t ct_size = wi * CT_LEN;
+    const size_t ad_size = wi * AD_LEN;
+    const size_t k_size = wi * 20ul;
+    const size_t nt_size = wi * (sizeof(uint64_t) << 1);
+    const size_t flg_size = wi * sizeof(bool);
+
+    // host -> device bytes
+    const size_t h2d_size = ct_size + ad_size + (nt_size << 1) + k_size;
+    // kernel consumed bytes
+    const size_t krnl_size = ct_size + ad_size;
+    // device -> host bytes
+    const size_t d2h_size = ct_size + flg_size;
+
+    t7.add(std::to_string(wi));
+    t7.add(to_readable_bandwidth(h2d_size, ts[0]));
+    t7.add(to_readable_bandwidth(krnl_size, ts[1]));
+    t7.add(to_readable_bandwidth(d2h_size, ts[2]));
+    t7.endOfRow();
+  }
+
+  t7.setAlignment(1, TextTable::Alignment::RIGHT);
+  t7.setAlignment(2, TextTable::Alignment::RIGHT);
+  t7.setAlignment(3, TextTable::Alignment::RIGHT);
+  std::cout << t7;
+
+  std::free(ts);
+
   return EXIT_SUCCESS;
 }
