@@ -52,5 +52,8 @@ main()
   accel_ascon_test::ascon_128a(q, AD_LEN, CT_LEN, WI_CNT, WI_SIZE);
   std::cout << "[test] passed data-parallel ascon-128a" << std::endl;
 
+  accel_ascon_test::ascon_80pq(q, AD_LEN, CT_LEN, WI_CNT, WI_SIZE);
+  std::cout << "[test] passed data-parallel ascon-80pq" << std::endl;
+
   return EXIT_SUCCESS;
 }
