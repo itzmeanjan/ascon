@@ -27,11 +27,13 @@ main()
     for (size_t text_len = 0; text_len < 32; text_len++) {
       ascon_test::ascon_128(data_len, text_len);
       ascon_test::ascon_128a(data_len, text_len);
+      ascon_test::ascon_80pq(data_len, text_len);
     }
   }
 
   std::cout << "[test] passed ascon-128" << std::endl;
   std::cout << "[test] passed ascon-128a" << std::endl;
+  std::cout << "[test] passed ascon-80pq" << std::endl;
 
   sycl::default_selector s{};
   sycl::device d{ s };

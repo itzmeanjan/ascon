@@ -102,4 +102,51 @@ ascon_128a(const size_t data_len /* bytes */, const size_t text_len /* bytes */)
   free(dec);
 }
 
+// Test correctness of Ascon-80pq authenticated encryption and verified
+// decryption implementation
+static void
+ascon_80pq(const size_t d_len /* bytes */, const size_t t_len /* bytes */)
+{
+  ascon::secret_key_160_t k;
+  ascon_utils::random_data(k.limbs, 3);
+
+  ascon::nonce_t n;
+  ascon_utils::random_data(n.limbs, 2);
+
+  uint8_t* data = static_cast<uint8_t*>(malloc(sizeof(uint8_t) * d_len));
+  ascon_utils::random_data(data, d_len);
+
+  uint8_t* text = static_cast<uint8_t*>(malloc(sizeof(uint8_t) * t_len));
+  ascon_utils::random_data(text, t_len);
+
+  const size_t enc_len = t_len; // bytes
+  uint8_t* enc = static_cast<uint8_t*>(malloc(sizeof(uint8_t) * enc_len));
+  memset(enc, 0, enc_len);
+
+  const size_t dec_len = enc_len; // bytes
+  uint8_t* dec = static_cast<uint8_t*>(malloc(sizeof(uint8_t) * dec_len));
+  memset(dec, 0, dec_len);
+
+  // 128 -bit tag
+  using tag_t = ascon::tag_t;
+
+  const tag_t t = ascon::encrypt_80pq(k, n, data, d_len, text, t_len, enc);
+  const bool v = ascon::decrypt_80pq(k, n, data, d_len, enc, t_len, dec, t);
+
+  // ensures that text has been decrypted & verified !
+  assert(v);
+
+  // byte-by-byte check to be sure that `encrypt -> decrypt` process behaved as
+  // expected !
+  for (size_t i = 0; i < t_len; i++) {
+    assert(text[i] == dec[i]);
+  }
+
+  // deallocate memory
+  free(data);
+  free(text);
+  free(enc);
+  free(dec);
+}
+
 }
