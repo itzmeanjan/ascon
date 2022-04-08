@@ -24,14 +24,18 @@ main()
   // prepare 128 -bit message nonce, don't repeat nonce for same secret key !
   ascon::nonce_t n = { { 4ul, 5ul } };
 
-  // prepare associated data, it's never encrypted !
+// prepare associated data, it's never encrypted !
+#if defined __clang__
 #pragma unroll 8
+#endif
   for (size_t i = 0; i < data_len; i++) {
     data[i] = static_cast<uint8_t>(i);
   }
 
   // prepare plain text, it'll be encrypted !
+#if defined __clang__
 #pragma unroll 8
+#endif
   for (size_t i = 0; i < text_len; i++) {
     text[i] = static_cast<uint8_t>(i);
   }

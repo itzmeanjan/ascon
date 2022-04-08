@@ -12,7 +12,9 @@ main()
   uint8_t* out = static_cast<uint8_t*>(malloc(out_len)); // digest
 
   // prepare input
+#if defined __clang__
 #pragma unroll 8
+#endif
   for (size_t i = 0; i < msg_len; i++) {
     msg[i] = static_cast<uint8_t>(i);
   }
