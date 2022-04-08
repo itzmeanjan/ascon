@@ -250,8 +250,6 @@ main()
   t5.setAlignment(3, TextTable::Alignment::RIGHT);
   std::cout << t5;
 
-  std::free(ts);
-
   std::cout << std::endl
             << "Benchmarking Ascon-80pq Encrypt" << std::endl
             << std::endl;
