@@ -43,23 +43,23 @@ namespace accel_ascon {
 static inline sycl::event
 decrypt_128(
   sycl::queue& q,
-  const uint64_t* const __restrict sec_key, // input
-  const size_t sec_key_len,                 // bytes
-  const uint64_t* const __restrict nonce,   // input
-  const size_t nonce_len,                   // bytes
-  const uint8_t* const __restrict a_data,   // input
-  const size_t a_data_len,                  // bytes
-  const uint8_t* const __restrict cipher,   // input
-  const size_t cipher_len,                  // bytes
-  const uint64_t* const __restrict tag,     // input
-  const size_t tag_len,                     // bytes
-  uint8_t* const __restrict text,           // output
-  const size_t text_len,                    // bytes
-  bool* const __restrict flag,              // output
-  const size_t flag_len,                    // bytes
-  const size_t wi_cnt,                      // SYCL work-item count
-  const size_t wg_size,                     // SYCL work-group size
-  const std::vector<sycl::event> evts       // depends on completion of these
+  const uint8_t* const __restrict sec_key, // input
+  const size_t sec_key_len,                // bytes
+  const uint8_t* const __restrict nonce,   // input
+  const size_t nonce_len,                  // bytes
+  const uint8_t* const __restrict a_data,  // input
+  const size_t a_data_len,                 // bytes
+  const uint8_t* const __restrict cipher,  // input
+  const size_t cipher_len,                 // bytes
+  const uint8_t* const __restrict tag,     // input
+  const size_t tag_len,                    // bytes
+  uint8_t* const __restrict text,          // output
+  const size_t text_len,                   // bytes
+  bool* const __restrict flag,             // output
+  const size_t flag_len,                   // bytes
+  const size_t wi_cnt,                     // SYCL work-item count
+  const size_t wg_size,                    // SYCL work-group size
+  const std::vector<sycl::event> evts      // depends on completion of these
 )
 {
   // All work-group must have equal many work-items
@@ -86,44 +86,45 @@ decrypt_128(
 
   sycl::event evt = q.submit([&](sycl::handler& h) {
     h.depends_on(evts);
-    h.parallel_for(
-      sycl::nd_range<1>{ wi_cnt, wg_size }, [=](sycl::nd_item<1> it) {
-        const size_t idx = it.get_global_linear_id();
+    h.parallel_for(sycl::nd_range<1>{ wi_cnt, wg_size },
+                   [=](sycl::nd_item<1> it) {
+                     const size_t idx = it.get_global_linear_id();
 
-        // offset for secret key, nonce & authentication tag
-        const size_t knt_offset = idx << 1;
-        // offset for associated data ( byte array )
-        const size_t ad_offset = idx * per_wi_ad_len;
-        // offset for cipher/ plain text ( byte array )
-        const size_t ct_offset = idx * per_wi_ct_len;
+                     // offset for secret key, nonce & authentication tag
+                     const size_t knt_offset = idx << 4;
+                     // offset for associated data ( byte array )
+                     const size_t ad_offset = idx * per_wi_ad_len;
+                     // offset for cipher/ plain text ( byte array )
+                     const size_t ct_offset = idx * per_wi_ct_len;
 
-        // wrap secret key the way it's expected by decrypt routine
-        const ascon::secret_key_128_t k{ { sec_key[knt_offset + 0],
-                                           sec_key[knt_offset + 1] } };
-        // wrap nonce the way it's expected by decrypt routine
-        const ascon::nonce_t n{ { nonce[knt_offset + 0],
-                                  nonce[knt_offset + 1] } };
-        // wrap authentication tag the way it's expected by decrypt routine
-        const ascon::tag_t t{ { tag[knt_offset + 0], tag[knt_offset + 1] } };
+                     // wrap secret key the way it's expected by decrypt routine
+                     const ascon::secret_key_128_t k{ sec_key + knt_offset };
+                     // wrap nonce the way it's expected by decrypt routine
+                     const ascon::nonce_t n{ nonce + knt_offset };
+                     // wrap authentication tag the way it's expected by decrypt
+                     // routine
+                     const ascon::tag_t t{ tag + knt_offset };
 
-        // each work-item decrypts its portion of cipher text with
-        // associated data ( not encrypted ) while using provided secret key,
-        // nonce & tag, using Ascon-128 algorithm
-        const bool f = ascon::decrypt_128(k,
-                                          n,
-                                          a_data + ad_offset,
-                                          per_wi_ad_len,
-                                          cipher + ct_offset,
-                                          per_wi_ct_len,
-                                          text + ct_offset,
-                                          t);
+                     // each work-item decrypts its portion of cipher text with
+                     // associated data ( not encrypted ) while using provided
+                     // secret key, nonce & tag, using Ascon-128 algorithm
+                     const bool f = ascon::decrypt_128(k,
+                                                       n,
+                                                       a_data + ad_offset,
+                                                       per_wi_ad_len,
+                                                       cipher + ct_offset,
+                                                       per_wi_ct_len,
+                                                       text + ct_offset,
+                                                       t);
 
-        // write successful verification flag back to respective memory location
-        //
-        // after transfering flag data back to host, it must be asserted for
-        // truth value, otherwise decryption may be successful but not verified
-        flag[idx] = f;
-      });
+                     // write successful verification flag back to respective
+                     // memory location
+                     //
+                     // after transfering flag data back to host, it must be
+                     // asserted for truth value, otherwise decryption may be
+                     // successful but not verified
+                     flag[idx] = f;
+                   });
   });
 
   return evt;
@@ -166,23 +167,23 @@ decrypt_128(
 static inline sycl::event
 decrypt_128a(
   sycl::queue& q,
-  const uint64_t* const __restrict sec_key, // input
-  const size_t sec_key_len,                 // bytes
-  const uint64_t* const __restrict nonce,   // input
-  const size_t nonce_len,                   // bytes
-  const uint8_t* const __restrict a_data,   // input
-  const size_t a_data_len,                  // bytes
-  const uint8_t* const __restrict cipher,   // input
-  const size_t cipher_len,                  // bytes
-  const uint64_t* const __restrict tag,     // input
-  const size_t tag_len,                     // bytes
-  uint8_t* const __restrict text,           // output
-  const size_t text_len,                    // bytes
-  bool* const __restrict flag,              // output
-  const size_t flag_len,                    // bytes
-  const size_t wi_cnt,                      // SYCL work-item count
-  const size_t wg_size,                     // SYCL work-group size
-  const std::vector<sycl::event> evts       // depends on completion of these
+  const uint8_t* const __restrict sec_key, // input
+  const size_t sec_key_len,                // bytes
+  const uint8_t* const __restrict nonce,   // input
+  const size_t nonce_len,                  // bytes
+  const uint8_t* const __restrict a_data,  // input
+  const size_t a_data_len,                 // bytes
+  const uint8_t* const __restrict cipher,  // input
+  const size_t cipher_len,                 // bytes
+  const uint8_t* const __restrict tag,     // input
+  const size_t tag_len,                    // bytes
+  uint8_t* const __restrict text,          // output
+  const size_t text_len,                   // bytes
+  bool* const __restrict flag,             // output
+  const size_t flag_len,                   // bytes
+  const size_t wi_cnt,                     // SYCL work-item count
+  const size_t wg_size,                    // SYCL work-group size
+  const std::vector<sycl::event> evts      // depends on completion of these
 )
 {
   // All work-group must have equal many work-items
@@ -209,44 +210,44 @@ decrypt_128a(
 
   sycl::event evt = q.submit([&](sycl::handler& h) {
     h.depends_on(evts);
-    h.parallel_for(
-      sycl::nd_range<1>{ wi_cnt, wg_size }, [=](sycl::nd_item<1> it) {
-        const size_t idx = it.get_global_linear_id();
+    h.parallel_for(sycl::nd_range<1>{ wi_cnt, wg_size },
+                   [=](sycl::nd_item<1> it) {
+                     const size_t idx = it.get_global_linear_id();
 
-        // offset for secret key, nonce & authentication tag
-        const size_t knt_offset = idx << 1;
-        // offset for associated data ( byte array )
-        const size_t ad_offset = idx * per_wi_ad_len;
-        // offset for cipher/ plain text ( byte array )
-        const size_t ct_offset = idx * per_wi_ct_len;
+                     // offset for secret key, nonce & authentication tag
+                     const size_t knt_offset = idx << 4;
+                     // offset for associated data ( byte array )
+                     const size_t ad_offset = idx * per_wi_ad_len;
+                     // offset for cipher/ plain text ( byte array )
+                     const size_t ct_offset = idx * per_wi_ct_len;
 
-        // wrap secret key the way it's expected by decrypt routine
-        const ascon::secret_key_128_t k{ { sec_key[knt_offset + 0],
-                                           sec_key[knt_offset + 1] } };
-        // wrap nonce the way it's expected by decrypt routine
-        const ascon::nonce_t n{ { nonce[knt_offset + 0],
-                                  nonce[knt_offset + 1] } };
-        // wrap authentication tag the way it's expected by decrypt routine
-        const ascon::tag_t t{ { tag[knt_offset + 0], tag[knt_offset + 1] } };
+                     // wrap secret key the way it's expected by decrypt routine
+                     const ascon::secret_key_128_t k{ sec_key + knt_offset };
+                     // wrap nonce the way it's expected by decrypt routine
+                     const ascon::nonce_t n{ nonce + knt_offset };
+                     // wrap tag as it's expected by decrypt routine
+                     const ascon::tag_t t{ tag + knt_offset };
 
-        // each work-item decrypts its portion of cipher text with
-        // associated data ( not encrypted ) while using provided secret key,
-        // nonce & tag, using Ascon-128a algorithm
-        const bool f = ascon::decrypt_128a(k,
-                                           n,
-                                           a_data + ad_offset,
-                                           per_wi_ad_len,
-                                           cipher + ct_offset,
-                                           per_wi_ct_len,
-                                           text + ct_offset,
-                                           t);
+                     // each work-item decrypts its portion of cipher text with
+                     // associated data ( not encrypted ) while using provided
+                     // secret key, nonce & tag, using Ascon-128a algorithm
+                     const bool f = ascon::decrypt_128a(k,
+                                                        n,
+                                                        a_data + ad_offset,
+                                                        per_wi_ad_len,
+                                                        cipher + ct_offset,
+                                                        per_wi_ct_len,
+                                                        text + ct_offset,
+                                                        t);
 
-        // write successful verification flag back to respective memory location
-        //
-        // after transfering flag data back to host, it must be asserted for
-        // truth value, otherwise decryption may be successful but not verified
-        flag[idx] = f;
-      });
+                     // write successful verification flag back to respective
+                     // memory location
+                     //
+                     // after transfering flag data back to host, it must be
+                     // asserted for truth value, otherwise decryption may be
+                     // successful but not verified
+                     flag[idx] = f;
+                   });
   });
 
   return evt;
@@ -297,7 +298,7 @@ decrypt_80pq(
   const size_t a_data_len,                 // bytes
   const uint8_t* const __restrict cipher,  // input
   const size_t cipher_len,                 // bytes
-  const uint64_t* const __restrict tag,    // input
+  const uint8_t* const __restrict tag,     // input
   const size_t tag_len,                    // bytes
   uint8_t* const __restrict text,          // output
   const size_t text_len,                   // bytes
@@ -332,50 +333,47 @@ decrypt_80pq(
 
   sycl::event evt = q.submit([&](sycl::handler& h) {
     h.depends_on(evts);
-    h.parallel_for(
-      sycl::nd_range<1>{ wi_cnt, wg_size }, [=](sycl::nd_item<1> it) {
-        const size_t idx = it.get_global_linear_id();
+    h.parallel_for(sycl::nd_range<1>{ wi_cnt, wg_size },
+                   [=](sycl::nd_item<1> it) {
+                     const size_t idx = it.get_global_linear_id();
 
-        // offset for secret key
-        const size_t k_offset = idx * 20;
-        // offset for public message nonce
-        const size_t n_offset = idx << 4;
-        // offset for authentication tag
-        const size_t t_offset = idx << 1;
-        // offset for associated data ( byte array )
-        const size_t ad_offset = idx * per_wi_ad_len;
-        // offset for cipher/ plain text ( byte array )
-        const size_t ct_offset = idx * per_wi_ct_len;
+                     // offset for secret key
+                     const size_t k_offset = idx * 20;
+                     // offset for public message nonce & authentication tag
+                     const size_t nt_offset = idx << 4;
+                     // offset for associated data ( byte array )
+                     const size_t ad_offset = idx * per_wi_ad_len;
+                     // offset for cipher/ plain text ( byte array )
+                     const size_t ct_offset = idx * per_wi_ct_len;
 
-        // wrap secret key the way it's expected by decrypt routine
-        ascon::secret_key_160_t k;
-        ascon_utils::from_be_bytes(sec_key + k_offset, k);
+                     // wrap secret key the way it's expected by decrypt routine
+                     const ascon::secret_key_160_t k{ sec_key + k_offset };
+                     // wrap nonce the way it's expected by decrypt routine
+                     const ascon::nonce_t n{ nonce + nt_offset };
+                     // wrap authentication tag the way it's expected by decrypt
+                     // routine
+                     const ascon::tag_t t{ tag + nt_offset };
 
-        // wrap nonce the way it's expected by decrypt routine
-        ascon::nonce_t n;
-        ascon_utils::from_be_bytes(nonce + n_offset, n);
+                     // each work-item decrypts its portion of cipher text with
+                     // associated data ( not encrypted ) while using provided
+                     // secret key, nonce & tag, using Ascon-80pq algorithm
+                     const bool f = ascon::decrypt_80pq(k,
+                                                        n,
+                                                        a_data + ad_offset,
+                                                        per_wi_ad_len,
+                                                        cipher + ct_offset,
+                                                        per_wi_ct_len,
+                                                        text + ct_offset,
+                                                        t);
 
-        // wrap authentication tag the way it's expected by decrypt routine
-        const ascon::tag_t t{ { tag[t_offset + 0], tag[t_offset + 1] } };
-
-        // each work-item decrypts its portion of cipher text with
-        // associated data ( not encrypted ) while using provided secret key,
-        // nonce & tag, using Ascon-80pq algorithm
-        const bool f = ascon::decrypt_80pq(k,
-                                           n,
-                                           a_data + ad_offset,
-                                           per_wi_ad_len,
-                                           cipher + ct_offset,
-                                           per_wi_ct_len,
-                                           text + ct_offset,
-                                           t);
-
-        // write successful verification flag back to respective memory location
-        //
-        // after transfering flag data back to host, it must be asserted for
-        // truth value, otherwise decryption may be successful but not verified
-        flag[idx] = f;
-      });
+                     // write successful verification flag back to respective
+                     // memory location
+                     //
+                     // after transfering flag data back to host, it must be
+                     // asserted for truth value, otherwise decryption may be
+                     // successful but not verified
+                     flag[idx] = f;
+                   });
   });
 
   return evt;

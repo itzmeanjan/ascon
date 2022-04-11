@@ -88,15 +88,17 @@ ascon_hash_a(benchmark::State& state)
 static void
 ascon_128_enc(benchmark::State& state)
 {
-  ascon::secret_key_128_t k;
-  ascon::nonce_t n;
+  uint8_t bytes[16];
+
+  ascon_utils::random_data(bytes, 16);
+  const ascon::secret_key_128_t k{ bytes };
+
+  ascon_utils::random_data(bytes, 16);
+  const ascon::nonce_t n{ bytes };
 
   uint8_t* data = static_cast<uint8_t*>(malloc(DATA_LEN));
   uint8_t* text = static_cast<uint8_t*>(malloc(TEXT_LEN));
   uint8_t* enc = static_cast<uint8_t*>(malloc(CIPHER_LEN));
-
-  ascon_utils::random_data(k.limbs, 2);
-  ascon_utils::random_data(n.limbs, 2);
 
   ascon_utils::random_data(data, DATA_LEN);
   ascon_utils::random_data(text, TEXT_LEN);
@@ -124,16 +126,18 @@ ascon_128_enc(benchmark::State& state)
 static void
 ascon_128_dec(benchmark::State& state)
 {
-  ascon::secret_key_128_t k;
-  ascon::nonce_t n;
+  uint8_t bytes[16];
+
+  ascon_utils::random_data(bytes, 16);
+  const ascon::secret_key_128_t k{ bytes };
+
+  ascon_utils::random_data(bytes, 16);
+  const ascon::nonce_t n{ bytes };
 
   uint8_t* data = static_cast<uint8_t*>(malloc(DATA_LEN));
   uint8_t* text = static_cast<uint8_t*>(malloc(TEXT_LEN));
   uint8_t* enc = static_cast<uint8_t*>(malloc(CIPHER_LEN));
   uint8_t* dec = static_cast<uint8_t*>(malloc(TEXT_LEN));
-
-  ascon_utils::random_data(k.limbs, 2);
-  ascon_utils::random_data(n.limbs, 2);
 
   ascon_utils::random_data(data, DATA_LEN);
   ascon_utils::random_data(text, TEXT_LEN);
@@ -164,15 +168,17 @@ ascon_128_dec(benchmark::State& state)
 static void
 ascon_128a_enc(benchmark::State& state)
 {
-  ascon::secret_key_128_t k;
-  ascon::nonce_t n;
+  uint8_t bytes[16];
+
+  ascon_utils::random_data(bytes, 16);
+  const ascon::secret_key_128_t k{ bytes };
+
+  ascon_utils::random_data(bytes, 16);
+  const ascon::nonce_t n{ bytes };
 
   uint8_t* data = static_cast<uint8_t*>(malloc(DATA_LEN));
   uint8_t* text = static_cast<uint8_t*>(malloc(TEXT_LEN));
   uint8_t* enc = static_cast<uint8_t*>(malloc(CIPHER_LEN));
-
-  ascon_utils::random_data(k.limbs, 2);
-  ascon_utils::random_data(n.limbs, 2);
 
   ascon_utils::random_data(data, DATA_LEN);
   ascon_utils::random_data(text, TEXT_LEN);
@@ -200,16 +206,18 @@ ascon_128a_enc(benchmark::State& state)
 static void
 ascon_128a_dec(benchmark::State& state)
 {
-  ascon::secret_key_128_t k;
-  ascon::nonce_t n;
+  uint8_t bytes[16];
+
+  ascon_utils::random_data(bytes, 16);
+  const ascon::secret_key_128_t k{ bytes };
+
+  ascon_utils::random_data(bytes, 16);
+  const ascon::nonce_t n{ bytes };
 
   uint8_t* data = static_cast<uint8_t*>(malloc(DATA_LEN));
   uint8_t* text = static_cast<uint8_t*>(malloc(TEXT_LEN));
   uint8_t* enc = static_cast<uint8_t*>(malloc(CIPHER_LEN));
   uint8_t* dec = static_cast<uint8_t*>(malloc(TEXT_LEN));
-
-  ascon_utils::random_data(k.limbs, 2);
-  ascon_utils::random_data(n.limbs, 2);
 
   ascon_utils::random_data(data, DATA_LEN);
   ascon_utils::random_data(text, TEXT_LEN);
@@ -240,15 +248,17 @@ ascon_128a_dec(benchmark::State& state)
 static void
 ascon_80pq_enc(benchmark::State& state)
 {
-  ascon::secret_key_160_t k;
-  ascon::nonce_t n;
+  uint8_t bytes[20];
+
+  ascon_utils::random_data(bytes, 20);
+  const ascon::secret_key_160_t k{ bytes };
+
+  ascon_utils::random_data(bytes, 16);
+  const ascon::nonce_t n{ bytes };
 
   uint8_t* data = static_cast<uint8_t*>(malloc(DATA_LEN));
   uint8_t* text = static_cast<uint8_t*>(malloc(TEXT_LEN));
   uint8_t* enc = static_cast<uint8_t*>(malloc(CIPHER_LEN));
-
-  ascon_utils::random_data(k.limbs, 3);
-  ascon_utils::random_data(n.limbs, 2);
 
   ascon_utils::random_data(data, DATA_LEN);
   ascon_utils::random_data(text, TEXT_LEN);
@@ -276,16 +286,18 @@ ascon_80pq_enc(benchmark::State& state)
 static void
 ascon_80pq_dec(benchmark::State& state)
 {
-  ascon::secret_key_160_t k;
-  ascon::nonce_t n;
+  uint8_t bytes[20];
+
+  ascon_utils::random_data(bytes, 20);
+  const ascon::secret_key_160_t k{ bytes };
+
+  ascon_utils::random_data(bytes, 16);
+  const ascon::nonce_t n{ bytes };
 
   uint8_t* data = static_cast<uint8_t*>(malloc(DATA_LEN));
   uint8_t* text = static_cast<uint8_t*>(malloc(TEXT_LEN));
   uint8_t* enc = static_cast<uint8_t*>(malloc(CIPHER_LEN));
   uint8_t* dec = static_cast<uint8_t*>(malloc(TEXT_LEN));
-
-  ascon_utils::random_data(k.limbs, 3);
-  ascon_utils::random_data(n.limbs, 2);
 
   ascon_utils::random_data(data, DATA_LEN);
   ascon_utils::random_data(text, TEXT_LEN);

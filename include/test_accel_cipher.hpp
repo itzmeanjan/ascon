@@ -31,18 +31,18 @@ ascon_128(sycl::queue& q,
   // associated data bytes
   uint8_t* ad = static_cast<uint8_t*>(sycl::malloc_shared(ad_len, q));
   // secret keys ( each 128 -bit )
-  uint64_t* key = static_cast<uint64_t*>(sycl::malloc_shared(knt_len, q));
+  uint8_t* key = static_cast<uint8_t*>(sycl::malloc_shared(knt_len, q));
   // public message nonces ( each 128 -bit )
-  uint64_t* nonce = static_cast<uint64_t*>(sycl::malloc_shared(knt_len, q));
+  uint8_t* nonce = static_cast<uint8_t*>(sycl::malloc_shared(knt_len, q));
   // authentication tags ( each 128 -bit )
-  uint64_t* tag = static_cast<uint64_t*>(sycl::malloc_shared(knt_len, q));
+  uint8_t* tag = static_cast<uint8_t*>(sycl::malloc_shared(knt_len, q));
   // verification flags ( boolean )
   bool* flag = static_cast<bool*>(sycl::malloc_shared(flag_len, q));
 
   ascon_utils::random_data(txt, ct_len);
   ascon_utils::random_data(ad, ad_len);
-  ascon_utils::random_data(key, wi_cnt << 1);
-  ascon_utils::random_data(nonce, wi_cnt << 1);
+  ascon_utils::random_data(key, knt_len);
+  ascon_utils::random_data(nonce, knt_len);
 
   evt e0 = q.memset(enc, 0, ct_len);
   evt e1 = q.memset(tag, 0, knt_len);
@@ -128,18 +128,18 @@ ascon_128a(sycl::queue& q,
   // associated data bytes
   uint8_t* ad = static_cast<uint8_t*>(sycl::malloc_shared(ad_len, q));
   // secret keys ( each 128 -bit )
-  uint64_t* key = static_cast<uint64_t*>(sycl::malloc_shared(knt_len, q));
+  uint8_t* key = static_cast<uint8_t*>(sycl::malloc_shared(knt_len, q));
   // public message nonces ( each 128 -bit )
-  uint64_t* nonce = static_cast<uint64_t*>(sycl::malloc_shared(knt_len, q));
+  uint8_t* nonce = static_cast<uint8_t*>(sycl::malloc_shared(knt_len, q));
   // authentication tags ( each 128 -bit )
-  uint64_t* tag = static_cast<uint64_t*>(sycl::malloc_shared(knt_len, q));
+  uint8_t* tag = static_cast<uint8_t*>(sycl::malloc_shared(knt_len, q));
   // verification flags ( boolean )
   bool* flag = static_cast<bool*>(sycl::malloc_shared(flag_len, q));
 
   ascon_utils::random_data(txt, ct_len);
   ascon_utils::random_data(ad, ad_len);
-  ascon_utils::random_data(key, wi_cnt << 1);
-  ascon_utils::random_data(nonce, wi_cnt << 1);
+  ascon_utils::random_data(key, knt_len);
+  ascon_utils::random_data(nonce, knt_len);
 
   evt e0 = q.memset(enc, 0, ct_len);
   evt e1 = q.memset(tag, 0, knt_len);
@@ -238,7 +238,7 @@ ascon_80pq(sycl::queue& q,
   // public message nonces ( each 128 -bit )
   uint8_t* nonce = static_cast<uint8_t*>(sycl::malloc_shared(nt_len, q));
   // authentication tags ( each 128 -bit )
-  uint64_t* tag = static_cast<uint64_t*>(sycl::malloc_shared(nt_len, q));
+  uint8_t* tag = static_cast<uint8_t*>(sycl::malloc_shared(nt_len, q));
   // verification flags ( boolean )
   bool* flag = static_cast<bool*>(sycl::malloc_shared(flag_len, q));
 

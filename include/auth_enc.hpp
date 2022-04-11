@@ -5,11 +5,6 @@
 // decryption and hashing ) Implementation
 namespace ascon {
 
-using secret_key_128_t = ascon_cipher::secret_key_128_t;
-using secret_key_160_t = ascon_cipher::secret_key_160_t;
-using nonce_t = ascon_cipher::nonce_t;
-using tag_t = ascon_cipher::tag_t;
-
 // Encrypts plain text with Ascon-128 authenticated encryption algorithm; see
 // algorithm 1 of Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf

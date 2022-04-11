@@ -13,14 +13,14 @@ namespace ascon {
 //
 // Note, use deciphered text only when this function returns true !
 static inline bool
-decrypt_128(const ascon_cipher::secret_key_128_t& k,
-            const ascon_cipher::nonce_t& n,
+decrypt_128(const secret_key_128_t& k,
+            const nonce_t& n,
             const uint8_t* const __restrict associated_data,
             const size_t data_len, // bytes; can be >= 0
             const uint8_t* const __restrict cipher,
             const size_t cipher_len,        // bytes; can be >= 0
             uint8_t* const __restrict text, // length same as `cipher`
-            const ascon_cipher::tag_t& t)
+            const tag_t& t)
 {
   using namespace ascon_cipher;
 
@@ -43,14 +43,14 @@ decrypt_128(const ascon_cipher::secret_key_128_t& k,
 //
 // Note, use deciphered text only when this function returns true !
 static inline bool
-decrypt_128a(const ascon_cipher::secret_key_128_t& k,
-             const ascon_cipher::nonce_t& n,
+decrypt_128a(const secret_key_128_t& k,
+             const nonce_t& n,
              const uint8_t* const __restrict associated_data,
              const size_t data_len, // bytes; can be >= 0
              const uint8_t* const __restrict cipher,
              const size_t cipher_len,        // bytes; can be >= 0
              uint8_t* const __restrict text, // length same as `cipher`
-             const ascon_cipher::tag_t& t)
+             const tag_t& t)
 {
   using namespace ascon_cipher;
 
@@ -73,14 +73,14 @@ decrypt_128a(const ascon_cipher::secret_key_128_t& k,
 //
 // Note, use deciphered text only when this function returns true !
 static inline bool
-decrypt_80pq(const ascon_cipher::secret_key_160_t& k,
-             const ascon_cipher::nonce_t& n,
+decrypt_80pq(const secret_key_160_t& k,
+             const nonce_t& n,
              const uint8_t* const __restrict associated_data,
              const size_t data_len, // bytes; can be >= 0
              const uint8_t* const __restrict cipher,
              const size_t cipher_len,        // bytes; can be >= 0
              uint8_t* const __restrict text, // length same as `cipher`
-             const ascon_cipher::tag_t& t)
+             const tag_t& t)
 {
   using namespace ascon_cipher;
 

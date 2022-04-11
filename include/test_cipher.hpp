@@ -12,11 +12,13 @@ namespace ascon_test {
 static void
 ascon_128(const size_t data_len /* bytes */, const size_t text_len /* bytes */)
 {
-  ascon::secret_key_128_t k;
-  ascon_utils::random_data(k.limbs, 2);
+  uint8_t bytes[16];
 
-  ascon::nonce_t n;
-  ascon_utils::random_data(n.limbs, 2);
+  ascon_utils::random_data(bytes, 16);
+  const ascon::secret_key_128_t k{ bytes };
+
+  ascon_utils::random_data(bytes, 16);
+  const ascon::nonce_t n{ bytes };
 
   uint8_t* data = static_cast<uint8_t*>(malloc(sizeof(uint8_t) * data_len));
   ascon_utils::random_data(data, data_len);
@@ -59,11 +61,13 @@ ascon_128(const size_t data_len /* bytes */, const size_t text_len /* bytes */)
 static void
 ascon_128a(const size_t data_len /* bytes */, const size_t text_len /* bytes */)
 {
-  ascon::secret_key_128_t k;
-  ascon_utils::random_data(k.limbs, 2);
+  uint8_t bytes[16];
 
-  ascon::nonce_t n;
-  ascon_utils::random_data(n.limbs, 2);
+  ascon_utils::random_data(bytes, 16);
+  const ascon::secret_key_128_t k{ bytes };
+
+  ascon_utils::random_data(bytes, 16);
+  const ascon::nonce_t n{ bytes };
 
   uint8_t* data = static_cast<uint8_t*>(malloc(sizeof(uint8_t) * data_len));
   ascon_utils::random_data(data, data_len);
@@ -107,11 +111,13 @@ ascon_128a(const size_t data_len /* bytes */, const size_t text_len /* bytes */)
 static void
 ascon_80pq(const size_t d_len /* bytes */, const size_t t_len /* bytes */)
 {
-  ascon::secret_key_160_t k;
-  ascon_utils::random_data(k.limbs, 3);
+  uint8_t bytes[20];
 
-  ascon::nonce_t n;
-  ascon_utils::random_data(n.limbs, 2);
+  ascon_utils::random_data(bytes, 20);
+  const ascon::secret_key_160_t k{ bytes };
+
+  ascon_utils::random_data(bytes, 16);
+  const ascon::nonce_t n{ bytes };
 
   uint8_t* data = static_cast<uint8_t*>(malloc(sizeof(uint8_t) * d_len));
   ascon_utils::random_data(data, d_len);

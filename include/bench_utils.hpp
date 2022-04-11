@@ -186,26 +186,26 @@ exec_kernel(sycl::queue& q,
       // associated data memory allocated on host
       uint8_t* a_h = static_cast<uint8_t*>(sycl::malloc_host(ad_len, q));
       // secret key memory allocated on accelerator
-      uint64_t* k_d = static_cast<uint64_t*>(sycl::malloc_device(knt_len, q));
+      uint8_t* k_d = static_cast<uint8_t*>(sycl::malloc_device(knt_len, q));
       // secret key memory allocated on host
-      uint64_t* k_h = static_cast<uint64_t*>(sycl::malloc_host(knt_len, q));
+      uint8_t* k_h = static_cast<uint8_t*>(sycl::malloc_host(knt_len, q));
       // pubic message nonce memory allocated on accelerator
-      uint64_t* n_d = static_cast<uint64_t*>(sycl::malloc_device(knt_len, q));
+      uint8_t* n_d = static_cast<uint8_t*>(sycl::malloc_device(knt_len, q));
       // pubic message nonce memory allocated on host
-      uint64_t* n_h = static_cast<uint64_t*>(sycl::malloc_host(knt_len, q));
+      uint8_t* n_h = static_cast<uint8_t*>(sycl::malloc_host(knt_len, q));
       // authentication tag memory allocated on accelerator
-      uint64_t* t_d = static_cast<uint64_t*>(sycl::malloc_device(knt_len, q));
+      uint8_t* t_d = static_cast<uint8_t*>(sycl::malloc_device(knt_len, q));
       // authentication tag memory allocated on host
-      uint64_t* t_h = static_cast<uint64_t*>(sycl::malloc_host(knt_len, q));
+      uint8_t* t_h = static_cast<uint8_t*>(sycl::malloc_host(knt_len, q));
 
       // generate random plain text on host
       ascon_utils::random_data(p_h, ct_len);
       // generate random associated data on host
       ascon_utils::random_data(a_h, ad_len);
       // generate random secret keys on host
-      ascon_utils::random_data(k_h, wi_cnt << 1);
+      ascon_utils::random_data(k_h, knt_len);
       // generate random public message nonces on host
-      ascon_utils::random_data(n_h, wi_cnt << 1);
+      ascon_utils::random_data(n_h, knt_len);
 
       // copy plain text to accelerator memory
       evt e0 = q.memcpy(p_d, p_h, ct_len);
@@ -327,15 +327,15 @@ exec_kernel(sycl::queue& q,
       // associated data memory allocated on host
       uint8_t* a_h = static_cast<uint8_t*>(sycl::malloc_host(ad_len, q));
       // secret key memory allocated on accelerator
-      uint64_t* k_d = static_cast<uint64_t*>(sycl::malloc_device(knt_len, q));
+      uint8_t* k_d = static_cast<uint8_t*>(sycl::malloc_device(knt_len, q));
       // secret key memory allocated on host
-      uint64_t* k_h = static_cast<uint64_t*>(sycl::malloc_host(knt_len, q));
+      uint8_t* k_h = static_cast<uint8_t*>(sycl::malloc_host(knt_len, q));
       // pubic message nonce memory allocated on accelerator
-      uint64_t* n_d = static_cast<uint64_t*>(sycl::malloc_device(knt_len, q));
+      uint8_t* n_d = static_cast<uint8_t*>(sycl::malloc_device(knt_len, q));
       // pubic message nonce memory allocated on host
-      uint64_t* n_h = static_cast<uint64_t*>(sycl::malloc_host(knt_len, q));
+      uint8_t* n_h = static_cast<uint8_t*>(sycl::malloc_host(knt_len, q));
       // authentication tag memory allocated on accelerator
-      uint64_t* t_d = static_cast<uint64_t*>(sycl::malloc_device(knt_len, q));
+      uint8_t* t_d = static_cast<uint8_t*>(sycl::malloc_device(knt_len, q));
       // verified decryption status flags, allocated on accelerator
       bool* f_d = static_cast<bool*>(sycl::malloc_device(flg_len, q));
       // verified decryption status flags, allocated on host
@@ -346,9 +346,9 @@ exec_kernel(sycl::queue& q,
       // generate random associated data on host
       ascon_utils::random_data(a_h, ad_len);
       // generate random secret keys on host
-      ascon_utils::random_data(k_h, wi_cnt << 1);
+      ascon_utils::random_data(k_h, knt_len);
       // generate random public message nonces on host
-      ascon_utils::random_data(n_h, wi_cnt << 1);
+      ascon_utils::random_data(n_h, knt_len);
 
       // copy plain text to accelerator memory
       evt e0 = q.memcpy(p_d, p_h, ct_len);
@@ -521,9 +521,9 @@ exec_kernel(sycl::queue& q,
       // pubic message nonce memory allocated on host
       uint8_t* n_h = static_cast<uint8_t*>(sycl::malloc_host(nt_len, q));
       // authentication tag memory allocated on accelerator
-      uint64_t* t_d = static_cast<uint64_t*>(sycl::malloc_device(nt_len, q));
+      uint8_t* t_d = static_cast<uint8_t*>(sycl::malloc_device(nt_len, q));
       // authentication tag memory allocated on host
-      uint64_t* t_h = static_cast<uint64_t*>(sycl::malloc_host(nt_len, q));
+      uint8_t* t_h = static_cast<uint8_t*>(sycl::malloc_host(nt_len, q));
 
       // generate random plain text on host
       ascon_utils::random_data(p_h, ct_len);
@@ -643,7 +643,7 @@ exec_kernel(sycl::queue& q,
       // pubic message nonce memory allocated on host
       uint8_t* n_h = static_cast<uint8_t*>(sycl::malloc_host(nt_len, q));
       // authentication tag memory allocated on accelerator
-      uint64_t* t_d = static_cast<uint64_t*>(sycl::malloc_device(nt_len, q));
+      uint8_t* t_d = static_cast<uint8_t*>(sycl::malloc_device(nt_len, q));
       // verified decryption status flags, allocated on accelerator
       bool* f_d = static_cast<bool*>(sycl::malloc_device(flg_len, q));
       // verified decryption status flags, allocated on host
