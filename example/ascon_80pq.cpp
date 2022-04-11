@@ -20,9 +20,9 @@ main()
   uint8_t* dec = static_cast<uint8_t*>(malloc(dec_len));   // deciphered data
 
   // prepare 160 -bit secret key
-  ascon::secret_key_160_t k = { { 1ul, 2ul, 3ul } };
+  ascon::secret_key_160_t k{ 1ul, 2ul, 3ul };
   // prepare 128 -bit message nonce, don't repeat nonce for same secret key !
-  ascon::nonce_t n = { { 4ul, 5ul } };
+  ascon::nonce_t n{ 4ul, 5ul };
 
 // prepare associated data, it's never encrypted !
 #if defined __clang__
