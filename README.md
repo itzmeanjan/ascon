@@ -3,10 +3,11 @@ Accelerating Ascon: Light Weight Cryptography
 
 ## Overview
 
-`ascon` is very first cryptographic suite I decided to implement from the list algorithms competing in final round of NIST **L**ight **W**eight **C**ryptography competition. I suggest you follow [this](https://csrc.nist.gov/Projects/Lightweight-Cryptography). Here I keep a C++ header-only library implementation of `ascon` LWC suite, which should be easy to use; find examples below. Following functions are implemented
+`ascon` is very first cryptographic suite I decided to implement from the list of algorithms competing in final round of NIST **L**ight **W**eight **C**ryptography competition. I suggest you follow [this](https://csrc.nist.gov/Projects/Lightweight-Cryptography). Here I keep a C++ header-only library implementation of `ascon` LWC suite, which should be easy to use; find examples below. Following functions are implemented
 
 - Ascon-128 authenticated encryption/ verified decryption ( AEAD )
 - Ascon-128a authenticated encryption/ verified decryption ( AEAD )
+- Ascon-80pq authenticated encryption/ verified decryption ( AEAD )
 - Ascon-Hash
 - Ascon-HashA
 
@@ -14,16 +15,18 @@ Accelerating Ascon: Light Weight Cryptography
 
 > While working on this project, I've relied on Ascon [specification](https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf)
 
-This implementation doesn't depend on anything else, except C++ standard library ( which implements C++20 specification ). I've also written Python interface to C++ implementation using `ctypes`, which is used for testing functional correctness using Known Answer Tests provided with NIST LWC submission package of `ascon`. Benchmarking C++ interface makes use of `google-benchmark` library; see below. While it's also possible to benchmark Python wrapper API using `pytest-benchmark`; details below.
+This implementation doesn't depend on anything else, except C++ standard library ( which implements C++20 specification ). I've also written Python interface to C++ implementation using `ctypes`, which is used for testing functional correctness using Known Answer Tests, provided with NIST LWC submission package of `ascon`. Benchmarking C++ interface makes use of `google-benchmark` library; see below. While it's also possible to benchmark Python wrapper API using `pytest-benchmark`; details below.
 
 Other than lean & simple Ascon implementation, I've also written SYCL kernels which can be used for data-parallelly computing
 
 - Ascon-Hash of N -many independent, equal length byte slices
 - Ascon-HashA of N -many independent, equal length byte slices
-- N -many independent, equal length cipher text slices and authentication tags ( 128 -bit each ) using Ascon-128 authenticated encryption algorithm
-- N -many independent, equal length plain text slices and verification flags ( boolean ) using Ascon-128 verified decryption algorithm
-- N -many independent, equal length cipher text slices and authentication tags ( 128 -bit each ) using Ascon-128a authenticated encryption algorithm
-- N -many independent, equal length plain text slices and verification flags ( boolean ) using Ascon-128a verified decryption algorithm
+- N -many independent, non-overlapping, equal-length cipher text slices and authentication tags ( 128 -bit each ) using Ascon-128 authenticated encryption algorithm
+- N -many independent, non-overlapping, equal-length plain text slices and verification flags ( boolean ) using Ascon-128 verified decryption algorithm
+- N -many independent, non-overlapping, equal-length cipher text slices and authentication tags ( 128 -bit each ) using Ascon-128a authenticated encryption algorithm
+- N -many independent, non-overlapping, equal-length plain text slices and verification flags ( boolean ) using Ascon-128a verified decryption algorithm
+- N -many independent, non-overlapping, equal-length cipher text slices and authentication tags ( 128 -bit each ) using Ascon-80pq authenticated encryption algorithm
+- N -many independent, non-overlapping, equal-length plain text slices and verification flags ( boolean ) using Ascon-80pq verified decryption algorithm
 
 on heterogeneous accelerator devices i.e. multi-core CPUs, GPGPUs etc. Benchmark results on multiple accelerator devices can be found below. Example of using SYCL accelerated Ascon kernel API can also be found below.
 
@@ -123,6 +126,7 @@ There're two ways to benchmark all implemented fundamental functions of Ascon cr
 
 - Ascon-128 ( encrypt/ decrypt )
 - Ascon-128a ( encrypt/ decrypt )
+- Ascon-80pq ( encrypt/ decrypt )
 - Ascon-Hash
 - Ascon-HashA
 
@@ -135,7 +139,7 @@ make bench_cpp
 ```
 
 ```bash
-2022-03-30T14:11:33+00:00
+2022-04-21T16:14:03+00:00
 Running ./bench/a.out
 Run on (4 X 2300.14 MHz CPU s)
 CPU Caches:
@@ -143,16 +147,18 @@ CPU Caches:
   L1 Instruction 32 KiB (x2)
   L2 Unified 256 KiB (x2)
   L3 Unified 46080 KiB (x1)
-Load Average: 0.20, 0.07, 0.01
+Load Average: 0.15, 0.05, 0.01
 -------------------------------------------------------------------------
 Benchmark               Time             CPU   Iterations UserCounters...
 -------------------------------------------------------------------------
-ascon_hash          33800 ns        33798 ns        20715 bytes_per_second=115.577M/s items_per_second=29.5877k/s
-ascon_hash_a        22482 ns        22480 ns        31198 bytes_per_second=173.766M/s items_per_second=44.4841k/s
-ascon_128_enc       17467 ns        17465 ns        40114 bytes_per_second=227.151M/s items_per_second=57.2561k/s
-ascon_128_dec       17021 ns        17020 ns        41128 bytes_per_second=233.092M/s items_per_second=58.7534k/s
-ascon_128a_enc      13303 ns        13301 ns        52673 bytes_per_second=298.263M/s items_per_second=75.1806k/s
-ascon_128a_dec      11201 ns        11201 ns        62374 bytes_per_second=354.175M/s items_per_second=89.2738k/s
+ascon_hash          33816 ns        33814 ns        20658 bytes_per_second=115.523M/s items_per_second=29.574k/s
+ascon_hash_a        23443 ns        23441 ns        30941 bytes_per_second=166.642M/s items_per_second=42.6604k/s
+ascon_128_enc       17467 ns        17466 ns        40461 bytes_per_second=227.143M/s items_per_second=57.254k/s
+ascon_128_dec       17199 ns        17198 ns        41602 bytes_per_second=230.689M/s items_per_second=58.1478k/s
+ascon_128a_enc      13545 ns        13542 ns        52513 bytes_per_second=292.954M/s items_per_second=73.8425k/s
+ascon_128a_dec      11163 ns        11163 ns        62680 bytes_per_second=355.404M/s items_per_second=89.5837k/s
+ascon_80pq_enc      17688 ns        17687 ns        39601 bytes_per_second=224.303M/s items_per_second=56.5382k/s
+ascon_80pq_dec      16858 ns        16858 ns        41660 bytes_per_second=235.339M/s items_per_second=59.3198k/s
 ```
 
 ---
@@ -164,28 +170,30 @@ make bench_python
 ```
 
 ```bash
--------------------------------------------------------------------------------------------- benchmark: 6 tests -------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------- benchmark: 8 tests -------------------------------------------------------------------------------------------
 Name (time in us)                     Min                   Max               Mean              StdDev             Median               IQR            Outliers  OPS (Kops/s)            Rounds  Iterations
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-test_bench_ascon_hasha            15.0390 (1.0)        185.8063 (1.0)      16.7846 (1.0)        8.7322 (1.0)      15.9033 (1.0)      0.4061 (1.0)       218;793       59.5783 (1.0)       15036           1
-test_bench_ascon_hash             15.2551 (1.01)     9,874.9287 (53.15)    18.5198 (1.10)     120.8451 (13.84)    16.0486 (1.01)     0.4396 (1.08)        5;391       53.9964 (0.91)       6749           1
-test_bench_ascon_128a_encrypt     30.2382 (2.01)       189.3044 (1.02)     33.3974 (1.99)      11.6782 (1.34)     31.9704 (2.01)     0.7786 (1.92)      197;641       29.9424 (0.50)      10252           1
-test_bench_ascon_128_encrypt      30.7076 (2.04)       226.2965 (1.22)     34.0247 (2.03)      12.0334 (1.38)     32.5143 (2.04)     0.7767 (1.91)      181;598       29.3905 (0.49)       8884           1
-test_bench_ascon_128_decrypt      31.2030 (2.07)       211.7380 (1.14)     34.2008 (2.04)      11.7221 (1.34)     32.7229 (2.06)     0.7413 (1.83)     349;1124       29.2391 (0.49)      16845           1
-test_bench_ascon_128a_decrypt     31.6724 (2.11)       217.4154 (1.17)     34.5162 (2.06)      11.8649 (1.36)     33.1178 (2.08)     0.6892 (1.70)     312;1109       28.9719 (0.49)      17012           1
+test_bench_ascon_hasha            14.7969 (1.0)        283.2972 (1.26)     17.3031 (1.0)        9.9935 (1.0)      15.7580 (1.0)      0.4731 (1.05)     703;1144       57.7933 (1.0)       15144           1
+test_bench_ascon_hash             15.5382 (1.05)     9,850.5802 (43.67)    19.3500 (1.12)     127.0850 (12.72)    16.3466 (1.04)     0.4508 (1.0)         5;485       51.6796 (0.89)       6022           1
+test_bench_ascon_128_encrypt      30.2121 (2.04)       225.5440 (1.0)      33.4573 (1.93)      12.5854 (1.26)     31.5197 (2.00)     0.8158 (1.81)      257;823       29.8889 (0.52)       9029           1
+test_bench_ascon_128a_encrypt     30.6256 (2.07)       229.7089 (1.02)     33.9579 (1.96)      12.5606 (1.26)     32.1195 (2.04)     0.7600 (1.69)      279;716       29.4482 (0.51)       9690           1
+test_bench_ascon_128a_decrypt     31.3483 (2.12)       306.1034 (1.36)     35.7931 (2.07)      14.4296 (1.44)     32.8794 (2.09)     0.8568 (1.90)     818;1348       27.9384 (0.48)      13547           1
+test_bench_ascon_80pq_encrypt     32.2126 (2.18)       246.1337 (1.09)     35.5822 (2.06)      12.6274 (1.26)     33.7437 (2.14)     0.8047 (1.79)      286;754       28.1039 (0.49)       9843           1
+test_bench_ascon_128_decrypt      32.4883 (2.20)       329.6062 (1.46)     35.9194 (2.08)      12.9967 (1.30)     33.9150 (2.15)     0.7227 (1.60)     511;1142       27.8401 (0.48)      15591           1
+test_bench_ascon_80pq_decrypt     33.1849 (2.24)       267.8931 (1.19)     36.4118 (2.10)      12.5121 (1.25)     34.8464 (2.21)     0.6855 (1.52)     374;1103       27.4636 (0.48)      16862           1
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Legend:
   Outliers: 1 Standard Deviation from Mean; 1.5 IQR (InterQuartile Range) from 1st Quartile and 3rd Quartile.
   OPS: Operations Per Second, computed as 1 / Mean
-======================================================================================================================= 6 passed, 4 deselected in 3.84s ========================================================================================================================
+================================================================================ 8 passed, 5 deselected in 5.24s ================================================================================
 ```
 
 ## Usage
 
 ### Basic Ascon API
 
-`ascon` being a header-only library, it's pretty easy to start using its C++ API. Just import the header file and use functions living inside `ascon::` namespace. Namespace like `ascon_utils::` might also be of your interest, which has some utility routines implemented.
+`ascon` being a header-only C++ library, it's pretty easy to start using its C++ API. Just include the header file ( i.e. `include/ascon.hpp` ) and use functions living inside `ascon::` namespace. Namespace like `ascon_utils::` might also be of your interest, which has some utility routines implemented.
 
 ```cpp
 // ascon_hash.cpp
@@ -338,6 +346,7 @@ Find example of using all `accel_ascon::` namespaced SYCL kernels
 - [Ascon-HashA SYCL Kernel API](https://github.com/itzmeanjan/ascon/blob/92f2c3e/example/accel_ascon_hasha.cpp)
 - [Ascon-128 authenticated encryption/ verified decryption SYCL Kernel API](https://github.com/itzmeanjan/ascon/blob/92f2c3e/example/accel_ascon_128.cpp)
 - [Ascon-128a authenticated encryption/ verified decryption SYCL Kernel API](https://github.com/itzmeanjan/ascon/blob/92f2c3e/example/accel_ascon_128a.cpp)
+- [Ascon-80pq authenticated encryption/ verified decryption SYCL Kernel API](https://github.com/itzmeanjan/ascon/blob/7a2964f/example/accel_ascon_80pq.cpp)
 
 ---
 
@@ -381,17 +390,19 @@ popd
 
 ## Benchmark SYCL accelerated Ascon
 
-I've written SYCL kernels which can be used for computing Ascon-Hash digest/ Ascon-HashA digest/ encrypted bytes & authentication tags using Ascon-128, Ascon-128a/ decrypted text & verification flags using Ascon-128, Ascon-128a, in data-parallel fashion on accelerator devices like multi-core CPUs, GPGPUs.
+I've written SYCL kernels which can be used for computing Ascon-Hash digest/ Ascon-HashA digest/ encrypted bytes & authentication tags using Ascon-128, Ascon-128a, Ascon-80pq/ decrypted text bytes & boolean verification flags using Ascon-128, Ascon-128a, Ascon-80pq, in data-parallel fashion on accelerator devices like multi-core CPUs, GPGPUs.
 
-These kernels themselves are pretty simple as they import standard Ascon cryptographic suite ( read `ascon::` namespace ) and invoke N -many instances of them on N -many independent input byte slices producing N -many independent output bytes --- meaning N -many SYCL work-items are dispatched for some kernel ( say Ascon-Hash ) and without any in work-group communication/ synchronization N -many Ascon-Hash digests ( each 32 -bytes wide ) are computed & placed in respective memory locations, in contiguous fashion. These digests can now be transferred back to host & consumed for other purposes.
+These kernels themselves are pretty simple as they import standard Ascon cryptographic suite ( read `ascon::` namespace ) and invoke N -many instances of relevant cryptographic routine on N -many independent, non-overlapping input byte slices producing N -many independent output bytes --- meaning N -many SYCL work-items are dispatched for some kernel ( say Ascon-Hash ) and without any in work-group communication/ synchronization N -many Ascon-Hash digests ( each 32 -bytes wide ) are computed & placed in respective memory locations, in contiguous fashion. These digests can now be transferred back to host & consumed for other purposes.
 
-Similarly for Ascon-128 encryption algorithm, N -many independent, equal length plain text slices are encrypted to N -many equal length cipher slices, also computing N -many authentication tags ( each 128 -bit wide ) while also using independent secret keys ( N -many ), public message nonces ( N -many ) & associated data byte slices ( each slice of same length, total N -many ) as input to encryption algorithm. These encrypted message slices can now be data-parallelly decrypted by dispatching N -many SYCL work-items while each of these work-items to consume respective secret key ( 128 -bit ), public message nonce ( 128 -bit ), authentication tag ( 128 -bit ), ciphered bytes & associated data bytes, producing plain text bytes and boolean flag denoting verification status of decryption process.
+Similarly for Ascon-128 encryption algorithm, N -many independent, non-overlapping, equal length plain text slices are encrypted to N -many equal length cipher slices, also computing N -many authentication tags ( each 128 -bit wide ) while also using independent, non-overlapping secret keys ( N -many ), public message nonces ( N -many ) & associated data byte slices ( each slice of same length, total N -many ) as input to encryption algorithm. These encrypted message slices can now be data-parallelly decrypted by dispatching N -many SYCL work-items while each of these work-items to consume respective secret key ( 128 -bit ), public message nonce ( 128 -bit ), authentication tag ( 128 -bit ), ciphered byte slice & associated data byte slice, producing plain text bytes and boolean flag denoting verification status of decryption process.
 
 Here I keep minimal benchmark results of SYCL kernels implementing following functionalities.
 
 - [Ascon-Hash/ Ascon-HashA](https://github.com/itzmeanjan/ascon/blob/ee890f9/include/bench_utils.hpp#L110-L160)
 - [Ascon-128 Encrypt/ Ascon-128a Encrypt](https://github.com/itzmeanjan/ascon/blob/ee890f9/include/bench_utils.hpp#L161-L298)
 - [Ascon-128 Decrypt/ Ascon-128a Decrypt](https://github.com/itzmeanjan/ascon/blob/ee890f9/include/bench_utils.hpp#L299-L481)
+- [Ascon-80pq Encrypt](https://github.com/itzmeanjan/ascon/blob/7a2964f/include/bench_utils.hpp#L489-L607)
+- [Ascon-80pq Decrypt](https://github.com/itzmeanjan/ascon/blob/7a2964f/include/bench_utils.hpp#L608-L759)
 
 Browse through results & respective build commands
 
