@@ -52,11 +52,11 @@ main()
   // associated data bytes
   uint8_t* adb = static_cast<uint8_t*>(sycl::malloc_shared(ad_len, q));
   // secret keys
-  uint64_t* keys = static_cast<uint64_t*>(sycl::malloc_shared(knt_len, q));
+  uint8_t* keys = static_cast<uint8_t*>(sycl::malloc_shared(knt_len, q));
   // public message nonces
-  uint64_t* nonces = static_cast<uint64_t*>(sycl::malloc_shared(knt_len, q));
+  uint8_t* nonces = static_cast<uint8_t*>(sycl::malloc_shared(knt_len, q));
   // authentication tags
-  uint64_t* tags = static_cast<uint64_t*>(sycl::malloc_shared(knt_len, q));
+  uint8_t* tags = static_cast<uint8_t*>(sycl::malloc_shared(knt_len, q));
   // verification flags
   bool* flags = static_cast<bool*>(sycl::malloc_shared(flg_len, q));
 
@@ -65,9 +65,9 @@ main()
   // prepare random associated data bytes
   ascon_utils::random_data(adb, ad_len);
   // prepare random secret keys
-  ascon_utils::random_data(keys, wi_cnt << 1);
+  ascon_utils::random_data(keys, knt_len);
   // prepare random public message nonces
-  ascon_utils::random_data(nonces, wi_cnt << 1);
+  ascon_utils::random_data(nonces, knt_len);
 
   using evt = sycl::event;
 

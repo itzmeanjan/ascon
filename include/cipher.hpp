@@ -1,9 +1,10 @@
 #pragma once
 #include "permutation.hpp"
+#include "types.hpp"
 #include "utils.hpp"
 
-// Utility functions for implementing Ascon-{128, 128a} authenticated encryption
-// & verified decryption
+// Utility functions for implementing Ascon-{128, 128a, 80pq} authenticated
+// encryption & verified decryption
 namespace ascon_cipher {
 
 // Ascon-128 initial state value ( only first 64 -bits ); taken from
@@ -16,32 +17,13 @@ constexpr uint64_t ASCON_128_IV = 0X80400c0600000000ul;
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
 constexpr uint64_t ASCON_128a_IV = 0x80800c0800000000ul;
 
+// Ascon-80pq initial state value ( only first 32 -bits );
+// taken from section 2.4.1 of
+// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+constexpr uint32_t ASCON_80pq_IV = 0xa0400c06ul;
+
 // = (1 << 64) - 1; maximum number that can be represented using 64 -bits
 constexpr uint64_t MAX_ULONG = 0xfffffffffffffffful;
-
-// 128 -bit Ascon secret key, used for authenticated encryption/ decryption;
-// see table 1 in section 2.2 of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-struct secret_key_t
-{
-  uint64_t limbs[2];
-};
-
-// 128 -bit Ascon nonce, used for authenticated encryption/ decryption
-// see table 1 in section 2.2 of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-struct nonce_t
-{
-  uint64_t limbs[2];
-};
-
-// 128 -bit tag, generated in finalization step of Ascon-128/128a; see table 1
-// in section 2.2 of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-struct tag_t
-{
-  uint64_t limbs[2];
-};
 
 // Compile-time check that correct initial state is used for either Ascon-128 or
 // Ascon-128a
@@ -59,9 +41,9 @@ check_iv(const uint64_t iv)
 // it's parameterized
 template<const uint64_t IV, const size_t a>
 static inline void
-initialize(uint64_t* const state, // uninitialized hash state
-           const secret_key_t& k, // 128 -bit secret key
-           const nonce_t& n       // 128 -bit nonce
+initialize(uint64_t* const state,            // uninitialized hash state
+           const ascon::secret_key_128_t& k, // 128 -bit secret key
+           const ascon::nonce_t& n           // 128 -bit nonce
            ) requires(ascon_perm::check_a(a) && check_iv(IV))
 {
   state[0] = IV;
@@ -74,6 +56,33 @@ initialize(uint64_t* const state, // uninitialized hash state
 
   state[3] ^= k.limbs[0];
   state[4] ^= k.limbs[1];
+}
+
+// Initialize cipher state for Ascon-80pq authenticated cipher;
+// see section 2.4.1 of Ascon specification
+// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+//
+// # -of rounds `a` should be 12 for Ascon-80pq, though still it's parameterized
+template<const size_t a>
+static inline void
+initialize(uint64_t* const state,            // uninitialized hash state
+           const ascon::secret_key_160_t& k, // 160 -bit secret key
+           const ascon::nonce_t& n           // 128 -bit nonce
+           ) requires(ascon_perm::check_a(a))
+{
+  state[0] = (static_cast<uint64_t>(ASCON_80pq_IV) << 32) | (k.limbs[0] >> 32);
+  state[1] = ((k.limbs[0] & 0xfffffffful) << 32) | (k.limbs[1] >> 32);
+  state[2] = ((k.limbs[1] & 0xfffffffful) << 32) | (k.limbs[2] & 0xfffffffful);
+  state[3] = n.limbs[0];
+  state[4] = n.limbs[1];
+
+  ascon_perm::p_a<a>(state);
+
+  const uint64_t l_u32 = k.limbs[2] & 0xfffffffful;
+
+  state[2] ^= (k.limbs[0] >> 32);
+  state[3] ^= (((k.limbs[0] & 0xfffffffful) << 32) | (k.limbs[1] >> 32));
+  state[4] ^= (((k.limbs[1] & 0xfffffffful) << 32) | l_u32);
 }
 
 // Compile-time check that rate bit length is 64
@@ -365,9 +374,9 @@ process_ciphertext(uint64_t* const __restrict state,
 // section 2.4.4 of Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
 template<const size_t a, const size_t r>
-static inline const tag_t
+static inline const ascon::tag_t
 finalize(uint64_t* const state,
-         const secret_key_t& k // 128 -bit secret key
+         const ascon::secret_key_128_t& k // 128 -bit secret key
          ) requires(ascon_perm::check_a(a) && check_r(r))
 {
   if (check_r64(r)) {
@@ -381,11 +390,51 @@ finalize(uint64_t* const state,
   ascon_perm::p_a<a>(state);
 
   // 128 -bit tag
-  tag_t t;
+  ascon::tag_t t(state[3] ^ k.limbs[0], state[4] ^ k.limbs[1]);
+  return t;
+}
 
-  t.limbs[0] = state[3] ^ k.limbs[0];
-  t.limbs[1] = state[4] ^ k.limbs[1];
+// Ascon-80pq finalization step, generates 128 -bit tag; taken from
+// section 2.4.4 of Ascon specification
+// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+template<const size_t a, const size_t r>
+static inline const ascon::tag_t
+finalize(uint64_t* const state,
+         const ascon::secret_key_160_t& k // 160 -bit secret key
+         ) requires(ascon_perm::check_a(a) && check_r(r))
+{
+  if (check_r64(r)) {
+    state[1] ^= k.limbs[0];
+    state[2] ^= k.limbs[1];
+    state[3] ^= ((k.limbs[2] & 0xfffffffful) << 32);
+  } else if (check_r128(r)) {
+    state[2] ^= k.limbs[0];
+    state[3] ^= k.limbs[1];
+    state[4] ^= ((k.limbs[2] & 0xfffffffful) << 32);
+  }
 
+  ascon_perm::p_a<a>(state);
+
+  // keeps 32 to 63 -bits of 160 -bit secret key, on upper 32 -bits of
+  // 64 -bit unsigned integer
+  const uint64_t tmp0 = (k.limbs[0] & 0xfffffffful) << 32;
+  // keeps 64 to 95 -bits of 160 -bit secret key, on lower 32 -bits of
+  // 64 -bit unsigned integer
+  const uint64_t tmp1 = k.limbs[1] >> 32;
+
+  // keeps 96 to 127 -bits of 160 -bit secret key, on upper 32 -bits of
+  // 64 -bit unsigned integer
+  const uint64_t tmp2 = (k.limbs[1] & 0xffffffff) << 32;
+  // secret key's last 32 -bits ( i.e. from bit 128 to 159 ) are placed on lower
+  // 32 -bits of 64 -bit unsigned integer
+  const uint64_t tmp3 = k.limbs[2] & 0xfffffffful;
+
+  // last 128 -bits of secret key, as two 64 -bit words
+  const uint64_t k_64_a = tmp0 | tmp1;
+  const uint64_t k_64_b = tmp2 | tmp3;
+
+  // 128 -bit tag
+  const ascon::tag_t t(state[3] ^ k_64_a, state[4] ^ k_64_b);
   return t;
 }
 

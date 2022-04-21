@@ -27,7 +27,9 @@ from_be_bytes(const uint8_t* const i_bytes)
 static inline void
 to_be_bytes(const uint64_t num, uint8_t* const bytes)
 {
+#if defined __clang__
 #pragma unroll 8
+#endif
   for (size_t i = 0; i < 8; i++) {
     bytes[i] = static_cast<uint8_t>(num >> ((8u - (i + 1u)) << 3u));
   }

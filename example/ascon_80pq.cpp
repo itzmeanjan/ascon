@@ -2,6 +2,9 @@
 #include <cassert>
 #include <iostream>
 
+// Compile & execute with
+//
+// `g++ -std=c++20 -I ./include example/ascon_80pq.cpp && ./a.out`
 int
 main()
 {
@@ -16,12 +19,12 @@ main()
   uint8_t* enc = static_cast<uint8_t*>(malloc(enc_len));   // ciphered data
   uint8_t* dec = static_cast<uint8_t*>(malloc(dec_len));   // deciphered data
 
-  // prepare 128 -bit secret key
-  ascon::secret_key_128_t k{ 1ul, 2ul };
+  // prepare 160 -bit secret key
+  ascon::secret_key_160_t k{ 1ul, 2ul, 3ul };
   // prepare 128 -bit message nonce, don't repeat nonce for same secret key !
-  ascon::nonce_t n{ 3ul, 4ul };
+  ascon::nonce_t n{ 4ul, 5ul };
 
-  // prepare associated data, it's never encrypted !
+// prepare associated data, it's never encrypted !
 #if defined __clang__
 #pragma unroll 8
 #endif
@@ -37,10 +40,10 @@ main()
     text[i] = static_cast<uint8_t>(i);
   }
 
-  // using Ascon-128a for running encrypt -> decrypt cycle
+  // using Ascon-80pq for running encrypt -> decrypt cycle
   using namespace ascon;
-  const tag_t t = encrypt_128a(k, n, data, data_len, text, text_len, enc);
-  const bool f = decrypt_128a(k, n, data, data_len, enc, enc_len, dec, t);
+  const tag_t t = encrypt_80pq(k, n, data, data_len, text, text_len, enc);
+  const bool f = decrypt_80pq(k, n, data, data_len, enc, enc_len, dec, t);
 
   // verified decryption; it must be true !
   assert(f);
@@ -52,7 +55,7 @@ main()
   // redundant check; if `f` is true, `dec` is good to consume !
   assert(text_ == dec_);
 
-  std::cout << "Ascon-128a AEAD" << std::endl << std::endl;
+  std::cout << "Ascon-80pq AEAD" << std::endl << std::endl;
   std::cout << "Plain      text :\t" << text_ << std::endl;
   std::cout << "Cipher     text :\t" << enc_ << std::endl;
   std::cout << "Deciphered text :\t" << dec_ << std::endl;
