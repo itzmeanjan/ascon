@@ -38,11 +38,11 @@ absorb(uint64_t* const __restrict state,
        ) requires(ascon_perm::check_b(b))
 {
   // these many 0 -bits to be appended to input message
-  const size_t tmp = (msg_len << 3) % 64;              // bits
-  const size_t zero_pad_len = 64 - 1 - tmp;            // bits
+  const size_t tmp = (msg_len << 3) & 63ul;            // bits
+  const size_t zero_pad_len = 63ul - tmp;              // bits
   const size_t pad_byte_len = (zero_pad_len + 1) >> 3; // bytes
 
-  const uint8_t* msg_ = msg + msg_len - (8 - pad_byte_len); // slice out
+  const uint8_t* msg_ = msg + msg_len - (8ul - pad_byte_len); // slice out
   const uint64_t last_msg_blk = ascon_utils::pad_data(msg_, pad_byte_len);
 
   const size_t msg_blk_cnt = ((msg_len + pad_byte_len) << 3) >> 6;
