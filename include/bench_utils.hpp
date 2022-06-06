@@ -76,10 +76,10 @@ to_readable_bandwidth(const size_t bytes, // bytes
   std::stringstream ss;
   ss << std::setprecision(2);
 
-  bps >= GB ? ss << (bps / GB) << " GB/ s"
-            : bps >= MB ? ss << (bps / MB) << " MB/ s"
-                        : bps >= KB ? ss << (bps / KB) << " KB/ s"
-                                    : ss << bps << " B/ s";
+  bps >= GB   ? ss << (bps / GB) << " GB/ s"
+  : bps >= MB ? ss << (bps / MB) << " MB/ s"
+  : bps >= KB ? ss << (bps / KB) << " KB/ s"
+              : ss << bps << " B/ s";
   return ss.str();
 }
 

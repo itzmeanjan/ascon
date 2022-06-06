@@ -7,7 +7,7 @@
 
 #define MSG_LEN 64ul  // per work-item input message length ( bytes )
 #define AD_LEN 32ul   // per work-item input associated data length ( bytes )
-#define CT_LEN 32ul  // per work-item input plain/ cipher text length ( bytes )
+#define CT_LEN 32ul   // per work-item input plain/ cipher text length ( bytes )
 #define WI_CNT 1024ul // SYCL work-item count
 #define WI_SIZE 32ul  // SYCL work-group size
 
