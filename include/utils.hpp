@@ -29,9 +29,12 @@ to_be_bytes(const uint64_t num, uint8_t* const bytes)
 {
 #if defined __clang__
 #pragma unroll 8
+#elif defined __GNUG__
+#pragma GCC ivdep
+#pragma GCC unroll 8
 #endif
   for (size_t i = 0; i < 8; i++) {
-    bytes[i] = static_cast<uint8_t>(num >> ((8u - (i + 1u)) << 3u));
+    bytes[i] = static_cast<uint8_t>(num >> ((7ul - i) << 3u));
   }
 }
 
@@ -70,61 +73,11 @@ random_data(uint8_t* const data, const size_t len)
 static inline constexpr uint64_t
 pad_data(const uint8_t* const data, const size_t pad_byte_len)
 {
-  uint64_t data_blk = 0ull;
+  uint64_t data_blk = 0b1ul << ((pad_byte_len << 3) - 1ul);
 
-  switch (pad_byte_len) {
-    case 8:
-      data_blk = 0b1ul << 63 /* padding: '1' ++ '0' <63 bits> */;
-      break;
-    case 7:
-      data_blk = (static_cast<uint64_t>(data[0]) << 56) |
-                 (0b1ul << 55) /* padding: '1' ++ '0' <55 bits> */;
-      break;
-    case 6:
-      data_blk = (static_cast<uint64_t>(data[0]) << 56) |
-                 (static_cast<uint64_t>(data[1]) << 48) |
-                 (0b1ul << 47) /* padding: '1' ++ '0' <47 bits> */;
-      break;
-    case 5:
-      data_blk = (static_cast<uint64_t>(data[0]) << 56) |
-                 (static_cast<uint64_t>(data[1]) << 48) |
-                 (static_cast<uint64_t>(data[2]) << 40) |
-                 (0b1ul << 39) /* padding: '1' ++ '0' <39 bits> */;
-      break;
-    case 4:
-      data_blk = (static_cast<uint64_t>(data[0]) << 56) |
-                 (static_cast<uint64_t>(data[1]) << 48) |
-                 (static_cast<uint64_t>(data[2]) << 40) |
-                 (static_cast<uint64_t>(data[3]) << 32) |
-                 (0b1ul << 31) /* padding: '1' ++ '0' <31 bits> */;
-      break;
-    case 3:
-      data_blk = (static_cast<uint64_t>(data[0]) << 56) |
-                 (static_cast<uint64_t>(data[1]) << 48) |
-                 (static_cast<uint64_t>(data[2]) << 40) |
-                 (static_cast<uint64_t>(data[3]) << 32) |
-                 (static_cast<uint64_t>(data[4]) << 24) |
-                 (0b1ul << 23) /* padding: '1' ++ '0' <23 bits> */;
-      break;
-    case 2:
-      data_blk = (static_cast<uint64_t>(data[0]) << 56) |
-                 (static_cast<uint64_t>(data[1]) << 48) |
-                 (static_cast<uint64_t>(data[2]) << 40) |
-                 (static_cast<uint64_t>(data[3]) << 32) |
-                 (static_cast<uint64_t>(data[4]) << 24) |
-                 (static_cast<uint64_t>(data[5]) << 16) |
-                 (0b1ul << 15) /* padding: '1' ++ '0' <15 bits> */;
-      break;
-    case 1:
-      data_blk = (static_cast<uint64_t>(data[0]) << 56) |
-                 (static_cast<uint64_t>(data[1]) << 48) |
-                 (static_cast<uint64_t>(data[2]) << 40) |
-                 (static_cast<uint64_t>(data[3]) << 32) |
-                 (static_cast<uint64_t>(data[4]) << 24) |
-                 (static_cast<uint64_t>(data[5]) << 16) |
-                 (static_cast<uint64_t>(data[6]) << 8) |
-                 (0b1ul << 7) /* padding: '1' ++ '0' <7 bits> */;
-      break;
+  const size_t dlen = 8ul - pad_byte_len;
+  for (size_t i = 0; i < dlen; i++) {
+    data_blk |= static_cast<uint64_t>(data[i]) << ((7ul - i) << 3);
   }
 
   return data_blk;
