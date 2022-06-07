@@ -95,184 +95,198 @@ pad_data(
   uint64_t* const __restrict data_blk // padded block; assert len(data_blk) = 2
 )
 {
-  switch (pad_byte_len) {
-    case 16:
-      data_blk[0] = 0b1ul << 63 /* padding: '1' ++ '0' <63 bits> */;
-      data_blk[1] = 0b0ul /* ++ '0' <64 bits> */;
-      break;
-    case 15:
-      data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
-                    (0b1ul << 55) /* padding: '1' ++ '0' <55 bits> */;
-      data_blk[1] = 0b0ul /* ++ '0' <64 bits> */;
-      break;
-    case 14:
-      data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
-                    (static_cast<uint64_t>(data[1]) << 48) |
-                    (0b1ul << 47) /* padding: '1' ++ '0' <47 bits> */;
-      data_blk[1] = 0b0ul /* ++ '0' <64 bits> */;
-      break;
-    case 13:
-      data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
-                    (static_cast<uint64_t>(data[1]) << 48) |
-                    (static_cast<uint64_t>(data[2]) << 40) |
-                    (0b1ul << 39) /* padding: '1' ++ '0' <39 bits> */;
-      data_blk[1] = 0b0ul /* ++ '0' <64 bits> */;
-      break;
-    case 12:
-      data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
-                    (static_cast<uint64_t>(data[1]) << 48) |
-                    (static_cast<uint64_t>(data[2]) << 40) |
-                    (static_cast<uint64_t>(data[3]) << 32) |
-                    (0b1ul << 31) /* padding: '1' ++ '0' <31 bits> */;
-      data_blk[1] = 0b0ul /* ++ '0' <64 bits> */;
-      break;
-    case 11:
-      data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
-                    (static_cast<uint64_t>(data[1]) << 48) |
-                    (static_cast<uint64_t>(data[2]) << 40) |
-                    (static_cast<uint64_t>(data[3]) << 32) |
-                    (static_cast<uint64_t>(data[4]) << 24) |
-                    (0b1ul << 23) /* padding: '1' ++ '0' <23 bits> */;
-      data_blk[1] = 0b0ul /* ++ '0' <64 bits> */;
-      break;
-    case 10:
-      data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
-                    (static_cast<uint64_t>(data[1]) << 48) |
-                    (static_cast<uint64_t>(data[2]) << 40) |
-                    (static_cast<uint64_t>(data[3]) << 32) |
-                    (static_cast<uint64_t>(data[4]) << 24) |
-                    (static_cast<uint64_t>(data[5]) << 16) |
-                    (0b1ul << 15) /* padding: '1' ++ '0' <15 bits> */;
-      data_blk[1] = 0b0ul /* ++ '0' <64 bits> */;
-      break;
-    case 9:
-      data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
-                    (static_cast<uint64_t>(data[1]) << 48) |
-                    (static_cast<uint64_t>(data[2]) << 40) |
-                    (static_cast<uint64_t>(data[3]) << 32) |
-                    (static_cast<uint64_t>(data[4]) << 24) |
-                    (static_cast<uint64_t>(data[5]) << 16) |
-                    (static_cast<uint64_t>(data[6]) << 8) |
-                    (0b1ul << 7) /* padding: '1' ++ '0' <7 bits> */;
-      data_blk[1] = 0b0ul /* ++ '0' <64 bits> */;
-      break;
-    case 8:
-      data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
-                    (static_cast<uint64_t>(data[1]) << 48) |
-                    (static_cast<uint64_t>(data[2]) << 40) |
-                    (static_cast<uint64_t>(data[3]) << 32) |
-                    (static_cast<uint64_t>(data[4]) << 24) |
-                    (static_cast<uint64_t>(data[5]) << 16) |
-                    (static_cast<uint64_t>(data[6]) << 8) |
-                    static_cast<uint64_t>(data[7]);
-      data_blk[1] = 0b1ul << 63 /* padding: '1' ++ '0' <63 bits> */;
-      break;
-    case 7:
-      data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
-                    (static_cast<uint64_t>(data[1]) << 48) |
-                    (static_cast<uint64_t>(data[2]) << 40) |
-                    (static_cast<uint64_t>(data[3]) << 32) |
-                    (static_cast<uint64_t>(data[4]) << 24) |
-                    (static_cast<uint64_t>(data[5]) << 16) |
-                    (static_cast<uint64_t>(data[6]) << 8) |
-                    static_cast<uint64_t>(data[7]);
-      data_blk[1] = (static_cast<uint64_t>(data[8]) << 56) |
-                    (0b1ul << 55) /* padding: '1' ++ '0' <55 bits> */;
-      break;
-    case 6:
-      data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
-                    (static_cast<uint64_t>(data[1]) << 48) |
-                    (static_cast<uint64_t>(data[2]) << 40) |
-                    (static_cast<uint64_t>(data[3]) << 32) |
-                    (static_cast<uint64_t>(data[4]) << 24) |
-                    (static_cast<uint64_t>(data[5]) << 16) |
-                    (static_cast<uint64_t>(data[6]) << 8) |
-                    static_cast<uint64_t>(data[7]);
-      data_blk[1] = (static_cast<uint64_t>(data[8]) << 56) |
-                    (static_cast<uint64_t>(data[9]) << 48) |
-                    (0b1ul << 47) /* padding: '1' ++ '0' <47 bits> */;
-      break;
-    case 5:
-      data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
-                    (static_cast<uint64_t>(data[1]) << 48) |
-                    (static_cast<uint64_t>(data[2]) << 40) |
-                    (static_cast<uint64_t>(data[3]) << 32) |
-                    (static_cast<uint64_t>(data[4]) << 24) |
-                    (static_cast<uint64_t>(data[5]) << 16) |
-                    (static_cast<uint64_t>(data[6]) << 8) |
-                    static_cast<uint64_t>(data[7]);
-      data_blk[1] = (static_cast<uint64_t>(data[8]) << 56) |
-                    (static_cast<uint64_t>(data[9]) << 48) |
-                    (static_cast<uint64_t>(data[10]) << 40) |
-                    (0b1ul << 39) /* padding: '1' ++ '0' <39 bits> */;
-      break;
-    case 4:
-      data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
-                    (static_cast<uint64_t>(data[1]) << 48) |
-                    (static_cast<uint64_t>(data[2]) << 40) |
-                    (static_cast<uint64_t>(data[3]) << 32) |
-                    (static_cast<uint64_t>(data[4]) << 24) |
-                    (static_cast<uint64_t>(data[5]) << 16) |
-                    (static_cast<uint64_t>(data[6]) << 8) |
-                    static_cast<uint64_t>(data[7]);
-      data_blk[1] = (static_cast<uint64_t>(data[8]) << 56) |
-                    (static_cast<uint64_t>(data[9]) << 48) |
-                    (static_cast<uint64_t>(data[10]) << 40) |
-                    (static_cast<uint64_t>(data[11]) << 32) |
-                    (0b1ul << 31) /* padding: '1' ++ '0' <31 bits> */;
-      break;
-    case 3:
-      data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
-                    (static_cast<uint64_t>(data[1]) << 48) |
-                    (static_cast<uint64_t>(data[2]) << 40) |
-                    (static_cast<uint64_t>(data[3]) << 32) |
-                    (static_cast<uint64_t>(data[4]) << 24) |
-                    (static_cast<uint64_t>(data[5]) << 16) |
-                    (static_cast<uint64_t>(data[6]) << 8) |
-                    static_cast<uint64_t>(data[7]);
-      data_blk[1] = (static_cast<uint64_t>(data[8]) << 56) |
-                    (static_cast<uint64_t>(data[9]) << 48) |
-                    (static_cast<uint64_t>(data[10]) << 40) |
-                    (static_cast<uint64_t>(data[11]) << 32) |
-                    (static_cast<uint64_t>(data[12]) << 24) |
-                    (0b1ul << 23) /* padding: '1' ++ '0' <23 bits> */;
-      break;
-    case 2:
-      data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
-                    (static_cast<uint64_t>(data[1]) << 48) |
-                    (static_cast<uint64_t>(data[2]) << 40) |
-                    (static_cast<uint64_t>(data[3]) << 32) |
-                    (static_cast<uint64_t>(data[4]) << 24) |
-                    (static_cast<uint64_t>(data[5]) << 16) |
-                    (static_cast<uint64_t>(data[6]) << 8) |
-                    static_cast<uint64_t>(data[7]);
-      data_blk[1] = (static_cast<uint64_t>(data[8]) << 56) |
-                    (static_cast<uint64_t>(data[9]) << 48) |
-                    (static_cast<uint64_t>(data[10]) << 40) |
-                    (static_cast<uint64_t>(data[11]) << 32) |
-                    (static_cast<uint64_t>(data[12]) << 24) |
-                    (static_cast<uint64_t>(data[13]) << 16) |
-                    (0b1ul << 15) /* padding: '1' ++ '0' <15 bits> */;
-      break;
-    case 1:
-      data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
-                    (static_cast<uint64_t>(data[1]) << 48) |
-                    (static_cast<uint64_t>(data[2]) << 40) |
-                    (static_cast<uint64_t>(data[3]) << 32) |
-                    (static_cast<uint64_t>(data[4]) << 24) |
-                    (static_cast<uint64_t>(data[5]) << 16) |
-                    (static_cast<uint64_t>(data[6]) << 8) |
-                    static_cast<uint64_t>(data[7]);
-      data_blk[1] = (static_cast<uint64_t>(data[8]) << 56) |
-                    (static_cast<uint64_t>(data[9]) << 48) |
-                    (static_cast<uint64_t>(data[10]) << 40) |
-                    (static_cast<uint64_t>(data[11]) << 32) |
-                    (static_cast<uint64_t>(data[12]) << 24) |
-                    (static_cast<uint64_t>(data[13]) << 16) |
-                    (static_cast<uint64_t>(data[14]) << 8) |
-                    (0b1ul << 7) /* padding: '1' ++ '0' <7 bits> */;
-      break;
+  const bool flg0 = pad_byte_len <= 8ul;
+
+  const size_t br0[2] = { pad_byte_len - 8ul, pad_byte_len };
+  constexpr size_t br1[2] = { 7ul, 15ul };
+
+  data_blk[flg0] = 0b1ul << ((br0[flg0] << 3) - 1ul);
+
+  const size_t dlen = 16ul - pad_byte_len;
+
+  for (size_t i = 0; i < dlen; i++) {
+    const bool flg1 = i >= 8ul;
+    data_blk[flg1] |= static_cast<uint64_t>(data[i]) << ((br1[flg1] - i) << 3);
   }
+
+  // switch (pad_byte_len) {
+  //   case 16:
+  //     data_blk[0] = 0b1ul << 63 /* padding: '1' ++ '0' <63 bits> */;
+  //     data_blk[1] = 0b0ul /* ++ '0' <64 bits> */;
+  //     break;
+  //   case 15:
+  //     data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
+  //                   (0b1ul << 55) /* padding: '1' ++ '0' <55 bits> */;
+  //     data_blk[1] = 0b0ul /* ++ '0' <64 bits> */;
+  //     break;
+  //   case 14:
+  //     data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
+  //                   (static_cast<uint64_t>(data[1]) << 48) |
+  //                   (0b1ul << 47) /* padding: '1' ++ '0' <47 bits> */;
+  //     data_blk[1] = 0b0ul /* ++ '0' <64 bits> */;
+  //     break;
+  //   case 13:
+  //     data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
+  //                   (static_cast<uint64_t>(data[1]) << 48) |
+  //                   (static_cast<uint64_t>(data[2]) << 40) |
+  //                   (0b1ul << 39) /* padding: '1' ++ '0' <39 bits> */;
+  //     data_blk[1] = 0b0ul /* ++ '0' <64 bits> */;
+  //     break;
+  //   case 12:
+  //     data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
+  //                   (static_cast<uint64_t>(data[1]) << 48) |
+  //                   (static_cast<uint64_t>(data[2]) << 40) |
+  //                   (static_cast<uint64_t>(data[3]) << 32) |
+  //                   (0b1ul << 31) /* padding: '1' ++ '0' <31 bits> */;
+  //     data_blk[1] = 0b0ul /* ++ '0' <64 bits> */;
+  //     break;
+  //   case 11:
+  //     data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
+  //                   (static_cast<uint64_t>(data[1]) << 48) |
+  //                   (static_cast<uint64_t>(data[2]) << 40) |
+  //                   (static_cast<uint64_t>(data[3]) << 32) |
+  //                   (static_cast<uint64_t>(data[4]) << 24) |
+  //                   (0b1ul << 23) /* padding: '1' ++ '0' <23 bits> */;
+  //     data_blk[1] = 0b0ul /* ++ '0' <64 bits> */;
+  //     break;
+  //   case 10:
+  //     data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
+  //                   (static_cast<uint64_t>(data[1]) << 48) |
+  //                   (static_cast<uint64_t>(data[2]) << 40) |
+  //                   (static_cast<uint64_t>(data[3]) << 32) |
+  //                   (static_cast<uint64_t>(data[4]) << 24) |
+  //                   (static_cast<uint64_t>(data[5]) << 16) |
+  //                   (0b1ul << 15) /* padding: '1' ++ '0' <15 bits> */;
+  //     data_blk[1] = 0b0ul /* ++ '0' <64 bits> */;
+  //     break;
+  //   case 9:
+  //     data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
+  //                   (static_cast<uint64_t>(data[1]) << 48) |
+  //                   (static_cast<uint64_t>(data[2]) << 40) |
+  //                   (static_cast<uint64_t>(data[3]) << 32) |
+  //                   (static_cast<uint64_t>(data[4]) << 24) |
+  //                   (static_cast<uint64_t>(data[5]) << 16) |
+  //                   (static_cast<uint64_t>(data[6]) << 8) |
+  //                   (0b1ul << 7) /* padding: '1' ++ '0' <7 bits> */;
+  //     data_blk[1] = 0b0ul /* ++ '0' <64 bits> */;
+  //     break;
+  //   case 8:
+  //     data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
+  //                   (static_cast<uint64_t>(data[1]) << 48) |
+  //                   (static_cast<uint64_t>(data[2]) << 40) |
+  //                   (static_cast<uint64_t>(data[3]) << 32) |
+  //                   (static_cast<uint64_t>(data[4]) << 24) |
+  //                   (static_cast<uint64_t>(data[5]) << 16) |
+  //                   (static_cast<uint64_t>(data[6]) << 8) |
+  //                   static_cast<uint64_t>(data[7]);
+  //     data_blk[1] = 0b1ul << 63 /* padding: '1' ++ '0' <63 bits> */;
+  //     break;
+  //   case 7:
+  //     data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
+  //                   (static_cast<uint64_t>(data[1]) << 48) |
+  //                   (static_cast<uint64_t>(data[2]) << 40) |
+  //                   (static_cast<uint64_t>(data[3]) << 32) |
+  //                   (static_cast<uint64_t>(data[4]) << 24) |
+  //                   (static_cast<uint64_t>(data[5]) << 16) |
+  //                   (static_cast<uint64_t>(data[6]) << 8) |
+  //                   static_cast<uint64_t>(data[7]);
+  //     data_blk[1] = (static_cast<uint64_t>(data[8]) << 56) |
+  //                   (0b1ul << 55) /* padding: '1' ++ '0' <55 bits> */;
+  //     break;
+  //   case 6:
+  //     data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
+  //                   (static_cast<uint64_t>(data[1]) << 48) |
+  //                   (static_cast<uint64_t>(data[2]) << 40) |
+  //                   (static_cast<uint64_t>(data[3]) << 32) |
+  //                   (static_cast<uint64_t>(data[4]) << 24) |
+  //                   (static_cast<uint64_t>(data[5]) << 16) |
+  //                   (static_cast<uint64_t>(data[6]) << 8) |
+  //                   static_cast<uint64_t>(data[7]);
+  //     data_blk[1] = (static_cast<uint64_t>(data[8]) << 56) |
+  //                   (static_cast<uint64_t>(data[9]) << 48) |
+  //                   (0b1ul << 47) /* padding: '1' ++ '0' <47 bits> */;
+  //     break;
+  //   case 5:
+  //     data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
+  //                   (static_cast<uint64_t>(data[1]) << 48) |
+  //                   (static_cast<uint64_t>(data[2]) << 40) |
+  //                   (static_cast<uint64_t>(data[3]) << 32) |
+  //                   (static_cast<uint64_t>(data[4]) << 24) |
+  //                   (static_cast<uint64_t>(data[5]) << 16) |
+  //                   (static_cast<uint64_t>(data[6]) << 8) |
+  //                   static_cast<uint64_t>(data[7]);
+  //     data_blk[1] = (static_cast<uint64_t>(data[8]) << 56) |
+  //                   (static_cast<uint64_t>(data[9]) << 48) |
+  //                   (static_cast<uint64_t>(data[10]) << 40) |
+  //                   (0b1ul << 39) /* padding: '1' ++ '0' <39 bits> */;
+  //     break;
+  //   case 4:
+  //     data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
+  //                   (static_cast<uint64_t>(data[1]) << 48) |
+  //                   (static_cast<uint64_t>(data[2]) << 40) |
+  //                   (static_cast<uint64_t>(data[3]) << 32) |
+  //                   (static_cast<uint64_t>(data[4]) << 24) |
+  //                   (static_cast<uint64_t>(data[5]) << 16) |
+  //                   (static_cast<uint64_t>(data[6]) << 8) |
+  //                   static_cast<uint64_t>(data[7]);
+  //     data_blk[1] = (static_cast<uint64_t>(data[8]) << 56) |
+  //                   (static_cast<uint64_t>(data[9]) << 48) |
+  //                   (static_cast<uint64_t>(data[10]) << 40) |
+  //                   (static_cast<uint64_t>(data[11]) << 32) |
+  //                   (0b1ul << 31) /* padding: '1' ++ '0' <31 bits> */;
+  //     break;
+  //   case 3:
+  //     data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
+  //                   (static_cast<uint64_t>(data[1]) << 48) |
+  //                   (static_cast<uint64_t>(data[2]) << 40) |
+  //                   (static_cast<uint64_t>(data[3]) << 32) |
+  //                   (static_cast<uint64_t>(data[4]) << 24) |
+  //                   (static_cast<uint64_t>(data[5]) << 16) |
+  //                   (static_cast<uint64_t>(data[6]) << 8) |
+  //                   static_cast<uint64_t>(data[7]);
+  //     data_blk[1] = (static_cast<uint64_t>(data[8]) << 56) |
+  //                   (static_cast<uint64_t>(data[9]) << 48) |
+  //                   (static_cast<uint64_t>(data[10]) << 40) |
+  //                   (static_cast<uint64_t>(data[11]) << 32) |
+  //                   (static_cast<uint64_t>(data[12]) << 24) |
+  //                   (0b1ul << 23) /* padding: '1' ++ '0' <23 bits> */;
+  //     break;
+  //   case 2:
+  //     data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
+  //                   (static_cast<uint64_t>(data[1]) << 48) |
+  //                   (static_cast<uint64_t>(data[2]) << 40) |
+  //                   (static_cast<uint64_t>(data[3]) << 32) |
+  //                   (static_cast<uint64_t>(data[4]) << 24) |
+  //                   (static_cast<uint64_t>(data[5]) << 16) |
+  //                   (static_cast<uint64_t>(data[6]) << 8) |
+  //                   static_cast<uint64_t>(data[7]);
+  //     data_blk[1] = (static_cast<uint64_t>(data[8]) << 56) |
+  //                   (static_cast<uint64_t>(data[9]) << 48) |
+  //                   (static_cast<uint64_t>(data[10]) << 40) |
+  //                   (static_cast<uint64_t>(data[11]) << 32) |
+  //                   (static_cast<uint64_t>(data[12]) << 24) |
+  //                   (static_cast<uint64_t>(data[13]) << 16) |
+  //                   (0b1ul << 15) /* padding: '1' ++ '0' <15 bits> */;
+  //     break;
+  //   case 1:
+  //     data_blk[0] = (static_cast<uint64_t>(data[0]) << 56) |
+  //                   (static_cast<uint64_t>(data[1]) << 48) |
+  //                   (static_cast<uint64_t>(data[2]) << 40) |
+  //                   (static_cast<uint64_t>(data[3]) << 32) |
+  //                   (static_cast<uint64_t>(data[4]) << 24) |
+  //                   (static_cast<uint64_t>(data[5]) << 16) |
+  //                   (static_cast<uint64_t>(data[6]) << 8) |
+  //                   static_cast<uint64_t>(data[7]);
+  //     data_blk[1] = (static_cast<uint64_t>(data[8]) << 56) |
+  //                   (static_cast<uint64_t>(data[9]) << 48) |
+  //                   (static_cast<uint64_t>(data[10]) << 40) |
+  //                   (static_cast<uint64_t>(data[11]) << 32) |
+  //                   (static_cast<uint64_t>(data[12]) << 24) |
+  //                   (static_cast<uint64_t>(data[13]) << 16) |
+  //                   (static_cast<uint64_t>(data[14]) << 8) |
+  //                   (0b1ul << 7) /* padding: '1' ++ '0' <7 bits> */;
+  //     break;
+  // }
 }
 
 // Converts byte array into hex string; see https://stackoverflow.com/a/14051107
