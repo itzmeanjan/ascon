@@ -81,7 +81,7 @@ permute(uint64_t* const state)
 // Round count for permutation function `p_a` is always 12; see table 1, 2 Ascon
 // specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-static inline consteval bool
+static inline constexpr bool
 check_a(const size_t a)
 {
   return !static_cast<bool>(a ^ 12);
@@ -111,21 +111,21 @@ p_a(uint64_t* const state) requires(check_a(a))
 }
 
 // Compile-time check that round count for `p_b` permutation is 6
-static inline consteval bool
+static inline constexpr bool
 check_b6(const size_t b)
 {
   return !static_cast<bool>(b ^ 6);
 }
 
 // Compile-time check that round count for `p_b` permutation is 8
-static inline consteval bool
+static inline constexpr bool
 check_b8(const size_t b)
 {
   return !static_cast<bool>(b ^ 8);
 }
 
 // Compile-time check that round count for `p_b` permutation is 12
-static inline consteval bool
+static inline constexpr bool
 check_b12(const size_t b)
 {
   return !static_cast<bool>(b ^ 12);
@@ -134,7 +134,7 @@ check_b12(const size_t b)
 // Compile-time check that round count for permutation function `p_b` ∈ {6, 8,
 // 12}; see table 1, 2 Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-static inline consteval bool
+static inline constexpr bool
 check_b(const size_t b)
 {
   return check_b6(b) | check_b8(b) | check_b12(b);

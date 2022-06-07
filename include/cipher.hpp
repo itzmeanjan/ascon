@@ -27,7 +27,7 @@ constexpr uint64_t MAX_ULONG = 0xfffffffffffffffful;
 
 // Compile-time check that correct initial state is used for either Ascon-128 or
 // Ascon-128a
-static inline consteval bool
+static inline constexpr bool
 check_iv(const uint64_t iv)
 {
   return !static_cast<bool>(iv ^ ASCON_128_IV) |
@@ -87,14 +87,14 @@ initialize(uint64_t* const state,            // uninitialized hash state
 }
 
 // Compile-time check that rate bit length is 64
-static inline consteval bool
+static inline constexpr bool
 check_r64(const size_t r)
 {
   return !static_cast<bool>(r ^ 64);
 }
 
 // Compile-time check that rate bit length is 128
-static inline consteval bool
+static inline constexpr bool
 check_r128(const size_t r)
 {
   return !static_cast<bool>(r ^ 128);
@@ -103,7 +103,7 @@ check_r128(const size_t r)
 // Compile-time check rate bit length for Ascon-128 & Ascon-128a; see table 1 of
 // Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-static inline consteval bool
+static inline constexpr bool
 check_r(const size_t r)
 {
   return check_r64(r) | check_r128(r);
