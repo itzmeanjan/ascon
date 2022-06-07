@@ -1,0 +1,22 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup compiler
+      run: sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 10; sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 9
+    - name: Install Python dependencies
+      run: python3 -m pip install -r wrapper/python/requirements.txt --user
+    - name: Execute tests
+      run: make kat_test_python
+      
