@@ -34,21 +34,24 @@ public:
     , _vertical('|')
     , _corner('+')
     , _has_ruler(true)
-  {}
+  {
+  }
 
   TextTable(char horizontal, char vertical, char corner)
     : _horizontal(horizontal)
     , _vertical(vertical)
     , _corner(corner)
     , _has_ruler(true)
-  {}
+  {
+  }
 
   explicit TextTable(char vertical)
     : _horizontal('\0')
     , _vertical(vertical)
     , _corner('\0')
     , _has_ruler(false)
-  {}
+  {
+  }
 
   void setAlignment(unsigned i, Alignment alignment)
   {

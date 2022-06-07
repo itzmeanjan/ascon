@@ -1,8 +1,7 @@
 #pragma once
 #include <bit>
 #include <cstdint>
-
-using size_t = std::size_t;
+#include <cstring>
 
 // Underlying permutation functions ( read `p_a` & `p_b` ) for Ascon
 // cryptographic suite
@@ -85,7 +84,7 @@ permute(uint64_t* const state)
 static inline constexpr bool
 check_a(const size_t a)
 {
-  return a == 12;
+  return !static_cast<bool>(a ^ 12);
 }
 
 // Permutation p_a to be sequentially applied on state for `a` -many times;
@@ -115,21 +114,21 @@ p_a(uint64_t* const state) requires(check_a(a))
 static inline constexpr bool
 check_b6(const size_t b)
 {
-  return b == 6;
+  return !static_cast<bool>(b ^ 6);
 }
 
 // Compile-time check that round count for `p_b` permutation is 8
 static inline constexpr bool
 check_b8(const size_t b)
 {
-  return b == 8;
+  return !static_cast<bool>(b ^ 8);
 }
 
 // Compile-time check that round count for `p_b` permutation is 12
 static inline constexpr bool
 check_b12(const size_t b)
 {
-  return b == 12;
+  return !static_cast<bool>(b ^ 12);
 }
 
 // Compile-time check that round count for permutation function `p_b` ∈ {6, 8,
@@ -138,7 +137,7 @@ check_b12(const size_t b)
 static inline constexpr bool
 check_b(const size_t b)
 {
-  return check_b6(b) || check_b8(b) || check_b12(b);
+  return check_b6(b) | check_b8(b) | check_b12(b);
 }
 
 // Permutation p_b to be sequentially applied on state for `b` -many times;
@@ -148,14 +147,14 @@ template<const size_t b>
 static inline void
 p_b(uint64_t* const state) requires(check_b(b))
 {
-  if (check_b6(b)) {
+  if constexpr (check_b6(b)) {
     permute<6>(state);
     permute<7>(state);
     permute<8>(state);
     permute<9>(state);
     permute<10>(state);
     permute<11>(state);
-  } else if (check_b8(b)) {
+  } else if constexpr (check_b8(b)) {
     permute<4>(state);
     permute<5>(state);
     permute<6>(state);
@@ -164,7 +163,7 @@ p_b(uint64_t* const state) requires(check_b(b))
     permute<9>(state);
     permute<10>(state);
     permute<11>(state);
-  } else if (check_b12(b)) {
+  } else if constexpr (check_b12(b)) {
     permute<0>(state);
     permute<1>(state);
     permute<2>(state);

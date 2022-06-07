@@ -5,7 +5,7 @@ make lib
 
 # run benchmark using python interface
 pushd wrapper/python
-pytest -k bench --cache-clear -v
+python3 -m pytest -k bench --cache-clear -v
 popd
 
 # clean it up
