@@ -22,7 +22,7 @@ mv LWC_HASH_KAT_256.txt wrapper/python
 # test Ascon Hash implementation
 pushd wrapper/python
 
-pytest -k hash_kat --cache-clear -v -s
+python3 -m pytest -k hash_kat --cache-clear -v -s
 
 popd
 
@@ -41,7 +41,7 @@ mv LWC_HASH_KAT_256.txt wrapper/python
 # test Ascon HashA implementation
 pushd wrapper/python
 
-pytest -k hashA_kat --cache-clear -v -s
+python3 -m pytest -k hashA_kat --cache-clear -v -s
 rm LWC_HASH_KAT_256.txt
 
 popd
@@ -61,7 +61,7 @@ mv LWC_AEAD_KAT_128_128.txt wrapper/python
 # test Ascon-128 implementation
 pushd wrapper/python
 
-pytest -k ascon_128_kat --cache-clear -v -s
+python3 -m pytest -k ascon_128_kat --cache-clear -v -s
 rm LWC_AEAD_KAT_128_128.txt
 
 popd
@@ -81,7 +81,7 @@ mv LWC_AEAD_KAT_128_128.txt wrapper/python
 # test Ascon-128a implementation
 pushd wrapper/python
 
-pytest -k ascon_128a_kat --cache-clear -v -s
+python3 -m pytest -k ascon_128a_kat --cache-clear -v -s
 rm LWC_AEAD_KAT_128_128.txt
 
 popd
@@ -101,7 +101,7 @@ mv LWC_AEAD_KAT_160_128.txt wrapper/python
 # test Ascon-80pq implementation
 pushd wrapper/python
 
-pytest -k ascon_80pq_kat --cache-clear -v -s
+python3 -m pytest -k ascon_80pq_kat --cache-clear -v -s
 rm LWC_AEAD_KAT_160_128.txt
 
 popd
