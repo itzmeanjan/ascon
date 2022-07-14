@@ -45,7 +45,7 @@ static inline void
 initialize(uint64_t* const state,            // uninitialized hash state
            const ascon::secret_key_128_t& k, // 128 -bit secret key
            const ascon::nonce_t& n           // 128 -bit nonce
-           ) requires(ascon_perm::check_a(a) && check_iv(IV))
+           ) requires(check_iv(IV))
 {
   state[0] = IV;
   state[1] = k.limbs[0];
@@ -53,7 +53,7 @@ initialize(uint64_t* const state,            // uninitialized hash state
   state[3] = n.limbs[0];
   state[4] = n.limbs[1];
 
-  ascon_perm::p_a<a>(state);
+  ascon_perm::permute<a>(state);
 
   state[3] ^= k.limbs[0];
   state[4] ^= k.limbs[1];
@@ -69,7 +69,7 @@ static inline void
 initialize(uint64_t* const state,            // uninitialized hash state
            const ascon::secret_key_160_t& k, // 160 -bit secret key
            const ascon::nonce_t& n           // 128 -bit nonce
-           ) requires(ascon_perm::check_a(a))
+)
 {
   state[0] = (static_cast<uint64_t>(ASCON_80pq_IV) << 32) | (k.limbs[0] >> 32);
   state[1] = ((k.limbs[0] & 0xfffffffful) << 32) | (k.limbs[1] >> 32);
@@ -77,7 +77,7 @@ initialize(uint64_t* const state,            // uninitialized hash state
   state[3] = n.limbs[0];
   state[4] = n.limbs[1];
 
-  ascon_perm::p_a<a>(state);
+  ascon_perm::permute<a>(state);
 
   const uint64_t l_u32 = k.limbs[2] & 0xfffffffful;
 
@@ -117,7 +117,7 @@ static inline void
 process_associated_data(uint64_t* const __restrict state,
                         const uint8_t* const __restrict data, // associated data
                         const size_t data_len // in terms of bytes
-                        ) requires(ascon_perm::check_b(b) && check_r(r))
+                        ) requires(check_r(r))
 {
   // only when associated data is non-empty; do padding and then mixing
   if (data_len > 0) {
@@ -137,11 +137,11 @@ process_associated_data(uint64_t* const __restrict state,
         const uint64_t data_blk = ascon_utils::from_be_bytes(data + (i << 3));
 
         state[0] ^= data_blk;
-        ascon_perm::p_b<b>(state);
+        ascon_perm::permute<b>(state);
       }
 
       state[0] ^= last_data_blk;
-      ascon_perm::p_b<b>(state);
+      ascon_perm::permute<b>(state);
 
     } else if constexpr (check_r128(r)) {
       uint64_t last_data_blk[2];
@@ -158,12 +158,12 @@ process_associated_data(uint64_t* const __restrict state,
 
         state[0] ^= data_blk_0;
         state[1] ^= data_blk_1;
-        ascon_perm::p_b<b>(state);
+        ascon_perm::permute<b>(state);
       }
 
       state[0] ^= last_data_blk[0];
       state[1] ^= last_data_blk[1];
-      ascon_perm::p_b<b>(state);
+      ascon_perm::permute<b>(state);
     }
   }
 
@@ -180,7 +180,7 @@ process_plaintext(uint64_t* const __restrict state,
                   const uint8_t* const __restrict text,
                   const size_t text_len,           // in terms of bytes
                   uint8_t* const __restrict cipher // has length same as `text`
-                  ) requires(ascon_perm::check_b(b) && check_r(r))
+                  ) requires(check_r(r))
 {
   constexpr const size_t rb8 = r >> 3;                 // r divided by 8
   const size_t tmp = (text_len << 3) % r;              // bits
@@ -200,7 +200,7 @@ process_plaintext(uint64_t* const __restrict state,
       state[0] ^= text_blk; // ciphered
       ascon_utils::to_be_bytes(state[0], cipher + (i << 3));
 
-      ascon_perm::p_b<b>(state);
+      ascon_perm::permute<b>(state);
     }
 
     state[0] ^= last_text_blk; // ciphered last text block
@@ -232,7 +232,7 @@ process_plaintext(uint64_t* const __restrict state,
       ascon_utils::to_be_bytes(state[0], cipher + offset_0);
       ascon_utils::to_be_bytes(state[1], cipher + offset_1);
 
-      ascon_perm::p_b<b>(state);
+      ascon_perm::permute<b>(state);
     }
 
     // ciphered last text block
@@ -264,7 +264,7 @@ process_ciphertext(uint64_t* const __restrict state,
                    const uint8_t* const __restrict cipher,
                    const size_t cipher_len,       // in terms of bytes
                    uint8_t* const __restrict text // has length same as `cipher`
-                   ) requires(ascon_perm::check_b(b) && check_r(r))
+                   ) requires(check_r(r))
 {
   const size_t cipher_bit_len = cipher_len << 3;
   const size_t cipher_blocks = cipher_bit_len / r;
@@ -280,7 +280,7 @@ process_ciphertext(uint64_t* const __restrict state,
       ascon_utils::to_be_bytes(text_blk, text + offset);
 
       state[0] = cipher_blk;
-      ascon_perm::p_b<b>(state);
+      ascon_perm::permute<b>(state);
     } else if constexpr (check_r128(r)) {
       const size_t off0 = (i << 1) << 3;
       const size_t off1 = ((i << 1) + 1) << 3;
@@ -296,7 +296,7 @@ process_ciphertext(uint64_t* const __restrict state,
 
       state[0] = cipher_blk_0;
       state[1] = cipher_blk_1;
-      ascon_perm::p_b<b>(state);
+      ascon_perm::permute<b>(state);
     }
   }
 
@@ -372,7 +372,7 @@ template<const size_t a, const size_t r>
 static inline const ascon::tag_t
 finalize(uint64_t* const state,
          const ascon::secret_key_128_t& k // 128 -bit secret key
-         ) requires(ascon_perm::check_a(a) && check_r(r))
+         ) requires(check_r(r))
 {
   if constexpr (check_r64(r)) {
     state[1] ^= k.limbs[0];
@@ -382,7 +382,7 @@ finalize(uint64_t* const state,
     state[3] ^= k.limbs[1];
   }
 
-  ascon_perm::p_a<a>(state);
+  ascon_perm::permute<a>(state);
 
   // 128 -bit tag
   ascon::tag_t t(state[3] ^ k.limbs[0], state[4] ^ k.limbs[1]);
@@ -396,7 +396,7 @@ template<const size_t a, const size_t r>
 static inline const ascon::tag_t
 finalize(uint64_t* const state,
          const ascon::secret_key_160_t& k // 160 -bit secret key
-         ) requires(ascon_perm::check_a(a) && check_r(r))
+         ) requires(check_r(r))
 {
   if constexpr (check_r64(r)) {
     state[1] ^= k.limbs[0];
@@ -408,7 +408,7 @@ finalize(uint64_t* const state,
     state[4] ^= ((k.limbs[2] & 0xfffffffful) << 32);
   }
 
-  ascon_perm::p_a<a>(state);
+  ascon_perm::permute<a>(state);
 
   // keeps 32 to 63 -bits of 160 -bit secret key, on upper 32 -bits of
   // 64 -bit unsigned integer

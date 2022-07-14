@@ -35,7 +35,7 @@ static void
 absorb(uint64_t* const __restrict state,
        const uint8_t* const __restrict msg,
        const size_t msg_len // in terms of bytes, can be >= 0
-       ) requires(ascon_perm::check_b(b))
+)
 {
   // these many 0 -bits to be appended to input message
   const size_t tmp = (msg_len << 3) & 63ul;            // bits
@@ -51,7 +51,7 @@ absorb(uint64_t* const __restrict state,
     const uint64_t msg_blk = ascon_utils::from_be_bytes(msg + (i << 3));
 
     state[0] ^= msg_blk;
-    ascon_perm::p_b<b>(state);
+    ascon_perm::permute<b>(state);
   }
 
   state[0] ^= last_msg_blk;
@@ -65,17 +65,15 @@ absorb(uint64_t* const __restrict state,
 // specification
 template<const size_t a, const size_t b>
 static void
-squeeze(uint64_t* const __restrict state,
-        uint8_t* const __restrict digest) requires(ascon_perm::check_a(a) &&
-                                                   ascon_perm::check_b(b))
+squeeze(uint64_t* const __restrict state, uint8_t* const __restrict digest)
 {
-  ascon_perm::p_a<a>(state);
+  ascon_perm::permute<a>(state);
 
   for (size_t i = 0; i < 4; i++) {
     const uint64_t block = state[0];
     ascon_utils::to_be_bytes(block, digest + (i << 3));
 
-    ascon_perm::p_b<b>(state);
+    ascon_perm::permute<b>(state);
   }
 }
 
