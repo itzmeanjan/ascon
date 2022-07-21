@@ -1,6 +1,9 @@
 #include "ascon.hpp"
 #include <iostream>
 
+// Compile & execute with
+//
+// g++ -std=c++20 -O3 -I ./include example/ascon_hash.cpp && ./a.out
 int
 main()
 {

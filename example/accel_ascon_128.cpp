@@ -1,7 +1,8 @@
 #include "accel_ascon.hpp"
 
 // Compile it with:
-// `dpcpp -std=c++20 -fsycl -O3 -I ./include example/accel_ascon_128.cpp`
+//
+// dpcpp -std=c++20 -fsycl -O3 -I ./include example/accel_ascon_128.cpp
 int
 main()
 {

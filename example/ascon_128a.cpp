@@ -2,6 +2,9 @@
 #include <cassert>
 #include <iostream>
 
+// Compile & execute with
+//
+// g++ -std=c++20 -O3 -I ./include example/ascon_128a.cpp && ./a.out
 int
 main()
 {
