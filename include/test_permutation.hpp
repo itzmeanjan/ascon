@@ -14,7 +14,7 @@ p_a()
 {
   {
     uint64_t state[5] = { 0x00400c0000000100ul, 0ul, 0ul, 0ul, 0ul };
-    ascon_perm::p_a<12>(state);
+    ascon_perm::permute<12>(state);
 
     assert(state[0] == ascon_hash_utils::ASCON_HASH_INIT_STATE[0]);
     assert(state[1] == ascon_hash_utils::ASCON_HASH_INIT_STATE[1]);
@@ -25,7 +25,7 @@ p_a()
 
   {
     uint64_t state[5] = { 0x00400c0400000100ul, 0ul, 0ul, 0ul, 0ul };
-    ascon_perm::p_a<12>(state);
+    ascon_perm::permute<12>(state);
 
     assert(state[0] == ascon_hash_utils::ASCON_HASHA_INIT_STATE[0]);
     assert(state[1] == ascon_hash_utils::ASCON_HASHA_INIT_STATE[1]);
@@ -36,7 +36,7 @@ p_a()
 
   {
     uint64_t state[5] = { 0x00400c0000000000ul, 0ul, 0ul, 0ul, 0ul };
-    ascon_perm::p_a<12>(state);
+    ascon_perm::permute<12>(state);
 
     assert(state[0] == 0xb57e273b814cd416ul);
     assert(state[1] == 0x2b51042562ae2420ul);
@@ -47,7 +47,7 @@ p_a()
 
   {
     uint64_t state[5] = { 0x00400c0400000000ul, 0ul, 0ul, 0ul, 0ul };
-    ascon_perm::p_a<12>(state);
+    ascon_perm::permute<12>(state);
 
     assert(state[0] == 0x44906568b77b9832ul);
     assert(state[1] == 0xcd8d6cae53455532ul);
