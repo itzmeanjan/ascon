@@ -1,34 +1,36 @@
 #pragma once
 #include <bit>
+#include <cstddef>
 #include <cstdint>
 #include <cstring>
 
-// Underlying permutation functions ( read `p_a` & `p_b` ) for Ascon
-// cryptographic suite
+// Ascon Permutation
 namespace ascon_perm {
+
+// Maximum number of Ascon permutation rounds
+constexpr size_t ROUNDS = 12;
 
 // Ascon  permutation round constants; taken from table 4 in Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-constexpr uint64_t RC[12] = { 0x00000000000000f0ul, 0x00000000000000e1ul,
-                              0x00000000000000d2ul, 0x00000000000000c3ul,
-                              0x00000000000000b4ul, 0x00000000000000a5ul,
-                              0x0000000000000096ul, 0x0000000000000087ul,
-                              0x0000000000000078ul, 0x0000000000000069ul,
-                              0x000000000000005aul, 0x000000000000004bul };
+constexpr uint64_t RC[ROUNDS] = { 0x00000000000000f0ul, 0x00000000000000e1ul,
+                                  0x00000000000000d2ul, 0x00000000000000c3ul,
+                                  0x00000000000000b4ul, 0x00000000000000a5ul,
+                                  0x0000000000000096ul, 0x0000000000000087ul,
+                                  0x0000000000000078ul, 0x0000000000000069ul,
+                                  0x000000000000005aul, 0x000000000000004bul };
 
 // Addition of constants step; see section 2.6.1 of Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-template<const size_t c_idx>
-static inline void
-p_c(uint64_t* const state)
+inline static void
+p_c(uint64_t* const state, const size_t r_idx)
 {
-  state[2] ^= RC[c_idx];
+  state[2] ^= RC[r_idx];
 }
 
 // Substitution layer i.e. 5 -bit S-box S(x) applied on Ascon state; taken from
 // figure 5 in Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-static inline void
+inline static void
 p_s(uint64_t* const state)
 {
   state[0] ^= state[4];
@@ -55,7 +57,7 @@ p_s(uint64_t* const state)
 
 // Linear diffusion layer; taken from figure 4.b in Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-static inline void
+inline static void
 p_l(uint64_t* const state)
 {
   using namespace std;
@@ -67,115 +69,35 @@ p_l(uint64_t* const state)
   state[4] = state[4] ^ rotr(state[4], 7) ^ rotr(state[4], 41);
 }
 
-// Ascon permutation; taken from section 2.6 of Ascon specification
+// Single round of Ascon permutation; taken from section 2.6 of Ascon
+// specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-template<const size_t c_idx>
-static inline void
-permute(uint64_t* const state)
+inline static void
+round(uint64_t* const state, const size_t r_idx)
 {
-  p_c<c_idx>(state);
+  p_c(state, r_idx);
   p_s(state);
   p_l(state);
 }
 
-// Round count for permutation function `p_a` is always 12; see table 1, 2 Ascon
-// specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-static inline constexpr bool
-check_a(const size_t a)
+// Compile time check to ensure template argument of `permute(...)` is <= 12
+inline static constexpr bool
+check_lte12(const size_t a)
 {
-  return !static_cast<bool>(a ^ 12);
+  return a <= 12;
 }
 
-// Permutation p_a to be sequentially applied on state for `a` -many times;
+// Sequentially apply Ascon permutation round for R -many times | R <= 12;
 // taken from section 2.6 of Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-template<const size_t a>
-static inline void
-p_a(uint64_t* const state) requires(check_a(a))
+template<const size_t R>
+inline static void
+permute(uint64_t* const state) requires(check_lte12(R))
 {
-  // for round index & constant index convention, read section 2.6.1 of Ascon
-  // specification
-  permute<0>(state);
-  permute<1>(state);
-  permute<2>(state);
-  permute<3>(state);
-  permute<4>(state);
-  permute<5>(state);
-  permute<6>(state);
-  permute<7>(state);
-  permute<8>(state);
-  permute<9>(state);
-  permute<10>(state);
-  permute<11>(state);
-}
+  constexpr size_t BEG = ROUNDS - R;
 
-// Compile-time check that round count for `p_b` permutation is 6
-static inline constexpr bool
-check_b6(const size_t b)
-{
-  return !static_cast<bool>(b ^ 6);
-}
-
-// Compile-time check that round count for `p_b` permutation is 8
-static inline constexpr bool
-check_b8(const size_t b)
-{
-  return !static_cast<bool>(b ^ 8);
-}
-
-// Compile-time check that round count for `p_b` permutation is 12
-static inline constexpr bool
-check_b12(const size_t b)
-{
-  return !static_cast<bool>(b ^ 12);
-}
-
-// Compile-time check that round count for permutation function `p_b` ∈ {6, 8,
-// 12}; see table 1, 2 Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-static inline constexpr bool
-check_b(const size_t b)
-{
-  return check_b6(b) | check_b8(b) | check_b12(b);
-}
-
-// Permutation p_b to be sequentially applied on state for `b` -many times;
-// taken from section 2.6 of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-template<const size_t b>
-static inline void
-p_b(uint64_t* const state) requires(check_b(b))
-{
-  if constexpr (check_b6(b)) {
-    permute<6>(state);
-    permute<7>(state);
-    permute<8>(state);
-    permute<9>(state);
-    permute<10>(state);
-    permute<11>(state);
-  } else if constexpr (check_b8(b)) {
-    permute<4>(state);
-    permute<5>(state);
-    permute<6>(state);
-    permute<7>(state);
-    permute<8>(state);
-    permute<9>(state);
-    permute<10>(state);
-    permute<11>(state);
-  } else if constexpr (check_b12(b)) {
-    permute<0>(state);
-    permute<1>(state);
-    permute<2>(state);
-    permute<3>(state);
-    permute<4>(state);
-    permute<5>(state);
-    permute<6>(state);
-    permute<7>(state);
-    permute<8>(state);
-    permute<9>(state);
-    permute<10>(state);
-    permute<11>(state);
+  for (size_t i = BEG; i < ROUNDS; i++) {
+    round(state, i);
   }
 }
 

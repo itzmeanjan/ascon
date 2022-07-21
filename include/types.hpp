@@ -26,7 +26,7 @@ struct secret_key_128_t
     limbs[1] = ascon_utils::from_be_bytes(bytes + 8u);
   }
 
-  inline void to_bytes(uint8_t* const out)
+  inline void to_bytes(uint8_t* const out) const
   {
     ascon_utils::to_be_bytes(limbs[0], out);
     ascon_utils::to_be_bytes(limbs[1], out + 8u);
@@ -61,7 +61,7 @@ struct secret_key_160_t
                                      static_cast<uint32_t>(bytes[19u]));
   }
 
-  inline void to_bytes(uint8_t* const out)
+  inline void to_bytes(uint8_t* const out) const
   {
     ascon_utils::to_be_bytes(limbs[0], out);
     ascon_utils::to_be_bytes(limbs[1], out + 8u);
@@ -94,7 +94,7 @@ struct nonce_t
     limbs[1] = ascon_utils::from_be_bytes(bytes + 8u);
   }
 
-  inline void to_bytes(uint8_t* const out)
+  inline void to_bytes(uint8_t* const out) const
   {
     ascon_utils::to_be_bytes(limbs[0], out);
     ascon_utils::to_be_bytes(limbs[1], out + 8u);
@@ -120,7 +120,7 @@ struct tag_t
     limbs[1] = ascon_utils::from_be_bytes(bytes + 8u);
   }
 
-  void to_bytes(uint8_t* const out)
+  void to_bytes(uint8_t* const out) const
   {
     ascon_utils::to_be_bytes(limbs[0], out);
     ascon_utils::to_be_bytes(limbs[1], out + 8u);

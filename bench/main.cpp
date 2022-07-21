@@ -8,6 +8,28 @@ constexpr size_t DIG_LEN = 32ul;
 // Fixed associated data length for Ascon AEAD scheme
 constexpr size_t DATA_LEN = 64ul;
 
+// Benchmarking Ascon permutation routine, while applying `ROUNDS` -many
+// permutation round
+template<const size_t ROUNDS>
+static void
+ascon_permutation(benchmark::State& state)
+{
+  static_assert(ROUNDS <= 12);
+
+  uint64_t st[5];
+  ascon_utils::random_data(st, 5);
+
+  for (auto _ : state) {
+    ascon_perm::permute<ROUNDS>(st);
+
+    benchmark::DoNotOptimize(st);
+    benchmark::ClobberMemory();
+  }
+
+  constexpr size_t len = sizeof(st);
+  state.SetBytesProcessed(static_cast<int64_t>(len * state.iterations()));
+}
+
 // Benchmark Ascon-Hash
 // https://github.com/itzmeanjan/ascon/blob/970c29902474eb55777761990eedf47189c75ff4/include/hash.hpp#L8-L27
 static void
@@ -309,6 +331,11 @@ ascon_80pq_dec(benchmark::State& state)
 }
 
 // register functions for benchmarking
+BENCHMARK(ascon_permutation<1>);
+BENCHMARK(ascon_permutation<6>);
+BENCHMARK(ascon_permutation<8>);
+BENCHMARK(ascon_permutation<12>);
+
 BENCHMARK(ascon_hash)->Arg(64);
 BENCHMARK(ascon_hash)->Arg(128);
 BENCHMARK(ascon_hash)->Arg(256);

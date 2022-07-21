@@ -4,7 +4,7 @@
 
 // Compile & execute with
 //
-// `g++ -std=c++20 -I ./include example/ascon_80pq.cpp && ./a.out`
+// g++ -std=c++20 -O3 -I ./include example/ascon_80pq.cpp && ./a.out
 int
 main()
 {
