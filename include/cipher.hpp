@@ -106,7 +106,7 @@ check_r128(const size_t r)
 static inline constexpr bool
 check_r(const size_t r)
 {
-  return check_r64(r) | check_r128(r);
+  return check_r64(r) || check_r128(r);
 }
 
 // Process `s` -many blocks of associated data, each of with rate ( = {64, 128}
