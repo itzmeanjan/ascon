@@ -1,7 +1,9 @@
 #!/usr/bin/python3
 
+from curses.ascii import DLE
 import ascon
 import numpy as np
+from random import Random, randint
 
 # = (1 << 64) - 1
 H = 0xFFFF_FFFF_FFFF_FFFF
@@ -317,6 +319,175 @@ def test_ascon_80pq_kat():
             count = cnt
 
     print(f"[test] passed {count} -many Ascon-80pq KAT(s)")
+
+
+def flip_bit(inp: bytes) -> bytes:
+    """
+    Randomly selects a byte offset of a given byte array ( inp ), whose single random bit
+    will be flipped. Input is **not** mutated & single bit flipped byte array is returned back.
+
+    Taken from https://github.com/itzmeanjan/elephant/blob/2a21c7e/wrapper/python/test_elephant.py#L217-L237
+    """
+    arr = bytearray(inp)
+    ilen = len(arr)
+
+    idx = randint(0, ilen - 1)
+    bidx = randint(0, 7)
+
+    mask0 = (0xFF << (bidx + 1)) & 0xFF
+    mask1 = (0xFF >> (8 - bidx)) & 0xFF
+    mask2 = 1 << bidx
+
+    msb = arr[idx] & mask0
+    lsb = arr[idx] & mask1
+    bit = (arr[idx] & mask2) >> bidx
+
+    arr[idx] = msb | ((1 - bit) << bidx) | lsb
+    return bytes(arr)
+
+
+def test_ascon_128_kat_auth_fail():
+    """
+    Test that Ascon128 authentication fails when random bit of associated data
+    and/ or encrypted text are flipped. Also it's ensured that in case of authentication
+    failure unverified plain text is never released, instead memory allocation for
+    decrypted plain text is zeroed.
+    """
+    rng = Random()
+
+    DLEN = 32
+    CTLEN = 32
+
+    key = rng.randbytes(16)
+    nonce = rng.randbytes(16)
+    data = rng.randbytes(DLEN)
+    txt = rng.randbytes(CTLEN)
+
+    data_ = np.frombuffer(data, dtype=np.uint8)
+    txt_ = np.frombuffer(txt, dtype=np.uint8)
+    zeros = np.zeros(CTLEN, dtype=np.uint8)
+
+    enc, tag = ascon.encrypt_128(key, nonce, data_, txt_)
+
+    # case 0
+    fdata = flip_bit(data)
+    fdata_ = np.frombuffer(fdata, dtype=np.uint8)
+
+    flg, dec = ascon.decrypt_128(key, nonce, fdata_, enc, tag)
+
+    assert not flg, "Ascon128 authentication must fail !"
+    assert np.all(zeros == dec), "Unverified plain text must not be released !"
+
+    # case 1
+    fenc = flip_bit(enc.tobytes())
+    fenc_ = np.frombuffer(fenc, dtype=np.uint8)
+
+    flg, dec = ascon.decrypt_128(key, nonce, data_, fenc_, tag)
+
+    assert not flg, "Ascon128 authentication must fail !"
+    assert np.all(zeros == dec), "Unverified plain text must not be released !"
+
+    # case 2
+    flg, dec = ascon.decrypt_128(key, nonce, fdata_, fenc_, tag)
+
+    assert not flg, "Ascon128 authentication must fail !"
+    assert np.all(zeros == dec), "Unverified plain text must not be released !"
+
+
+def test_ascon_128a_kat_auth_fail():
+    """
+    Test that Ascon128a authentication fails when random bit of associated data
+    and/ or encrypted text are flipped. Also it's ensured that in case of authentication
+    failure unverified plain text is never released, instead memory allocation for
+    decrypted plain text is zeroed.
+    """
+    rng = Random()
+
+    DLEN = 32
+    CTLEN = 32
+
+    key = rng.randbytes(16)
+    nonce = rng.randbytes(16)
+    data = rng.randbytes(DLEN)
+    txt = rng.randbytes(CTLEN)
+
+    data_ = np.frombuffer(data, dtype=np.uint8)
+    txt_ = np.frombuffer(txt, dtype=np.uint8)
+    zeros = np.zeros(CTLEN, dtype=np.uint8)
+
+    enc, tag = ascon.encrypt_128a(key, nonce, data_, txt_)
+
+    # case 0
+    fdata = flip_bit(data)
+    fdata_ = np.frombuffer(fdata, dtype=np.uint8)
+
+    flg, dec = ascon.decrypt_128a(key, nonce, fdata_, enc, tag)
+
+    assert not flg, "Ascon128a aauthentication must fail !"
+    assert np.all(zeros == dec), "Unverified plain text must not be released !"
+
+    # case 1
+    fenc = flip_bit(enc.tobytes())
+    fenc_ = np.frombuffer(fenc, dtype=np.uint8)
+
+    flg, dec = ascon.decrypt_128a(key, nonce, data_, fenc_, tag)
+
+    assert not flg, "Ascon128a authentication must fail !"
+    assert np.all(zeros == dec), "Unverified plain text must not be released !"
+
+    # case 2
+    flg, dec = ascon.decrypt_128a(key, nonce, fdata_, fenc_, tag)
+
+    assert not flg, "Ascon128a authentication must fail !"
+    assert np.all(zeros == dec), "Unverified plain text must not be released !"
+
+
+def test_ascon_80pq_kat_auth_fail():
+    """
+    Test that Ascon80pq authentication fails when random bit of associated data
+    and/ or encrypted text are flipped. Also it's ensured that in case of authentication
+    failure unverified plain text is never released, instead memory allocation for
+    decrypted plain text is zeroed.
+    """
+    rng = Random()
+
+    DLEN = 32
+    CTLEN = 32
+
+    key = rng.randbytes(20)
+    nonce = rng.randbytes(16)
+    data = rng.randbytes(DLEN)
+    txt = rng.randbytes(CTLEN)
+
+    data_ = np.frombuffer(data, dtype=np.uint8)
+    txt_ = np.frombuffer(txt, dtype=np.uint8)
+    zeros = np.zeros(CTLEN, dtype=np.uint8)
+
+    enc, tag = ascon.encrypt_80pq(key, nonce, data_, txt_)
+
+    # case 0
+    fdata = flip_bit(data)
+    fdata_ = np.frombuffer(fdata, dtype=np.uint8)
+
+    flg, dec = ascon.decrypt_80pq(key, nonce, fdata_, enc, tag)
+
+    assert not flg, "Ascon80pq authentication must fail !"
+    assert np.all(zeros == dec), "Unverified plain text must not be released !"
+
+    # case 1
+    fenc = flip_bit(enc.tobytes())
+    fenc_ = np.frombuffer(fenc, dtype=np.uint8)
+
+    flg, dec = ascon.decrypt_80pq(key, nonce, data_, fenc_, tag)
+
+    assert not flg, "Ascon80pq authentication must fail !"
+    assert np.all(zeros == dec), "Unverified plain text must not be released !"
+
+    # case 2
+    flg, dec = ascon.decrypt_80pq(key, nonce, fdata_, fenc_, tag)
+
+    assert not flg, "Ascon80pq authentication must fail !"
+    assert np.all(zeros == dec), "Unverified plain text must not be released !"
 
 
 def test_bench_ascon_hash(benchmark):

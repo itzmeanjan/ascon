@@ -32,7 +32,15 @@ decrypt_128(const secret_key_128_t& k,
   process_ciphertext<6, 64>(state, cipher, cipher_len, text);
 
   const tag_t t_ = finalize<12, 64>(state, k);
-  return (t.limbs[0] == t_.limbs[0]) && (t.limbs[1] == t_.limbs[1]);
+
+  const uint64_t flg0 = t.limbs[0] ^ t_.limbs[0];
+  const uint64_t flg1 = t.limbs[1] ^ t_.limbs[1];
+
+  const bool flg = static_cast<bool>(flg0 | flg1);
+
+  std::memset(text, 0, flg * cipher_len);
+
+  return !flg;
 }
 
 // Decrypts cipher text with Ascon-128a verified decryption algorithm; see
@@ -62,7 +70,15 @@ decrypt_128a(const secret_key_128_t& k,
   process_ciphertext<8, 128>(state, cipher, cipher_len, text);
 
   const tag_t t_ = finalize<12, 128>(state, k);
-  return (t.limbs[0] == t_.limbs[0]) && (t.limbs[1] == t_.limbs[1]);
+
+  const uint64_t flg0 = t.limbs[0] ^ t_.limbs[0];
+  const uint64_t flg1 = t.limbs[1] ^ t_.limbs[1];
+
+  const bool flg = static_cast<bool>(flg0 | flg1);
+
+  std::memset(text, 0, flg * cipher_len);
+
+  return !flg;
 }
 
 // Decrypts cipher text with Ascon-80pq verified decryption algorithm; see
@@ -92,7 +108,15 @@ decrypt_80pq(const secret_key_160_t& k,
   process_ciphertext<6, 64>(state, cipher, cipher_len, text);
 
   const tag_t t_ = finalize<12, 64>(state, k);
-  return (t.limbs[0] == t_.limbs[0]) && (t.limbs[1] == t_.limbs[1]);
+
+  const uint64_t flg0 = t.limbs[0] ^ t_.limbs[0];
+  const uint64_t flg1 = t.limbs[1] ^ t_.limbs[1];
+
+  const bool flg = static_cast<bool>(flg0 | flg1);
+
+  std::memset(text, 0, flg * cipher_len);
+
+  return !flg;
 }
 
 }

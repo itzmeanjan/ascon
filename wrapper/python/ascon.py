@@ -237,8 +237,6 @@ def decrypt_128(
     # decrypt using Ascon-128
     v = SO_LIB.decrypt_128(key_, nonce_, data, d_len, cipher, c_len, text, tag_)
 
-    assert v, "tag doesn't match, failed to decrypt !"
-
     # return decryption status, decrypted plain text
     return v, text
 
@@ -360,8 +358,6 @@ def decrypt_128a(
 
     # decrypt using Ascon-128a
     v = SO_LIB.decrypt_128a(key_, nonce_, data, d_len, cipher, c_len, text, tag_)
-
-    assert v, "tag doesn't match, failed to decrypt !"
 
     # return decryption status, decrypted plain text
     return v, text
@@ -487,11 +483,9 @@ def decrypt_80pq(
     # decrypt using Ascon-80pq
     v = SO_LIB.decrypt_80pq(key_, nonce_, data, d_len, cipher, c_len, text, tag_)
 
-    assert v, "tag doesn't match, failed to decrypt !"
-
     # return decryption status, decrypted plain text
     return v, text
 
 
 if __name__ == "__main__":
-    print("This is an importable library module !")
+    print("Use `ascon` as library module !")
