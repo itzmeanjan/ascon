@@ -10,7 +10,7 @@ constexpr size_t DATA_LEN = 64ul;
 
 // Benchmark Ascon-128 authenticated encryption
 void
-ascon_128_enc(benchmark::State& state)
+enc_128(benchmark::State& state)
 {
   const size_t ct_len = static_cast<size_t>(state.range(0));
 
@@ -56,7 +56,7 @@ ascon_128_enc(benchmark::State& state)
 
 // Benchmark Ascon-128 verified decryption
 void
-ascon_128_dec(benchmark::State& state)
+dec_128(benchmark::State& state)
 {
   const size_t ct_len = static_cast<size_t>(state.range(0));
 
@@ -106,7 +106,7 @@ ascon_128_dec(benchmark::State& state)
 
 // Benchmark Ascon-128a authenticated encryption
 void
-ascon_128a_enc(benchmark::State& state)
+enc_128a(benchmark::State& state)
 {
   const size_t ct_len = static_cast<size_t>(state.range(0));
 
@@ -152,7 +152,7 @@ ascon_128a_enc(benchmark::State& state)
 
 // Benchmark Ascon-128a verified decryption
 void
-ascon_128a_dec(benchmark::State& state)
+dec_128a(benchmark::State& state)
 {
   const size_t ct_len = static_cast<size_t>(state.range(0));
 
@@ -202,7 +202,7 @@ ascon_128a_dec(benchmark::State& state)
 
 // Benchmark Ascon-80pq authenticated encryption
 void
-ascon_80pq_enc(benchmark::State& state)
+enc_80pq(benchmark::State& state)
 {
   const size_t ct_len = static_cast<size_t>(state.range(0));
 
@@ -248,7 +248,7 @@ ascon_80pq_enc(benchmark::State& state)
 
 // Benchmark Ascon-80pq verified decryption
 void
-ascon_80pq_dec(benchmark::State& state)
+dec_80pq(benchmark::State& state)
 {
   const size_t ct_len = static_cast<size_t>(state.range(0));
 

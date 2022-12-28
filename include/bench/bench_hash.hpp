@@ -10,7 +10,7 @@ constexpr size_t DIG_LEN = 32ul;
 
 // Benchmark Ascon-Hash on target CPU
 void
-ascon_hash(benchmark::State& state)
+hash(benchmark::State& state)
 {
   const size_t mlen = static_cast<size_t>(state.range(0));
 
@@ -36,7 +36,7 @@ ascon_hash(benchmark::State& state)
 
 // Benchmark Ascon-HashA on target CPU
 void
-ascon_hash_a(benchmark::State& state)
+hash_a(benchmark::State& state)
 {
   const size_t mlen = static_cast<size_t>(state.range(0));
 
