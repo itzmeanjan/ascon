@@ -80,17 +80,21 @@ random_data(T* const data, const size_t len)
 // See Ascon-{128, Hash, HashA} padding rule in section 2.4.{2,3} & 2.5.2 of
 // Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-static inline constexpr uint64_t
+static inline uint64_t
 pad_data(const uint8_t* const data, const size_t pad_byte_len)
 {
-  uint64_t data_blk = 0b1ul << ((pad_byte_len << 3) - 1ul);
-
   const size_t dlen = 8ul - pad_byte_len;
-  for (size_t i = 0; i < dlen; i++) {
-    data_blk |= static_cast<uint64_t>(data[i]) << ((7ul - i) << 3);
+  const size_t pad_bit_len = pad_byte_len << 3;
+  const size_t pad_mask = 1ul << (pad_bit_len - 1ul);
+
+  uint64_t res = 0ul;
+  std::memcpy(&res, data, dlen);
+
+  if constexpr (std::endian::native == std::endian::little) {
+    res = bswap64(res);
   }
 
-  return data_blk;
+  return res | pad_mask;
 }
 
 // Pad data, when rate = 128, such that padded data (bit-) length is evenly
