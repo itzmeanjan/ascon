@@ -3,7 +3,7 @@
 from curses.ascii import DLE
 import ascon
 import numpy as np
-from random import Random, randint
+from random import randint, randbytes
 
 # = (1 << 64) - 1
 H = 0xFFFF_FFFF_FFFF_FFFF
@@ -353,15 +353,13 @@ def test_ascon_128_kat_auth_fail():
     failure unverified plain text is never released, instead memory allocation for
     decrypted plain text is zeroed.
     """
-    rng = Random()
-
     DLEN = 32
     CTLEN = 32
 
-    key = rng.randbytes(16)
-    nonce = rng.randbytes(16)
-    data = rng.randbytes(DLEN)
-    txt = rng.randbytes(CTLEN)
+    key = randbytes(16)
+    nonce = randbytes(16)
+    data = randbytes(DLEN)
+    txt = randbytes(CTLEN)
 
     data_ = np.frombuffer(data, dtype=np.uint8)
     txt_ = np.frombuffer(txt, dtype=np.uint8)
@@ -401,15 +399,13 @@ def test_ascon_128a_kat_auth_fail():
     failure unverified plain text is never released, instead memory allocation for
     decrypted plain text is zeroed.
     """
-    rng = Random()
-
     DLEN = 32
     CTLEN = 32
 
-    key = rng.randbytes(16)
-    nonce = rng.randbytes(16)
-    data = rng.randbytes(DLEN)
-    txt = rng.randbytes(CTLEN)
+    key = randbytes(16)
+    nonce = randbytes(16)
+    data = randbytes(DLEN)
+    txt = randbytes(CTLEN)
 
     data_ = np.frombuffer(data, dtype=np.uint8)
     txt_ = np.frombuffer(txt, dtype=np.uint8)
@@ -449,15 +445,13 @@ def test_ascon_80pq_kat_auth_fail():
     failure unverified plain text is never released, instead memory allocation for
     decrypted plain text is zeroed.
     """
-    rng = Random()
-
     DLEN = 32
     CTLEN = 32
 
-    key = rng.randbytes(20)
-    nonce = rng.randbytes(16)
-    data = rng.randbytes(DLEN)
-    txt = rng.randbytes(CTLEN)
+    key = randbytes(20)
+    nonce = randbytes(16)
+    data = randbytes(DLEN)
+    txt = randbytes(CTLEN)
 
     data_ = np.frombuffer(data, dtype=np.uint8)
     txt_ = np.frombuffer(txt, dtype=np.uint8)
@@ -488,194 +482,6 @@ def test_ascon_80pq_kat_auth_fail():
 
     assert not flg, "Ascon80pq authentication must fail !"
     assert np.all(zeros == dec), "Unverified plain text must not be released !"
-
-
-def test_bench_ascon_hash(benchmark):
-    """
-    Benchmark Ascon-Hash implementation with random 64 -bytes input
-    """
-
-    # prepare random 64 -bytes input
-    msg = np.random.randint(0, high=256, size=64, dtype=np.uint8)
-
-    @benchmark
-    def compute():
-        return ascon.hash(msg)
-
-
-def test_bench_ascon_hasha(benchmark):
-    """
-    Benchmark Ascon-HashA implementation with random 64 -bytes input
-    """
-
-    # prepare random 64 -bytes input
-    msg = np.random.randint(0, high=256, size=64, dtype=np.uint8)
-
-    @benchmark
-    def compute():
-        return ascon.hash_a(msg)
-
-
-def test_bench_ascon_128_encrypt(benchmark):
-    """
-    Benchmark Ascon-128 authenticated encryption implementation with
-    random 64 -bytes associated data & 64 -bytes plain text
-    """
-
-    # random 128 -bit secret key
-    key = np.random.randint(0, high=H, size=2, dtype=np.uint64).tobytes()
-    # random 128 -bit nonce
-    nonce = np.random.randint(0, high=H, size=2, dtype=np.uint64).tobytes()
-    # random 64 -bytes associated data
-    data = np.random.randint(0, high=256, size=64, dtype=np.uint8)
-    # random 64 -bytes plain text
-    text = np.random.randint(0, high=256, size=64, dtype=np.uint8)
-
-    @benchmark
-    def compute():
-        return ascon.encrypt_128(key, nonce, data, text)
-
-    # ensure encryption works as expected !
-    enc, tag = compute
-    flag, _ = ascon.decrypt_128(key, nonce, data, enc, tag)
-
-    assert flag
-
-
-def test_bench_ascon_128_decrypt(benchmark):
-    """
-    Benchmark Ascon-128 verified decryption implementation with
-    random 64 -bytes associated data & 64 -bytes cipher text
-    """
-
-    # random 128 -bit secret key
-    key = np.random.randint(0, high=H, size=2, dtype=np.uint64).tobytes()
-    # random 128 -bit nonce
-    nonce = np.random.randint(0, high=H, size=2, dtype=np.uint64).tobytes()
-    # random 64 -bytes associated data
-    data = np.random.randint(0, high=256, size=64, dtype=np.uint8)
-    # random 64 -bytes plain text
-    text = np.random.randint(0, high=256, size=64, dtype=np.uint8)
-
-    # encrypt text
-    enc, tag = ascon.encrypt_128(key, nonce, data, text)
-
-    @benchmark
-    def compute():
-        return ascon.decrypt_128(key, nonce, data, enc, tag)
-
-    # ensure decryption works as expected !
-    flag, _ = compute
-
-    assert flag
-
-
-def test_bench_ascon_128a_encrypt(benchmark):
-    """
-    Benchmark Ascon-128a authenticated encryption implementation with
-    random 64 -bytes associated data & 64 -bytes plain text
-    """
-
-    # random 128 -bit secret key
-    key = np.random.randint(0, high=H, size=2, dtype=np.uint64).tobytes()
-    # random 128 -bit nonce
-    nonce = np.random.randint(0, high=H, size=2, dtype=np.uint64).tobytes()
-    # random 64 -bytes associated data
-    data = np.random.randint(0, high=256, size=64, dtype=np.uint8)
-    # random 64 -bytes plain text
-    text = np.random.randint(0, high=256, size=64, dtype=np.uint8)
-
-    @benchmark
-    def compute():
-        return ascon.encrypt_128a(key, nonce, data, text)
-
-    # ensure encryption works as expected !
-    enc, tag = compute
-    flag, _ = ascon.decrypt_128a(key, nonce, data, enc, tag)
-
-    assert flag
-
-
-def test_bench_ascon_128a_decrypt(benchmark):
-    """
-    Benchmark Ascon-128a verified decryption implementation with
-    random 64 -bytes associated data & 64 -bytes cipher text
-    """
-
-    # random 128 -bit secret key
-    key = np.random.randint(0, high=H, size=2, dtype=np.uint64).tobytes()
-    # random 128 -bit nonce
-    nonce = np.random.randint(0, high=H, size=2, dtype=np.uint64).tobytes()
-    # random 64 -bytes associated data
-    data = np.random.randint(0, high=256, size=64, dtype=np.uint8)
-    # random 64 -bytes plain text
-    text = np.random.randint(0, high=256, size=64, dtype=np.uint8)
-
-    # encrypt text
-    enc, tag = ascon.encrypt_128a(key, nonce, data, text)
-
-    @benchmark
-    def compute():
-        return ascon.decrypt_128a(key, nonce, data, enc, tag)
-
-    # ensure decryption works as expected !
-    flag, _ = compute
-
-    assert flag
-
-
-def test_bench_ascon_80pq_encrypt(benchmark):
-    """
-    Benchmark Ascon-80pq authenticated encryption implementation with
-    random 64 -bytes associated data & 64 -bytes plain text
-    """
-
-    # random 160 -bit secret key
-    key = np.random.randint(0, high=H, size=3, dtype=np.uint64).tobytes()[:20]
-    # random 128 -bit nonce
-    nonce = np.random.randint(0, high=H, size=2, dtype=np.uint64).tobytes()
-    # random 64 -bytes associated data
-    data = np.random.randint(0, high=256, size=64, dtype=np.uint8)
-    # random 64 -bytes plain text
-    text = np.random.randint(0, high=256, size=64, dtype=np.uint8)
-
-    @benchmark
-    def compute():
-        return ascon.encrypt_80pq(key, nonce, data, text)
-
-    # ensure encryption works as expected !
-    enc, tag = compute
-    flag, _ = ascon.decrypt_80pq(key, nonce, data, enc, tag)
-
-    assert flag
-
-
-def test_bench_ascon_80pq_decrypt(benchmark):
-    """
-    Benchmark Ascon-80pq verified decryption implementation with
-    random 64 -bytes associated data & 64 -bytes cipher text
-    """
-
-    # random 160 -bit secret key
-    key = np.random.randint(0, high=H, size=3, dtype=np.uint64).tobytes()[:20]
-    # random 128 -bit nonce
-    nonce = np.random.randint(0, high=H, size=2, dtype=np.uint64).tobytes()
-    # random 64 -bytes associated data
-    data = np.random.randint(0, high=256, size=64, dtype=np.uint8)
-    # random 64 -bytes plain text
-    text = np.random.randint(0, high=256, size=64, dtype=np.uint8)
-
-    # encrypt text
-    enc, tag = ascon.encrypt_80pq(key, nonce, data, text)
-
-    @benchmark
-    def compute():
-        return ascon.decrypt_80pq(key, nonce, data, enc, tag)
-
-    # ensure decryption works as expected !
-    flag, _ = compute
-
-    assert flag
 
 
 if __name__ == "__main__":

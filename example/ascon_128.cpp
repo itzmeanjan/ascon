@@ -48,9 +48,9 @@ main()
   // verified decryption; it must be true !
   assert(f);
 
-  const std::string text_ = ascon_utils::tohex(text, text_len);
-  const std::string enc_ = ascon_utils::tohex(enc, enc_len);
-  const std::string dec_ = ascon_utils::tohex(dec, dec_len);
+  const std::string text_ = ascon_utils::to_hex(text, text_len);
+  const std::string enc_ = ascon_utils::to_hex(enc, enc_len);
+  const std::string dec_ = ascon_utils::to_hex(dec, dec_len);
 
   // redundant check; if `f` is true, `dec` is good to consume !
   assert(text_ == dec_);

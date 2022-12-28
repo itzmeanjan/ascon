@@ -18,7 +18,7 @@ hash(const uint8_t* const __restrict msg,
   using namespace ascon_hash_utils;
 
   uint64_t state[5];
-  std::memcpy(state, ASCON_HASH_INIT_STATE, 5ul << 3);
+  std::memcpy(state, ASCON_HASH_INIT_STATE, 40);
 
   absorb<12>(state, msg, msg_len);
   squeeze<12, 12>(state, digest);
@@ -36,7 +36,7 @@ hash_a(const uint8_t* const __restrict msg,
   using namespace ascon_hash_utils;
 
   uint64_t state[5];
-  std::memcpy(state, ASCON_HASHA_INIT_STATE, 5ul << 3);
+  std::memcpy(state, ASCON_HASHA_INIT_STATE, 40);
 
   absorb<8>(state, msg, msg_len);
   squeeze<12, 8>(state, digest);

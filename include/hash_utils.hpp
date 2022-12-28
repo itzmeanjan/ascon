@@ -31,7 +31,7 @@ constexpr uint64_t ASCON_HASHA_INIT_STATE[5] = { 0x01470194fc6528a6,
 // For possible values of template parameter `b`, follow table 2 in
 // specification
 template<const size_t b>
-static void
+static inline void
 absorb(uint64_t* const __restrict state,
        const uint8_t* const __restrict msg,
        const size_t msg_len // in terms of bytes, can be >= 0
@@ -64,7 +64,7 @@ absorb(uint64_t* const __restrict state,
 // For possible values of template parameter `a`, `b`, follow table 2 in Ascon
 // specification
 template<const size_t a, const size_t b>
-static void
+static inline void
 squeeze(uint64_t* const __restrict state, uint8_t* const __restrict digest)
 {
   ascon_perm::permute<a>(state);
