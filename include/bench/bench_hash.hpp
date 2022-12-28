@@ -18,7 +18,7 @@ ascon_hash(benchmark::State& state)
   uint8_t* digest = static_cast<uint8_t*>(std::malloc(DIG_LEN));
 
   ascon_utils::random_data(msg, mlen);
-  memset(digest, 0, DIG_LEN);
+  std::memset(digest, 0, DIG_LEN);
 
   for (auto _ : state) {
     ascon::hash(msg, mlen, digest);
@@ -44,7 +44,7 @@ ascon_hash_a(benchmark::State& state)
   uint8_t* digest = static_cast<uint8_t*>(std::malloc(DIG_LEN));
 
   ascon_utils::random_data(msg, mlen);
-  memset(digest, 0, DIG_LEN);
+  std::memset(digest, 0, DIG_LEN);
 
   for (auto _ : state) {
     ascon::hash_a(msg, mlen, digest);
