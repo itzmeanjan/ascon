@@ -45,7 +45,8 @@ static inline void
 initialize(uint64_t* const state,            // uninitialized hash state
            const ascon::secret_key_128_t& k, // 128 -bit secret key
            const ascon::nonce_t& n           // 128 -bit nonce
-           ) requires(check_iv(IV))
+           )
+  requires(check_iv(IV))
 {
   state[0] = IV;
   state[1] = k.limbs[0];
@@ -117,7 +118,8 @@ static inline void
 process_associated_data(uint64_t* const __restrict state,
                         const uint8_t* const __restrict data, // associated data
                         const size_t data_len // in terms of bytes
-                        ) requires(check_r(r))
+                        )
+  requires(check_r(r))
 {
   // only when associated data is non-empty; do padding and then mixing
   if (data_len > 0) {
@@ -180,7 +182,8 @@ process_plaintext(uint64_t* const __restrict state,
                   const uint8_t* const __restrict text,
                   const size_t text_len,           // in terms of bytes
                   uint8_t* const __restrict cipher // has length same as `text`
-                  ) requires(check_r(r))
+                  )
+  requires(check_r(r))
 {
   constexpr const size_t rb8 = r >> 3;                 // r divided by 8
   const size_t tmp = (text_len << 3) % r;              // bits
@@ -264,7 +267,8 @@ process_ciphertext(uint64_t* const __restrict state,
                    const uint8_t* const __restrict cipher,
                    const size_t cipher_len,       // in terms of bytes
                    uint8_t* const __restrict text // has length same as `cipher`
-                   ) requires(check_r(r))
+                   )
+  requires(check_r(r))
 {
   const size_t cipher_bit_len = cipher_len << 3;
   const size_t cipher_blocks = cipher_bit_len / r;
@@ -372,7 +376,8 @@ template<const size_t a, const size_t r>
 static inline const ascon::tag_t
 finalize(uint64_t* const state,
          const ascon::secret_key_128_t& k // 128 -bit secret key
-         ) requires(check_r(r))
+         )
+  requires(check_r(r))
 {
   if constexpr (check_r64(r)) {
     state[1] ^= k.limbs[0];
@@ -396,7 +401,8 @@ template<const size_t a, const size_t r>
 static inline const ascon::tag_t
 finalize(uint64_t* const state,
          const ascon::secret_key_160_t& k // 160 -bit secret key
-         ) requires(check_r(r))
+         )
+  requires(check_r(r))
 {
   if constexpr (check_r64(r)) {
     state[1] ^= k.limbs[0];

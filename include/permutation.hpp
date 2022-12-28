@@ -92,7 +92,8 @@ check_lte12(const size_t a)
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
 template<const size_t R>
 inline static void
-permute(uint64_t* const state) requires(check_lte12(R))
+permute(uint64_t* const state)
+  requires(check_lte12(R))
 {
   constexpr size_t BEG = ROUNDS - R;
 
