@@ -3,7 +3,7 @@
 from curses.ascii import DLE
 import ascon
 import numpy as np
-from random import Random, randint
+from random import randint, randbytes
 
 # = (1 << 64) - 1
 H = 0xFFFF_FFFF_FFFF_FFFF
@@ -353,15 +353,13 @@ def test_ascon_128_kat_auth_fail():
     failure unverified plain text is never released, instead memory allocation for
     decrypted plain text is zeroed.
     """
-    rng = Random()
-
     DLEN = 32
     CTLEN = 32
 
-    key = rng.randbytes(16)
-    nonce = rng.randbytes(16)
-    data = rng.randbytes(DLEN)
-    txt = rng.randbytes(CTLEN)
+    key = randbytes(16)
+    nonce = randbytes(16)
+    data = randbytes(DLEN)
+    txt = randbytes(CTLEN)
 
     data_ = np.frombuffer(data, dtype=np.uint8)
     txt_ = np.frombuffer(txt, dtype=np.uint8)
@@ -401,15 +399,13 @@ def test_ascon_128a_kat_auth_fail():
     failure unverified plain text is never released, instead memory allocation for
     decrypted plain text is zeroed.
     """
-    rng = Random()
-
     DLEN = 32
     CTLEN = 32
 
-    key = rng.randbytes(16)
-    nonce = rng.randbytes(16)
-    data = rng.randbytes(DLEN)
-    txt = rng.randbytes(CTLEN)
+    key = randbytes(16)
+    nonce = randbytes(16)
+    data = randbytes(DLEN)
+    txt = randbytes(CTLEN)
 
     data_ = np.frombuffer(data, dtype=np.uint8)
     txt_ = np.frombuffer(txt, dtype=np.uint8)
@@ -449,15 +445,13 @@ def test_ascon_80pq_kat_auth_fail():
     failure unverified plain text is never released, instead memory allocation for
     decrypted plain text is zeroed.
     """
-    rng = Random()
-
     DLEN = 32
     CTLEN = 32
 
-    key = rng.randbytes(20)
-    nonce = rng.randbytes(16)
-    data = rng.randbytes(DLEN)
-    txt = rng.randbytes(CTLEN)
+    key = randbytes(20)
+    nonce = randbytes(16)
+    data = randbytes(DLEN)
+    txt = randbytes(CTLEN)
 
     data_ = np.frombuffer(data, dtype=np.uint8)
     txt_ = np.frombuffer(txt, dtype=np.uint8)
