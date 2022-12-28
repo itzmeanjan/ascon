@@ -8,7 +8,7 @@ namespace ascon_test {
 // Testing Ascon Hash implementation for input length 0;
 // test data generated using
 // https://github.com/meichlseder/pyascon/blob/40fddd3e4009dbcc54eefd36033f7d418ba234f6/genkat.py
-static void
+void
 hash()
 {
   const uint8_t expect[32] = { 115, 70,  188, 20,  240, 54, 232, 122,
@@ -27,7 +27,7 @@ hash()
 // Testing Ascon HashA implementation for input length 0;
 // test data generated using
 // https://github.com/meichlseder/pyascon/blob/40fddd3e4009dbcc54eefd36033f7d418ba234f6/genkat.py
-static void
+void
 hash_a()
 {
   const uint8_t expect[32] = { 174, 205, 2,   112, 38,  208, 103, 95,
