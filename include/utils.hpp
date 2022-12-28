@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 #include <bit>
 #include <cstdint>
 #include <cstring>
@@ -109,22 +110,25 @@ pad_data(
   uint64_t* const __restrict data_blk // padded block; assert len(data_blk) = 2
 )
 {
-  // Important: Clean memory allocation by putting zero bytes !
-  std::memset(data_blk, 0, sizeof(uint64_t) << 1);
-
-  const bool flg0 = pad_byte_len <= 8ul;
-
-  const size_t br0[2] = { pad_byte_len - 8ul, pad_byte_len };
-  constexpr size_t br1[2] = { 7ul, 15ul };
-
-  data_blk[flg0] = 0b1ul << ((br0[flg0] << 3) - 1ul);
+  std::memset(data_blk, 0, 16);
 
   const size_t dlen = 16ul - pad_byte_len;
+  const size_t fw_len = std::min(dlen, 8ul);
+  const size_t sw_len = dlen - fw_len;
 
-  for (size_t i = 0; i < dlen; i++) {
-    const bool flg1 = i >= 8ul;
-    data_blk[flg1] |= static_cast<uint64_t>(data[i]) << ((br1[flg1] - i) << 3);
+  std::memcpy(&data_blk[0], data, fw_len);
+  std::memcpy(&data_blk[1], data + fw_len, sw_len);
+
+  if constexpr (std::endian::native == std::endian::little) {
+    data_blk[0] = bswap64(data_blk[0]);
+    data_blk[1] = bswap64(data_blk[1]);
   }
+
+  const bool flg = pad_byte_len > 8;
+  const size_t pad_bit_len = (pad_byte_len - 8 * flg) << 3;
+  const size_t pad_mask = 1ul << (pad_bit_len - 1ul);
+
+  data_blk[!flg] |= pad_mask;
 }
 
 // Converts byte array into hex string; see https://stackoverflow.com/a/14051107
