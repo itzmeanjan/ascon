@@ -12,15 +12,15 @@ namespace ascon {
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
 struct secret_key_128_t
 {
-  uint64_t limbs[2];
+  uint64_t limbs[2]{};
 
-  secret_key_128_t(const uint64_t l0, const uint64_t l1)
+  inline secret_key_128_t(const uint64_t l0, const uint64_t l1)
   {
     limbs[0] = l0;
     limbs[1] = l1;
   }
 
-  secret_key_128_t(const uint8_t* const bytes)
+  inline secret_key_128_t(const uint8_t* const bytes)
   {
     limbs[0] = ascon_utils::from_be_bytes(bytes);
     limbs[1] = ascon_utils::from_be_bytes(bytes + 8u);
@@ -42,16 +42,18 @@ struct secret_key_128_t
 // secret key are kept, so it's safe to discard upper 32 -bits of `limbs[2]`
 struct secret_key_160_t
 {
-  uint64_t limbs[3];
+  uint64_t limbs[3]{};
 
-  secret_key_160_t(const uint64_t l0, const uint64_t l1, const uint64_t l2)
+  inline secret_key_160_t(const uint64_t l0,
+                          const uint64_t l1,
+                          const uint64_t l2)
   {
     limbs[0] = l0;
     limbs[1] = l1;
     limbs[2] = l2;
   }
 
-  secret_key_160_t(const uint8_t* const bytes)
+  inline secret_key_160_t(const uint8_t* const bytes)
   {
     limbs[0] = ascon_utils::from_be_bytes(bytes);
     limbs[1] = ascon_utils::from_be_bytes(bytes + 8u);
@@ -80,15 +82,15 @@ struct secret_key_160_t
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
 struct nonce_t
 {
-  uint64_t limbs[2];
+  uint64_t limbs[2]{};
 
-  nonce_t(const uint64_t l0, const uint64_t l1)
+  inline nonce_t(const uint64_t l0, const uint64_t l1)
   {
     limbs[0] = l0;
     limbs[1] = l1;
   }
 
-  nonce_t(const uint8_t* const bytes)
+  inline nonce_t(const uint8_t* const bytes)
   {
     limbs[0] = ascon_utils::from_be_bytes(bytes);
     limbs[1] = ascon_utils::from_be_bytes(bytes + 8u);
@@ -106,21 +108,21 @@ struct nonce_t
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
 struct tag_t
 {
-  uint64_t limbs[2];
+  uint64_t limbs[2]{};
 
-  tag_t(const uint64_t l0, const uint64_t l1)
+  inline tag_t(const uint64_t l0, const uint64_t l1)
   {
     limbs[0] = l0;
     limbs[1] = l1;
   }
 
-  tag_t(const uint8_t* const bytes)
+  inline tag_t(const uint8_t* const bytes)
   {
     limbs[0] = ascon_utils::from_be_bytes(bytes);
     limbs[1] = ascon_utils::from_be_bytes(bytes + 8u);
   }
 
-  void to_bytes(uint8_t* const out) const
+  inline void to_bytes(uint8_t* const out) const
   {
     ascon_utils::to_be_bytes(limbs[0], out);
     ascon_utils::to_be_bytes(limbs[1], out + 8u);
