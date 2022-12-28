@@ -25,7 +25,7 @@ main()
   // compute digest using Ascon-Hash
   ascon::hash(msg, msg_len, out);
   // digest as hex string
-  const std::string digest = ascon_utils::tohex(out, out_len);
+  const std::string digest = ascon_utils::to_hex(out, out_len);
 
   std::cout << "Ascon-Hash digest :\t" << digest << std::endl;
 
