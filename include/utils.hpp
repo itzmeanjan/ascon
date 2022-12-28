@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <random>
 #include <sstream>
+#include <type_traits>
 
 // Utility functions for Ascon Light Weight Cryptography Implementation
 namespace ascon_utils {
@@ -39,26 +40,15 @@ to_be_bytes(const uint64_t num, uint8_t* const bytes)
   }
 }
 
-// Generate `len` -many random 64 -bit unsigned integers
+// Generate `len` -many random sampled data of type T | T = unsigned integer
+template<typename T>
 static inline void
-random_data(uint64_t* const data, const size_t len)
+random_data(T* const data, const size_t len)
+  requires(std::is_unsigned_v<T>)
 {
   std::random_device rd;
   std::mt19937_64 gen(rd());
-  std::uniform_int_distribution<uint64_t> dis;
-
-  for (size_t i = 0; i < len; i++) {
-    data[i] = dis(gen);
-  }
-}
-
-// Generate `len` -many random 8 -bit unsigned integers
-static inline void
-random_data(uint8_t* const data, const size_t len)
-{
-  std::random_device rd;
-  std::mt19937_64 gen(rd());
-  std::uniform_int_distribution<uint8_t> dis;
+  std::uniform_int_distribution<T> dis;
 
   for (size_t i = 0; i < len; i++) {
     data[i] = dis(gen);
@@ -116,7 +106,7 @@ pad_data(
 
 // Converts byte array into hex string; see https://stackoverflow.com/a/14051107
 static inline const std::string
-tohex(const uint8_t* const bytes, const size_t len)
+to_hex(const uint8_t* const bytes, const size_t len)
 {
   std::stringstream ss;
   ss << std::hex;
