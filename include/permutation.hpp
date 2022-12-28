@@ -2,7 +2,6 @@
 #include <bit>
 #include <cstddef>
 #include <cstdint>
-#include <cstring>
 
 // Ascon Permutation
 namespace ascon_perm {
