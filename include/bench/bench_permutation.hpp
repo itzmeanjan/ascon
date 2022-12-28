@@ -9,7 +9,7 @@ namespace bench_ascon {
 // Benchmarking Ascon permutation routine, while applying `ROUNDS` -many
 // permutation round
 template<const size_t ROUNDS>
-static void
+void
 ascon_permutation(benchmark::State& state)
 {
   static_assert(ROUNDS <= 12);
