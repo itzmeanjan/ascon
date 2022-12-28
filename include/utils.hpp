@@ -1,4 +1,5 @@
 #pragma once
+#include <bit>
 #include <cstdint>
 #include <cstring>
 #include <iomanip>
@@ -9,19 +10,40 @@
 // Utility functions for Ascon Light Weight Cryptography Implementation
 namespace ascon_utils {
 
+// Given a 64 -bit unsigned integer word, this routine swaps byte order and
+// returns byte swapped 64 -bit word.
+//
+// Collects inspiration from https://stackoverflow.com/a/36552262
+static inline constexpr uint64_t
+bswap64(const uint64_t a)
+{
+#if defined __GNUG__
+  return __builtin_bswap64(a);
+#else
+  return ((a & 0x00000000000000fful) << 56) |
+         ((a & 0x000000000000ff00ul) << 40) |
+         ((a & 0x0000000000ff0000ul) << 24) |
+         ((a & 0x00000000ff000000ul) << 0x8) |
+         ((a & 0x000000ff00000000ul) >> 0x8) |
+         ((a & 0x0000ff0000000000ul) >> 24) |
+         ((a & 0x00ff000000000000ul) >> 40) |
+         ((a & 0xff00000000000000ul) >> 56);
+#endif
+}
+
 // Given big-endian byte array of length 8, this function interprets it as
 // 64 -bit unsigned integer
-static inline constexpr uint64_t
+static inline uint64_t
 from_be_bytes(const uint8_t* const i_bytes)
 {
-  return (static_cast<uint64_t>(i_bytes[0]) << 56) |
-         (static_cast<uint64_t>(i_bytes[1]) << 48) |
-         (static_cast<uint64_t>(i_bytes[2]) << 40) |
-         (static_cast<uint64_t>(i_bytes[3]) << 32) |
-         (static_cast<uint64_t>(i_bytes[4]) << 24) |
-         (static_cast<uint64_t>(i_bytes[5]) << 16) |
-         (static_cast<uint64_t>(i_bytes[6]) << 8) |
-         static_cast<uint64_t>(i_bytes[7]);
+  uint64_t res = 0ul;
+  std::memcpy(&res, i_bytes, 8);
+
+  if constexpr (std::endian::native == std::endian::little) {
+    return bswap64(res);
+  } else {
+    return res;
+  }
 }
 
 // Given a 64 -bit unsigned integer, this function interprets it as a big-endian
@@ -29,14 +51,11 @@ from_be_bytes(const uint8_t* const i_bytes)
 static inline void
 to_be_bytes(const uint64_t num, uint8_t* const bytes)
 {
-#if defined __clang__
-#pragma unroll 8
-#elif defined __GNUG__
-#pragma GCC ivdep
-#pragma GCC unroll 8
-#endif
-  for (size_t i = 0; i < 8; i++) {
-    bytes[i] = static_cast<uint8_t>(num >> ((7ul - i) << 3u));
+  if constexpr (std::endian::native == std::endian::little) {
+    const uint64_t res = bswap64(num);
+    std::memcpy(bytes, &res, 8);
+  } else {
+    std::memcpy(bytes, &num, 8);
   }
 }
 
