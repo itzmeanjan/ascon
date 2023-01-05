@@ -113,58 +113,64 @@ check_r(const size_t r)
 // Process `s` -many blocks of associated data, each of with rate ( = {64, 128}
 // ) -bits; see section 2.4.2 of Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-template<const size_t b, const size_t r>
+template<const size_t b, const size_t rate>
 static inline void
 process_associated_data(uint64_t* const __restrict state,
                         const uint8_t* const __restrict data, // associated data
-                        const size_t data_len // in terms of bytes
+                        const size_t dlen // in terms of bytes, can be >= 0
                         )
-  requires(check_r(r))
+  requires(check_r(rate))
 {
-  // only when associated data is non-empty; do padding and then mixing
-  if (data_len > 0) {
-    constexpr const size_t rb8 = r >> 3;                 // r divided by 8
-    const size_t tmp = (data_len << 3) % r;              // bits
-    const size_t zero_pad_len = r - 1 - tmp;             // bits
-    const size_t pad_byte_len = (zero_pad_len + 1) >> 3; // bytes
+  if (dlen > 0) {
+    const size_t dbits = dlen << 3;
+    const size_t rm_bits = dbits & (rate - 1ul);
+    const size_t zero_pad_bits = rate - 1ul - rm_bits;
+    const size_t pad_bytes = (1ul + zero_pad_bits) >> 3;
 
-    const uint8_t* data_ = data + data_len - (rb8 - pad_byte_len);
+    const size_t till = dlen - (rm_bits >> 3);
+    size_t off = 0;
 
-    if constexpr (check_r64(r)) {
-      const uint64_t last_data_blk = ascon_utils::pad_data(data_, pad_byte_len);
+    // first mix all bytes which can form full words ( rate bits wide )
+    while (off < till) {
+      if constexpr (check_r64(rate)) {
+        // force compile-time branch evaluation
+        static_assert(rate == 64, "Rate must be 64 -bits");
 
-      const size_t data_blk_cnt = ((data_len + pad_byte_len) << 3) >> 6;
-
-      for (size_t i = 0; i < data_blk_cnt - 1; i++) {
-        const uint64_t data_blk = ascon_utils::from_be_bytes(data + (i << 3));
-
-        state[0] ^= data_blk;
+        const auto word = ascon_utils::from_be_bytes(data + off);
+        state[0] ^= word;
         ascon_perm::permute<b>(state);
-      }
 
-      state[0] ^= last_data_blk;
+        off += 8ul;
+      } else {
+        // force compile-time branch evaluation
+        static_assert(rate == 128, "Rate must be 128 -bits");
+
+        const auto word0 = ascon_utils::from_be_bytes(data + off);
+        const auto word1 = ascon_utils::from_be_bytes(data + off + 8ul);
+        state[0] ^= word0;
+        state[1] ^= word1;
+        ascon_perm::permute<b>(state);
+
+        off += 16ul;
+      }
+    }
+
+    // finally do padding and then mixing of padded word ( rate bits wide )
+    if constexpr (check_r64(rate)) {
+      // force compile-time branch evaluation
+      static_assert(rate == 64, "Rate must be 64 -bits");
+
+      const auto word = ascon_utils::pad_data(data + off, pad_bytes);
+      state[0] ^= word;
       ascon_perm::permute<b>(state);
+    } else {
+      // force compile-time branch evaluation
+      static_assert(rate == 128, "Rate must be 128 -bits");
 
-    } else if constexpr (check_r128(r)) {
-      uint64_t last_data_blk[2];
-      ascon_utils::pad_data(data_, pad_byte_len, last_data_blk);
-
-      const size_t data_blk_cnt = ((data_len + pad_byte_len) << 3) >> 7;
-
-      for (size_t i = 0; i < data_blk_cnt - 1; i++) {
-        const size_t offset0 = ((i << 1) << 3);
-        const size_t offset1 = (((i << 1) + 1) << 3);
-
-        const uint64_t data_blk_0 = ascon_utils::from_be_bytes(data + offset0);
-        const uint64_t data_blk_1 = ascon_utils::from_be_bytes(data + offset1);
-
-        state[0] ^= data_blk_0;
-        state[1] ^= data_blk_1;
-        ascon_perm::permute<b>(state);
-      }
-
-      state[0] ^= last_data_blk[0];
-      state[1] ^= last_data_blk[1];
+      uint64_t buf[2];
+      ascon_utils::pad_data(data + off, pad_bytes, buf);
+      state[0] ^= buf[0];
+      state[1] ^= buf[1];
       ascon_perm::permute<b>(state);
     }
   }
