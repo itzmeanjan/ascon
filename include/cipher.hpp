@@ -182,83 +182,84 @@ process_associated_data(uint64_t* const __restrict state,
 // Process plain text in blocks ( same as rate bits wide ) and produce cipher
 // text is equal sized blocks; see section 2.4.3 of Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-template<const size_t b, const size_t r>
+template<const size_t b, const size_t rate>
 static inline void
 process_plaintext(uint64_t* const __restrict state,
                   const uint8_t* const __restrict text,
-                  const size_t text_len,           // in terms of bytes
+                  const size_t ctlen, // in terms of bytes, can be >= 0
                   uint8_t* const __restrict cipher // has length same as `text`
                   )
-  requires(check_r(r))
+  requires(check_r(rate))
 {
-  constexpr const size_t rb8 = r >> 3;                 // r divided by 8
-  const size_t tmp = (text_len << 3) % r;              // bits
-  const size_t zero_pad_len = r - 1 - tmp;             // bits
-  const size_t pad_byte_len = (zero_pad_len + 1) >> 3; // bytes
+  const size_t tbits = ctlen << 3;
+  const size_t rm_bits = tbits & (rate - 1ul);
+  const size_t zero_pad_bits = rate - 1ul - rm_bits;
+  const size_t pad_bytes = (1ul + zero_pad_bits) >> 3;
 
-  const uint8_t* text_ = text + text_len - (rb8 - pad_byte_len);
+  const size_t till = ctlen - (rm_bits >> 3);
+  size_t off = 0ul;
 
-  if constexpr (check_r64(r)) {
-    const uint64_t last_text_blk = ascon_utils::pad_data(text_, pad_byte_len);
+  while (off < till) {
+    if constexpr (check_r64(rate)) {
+      // force compile-time branch evaluation
+      static_assert(rate == 64, "Rate must be 64 -bits");
 
-    const size_t text_blk_cnt = ((text_len + pad_byte_len) << 3) >> 6;
+      const auto word = ascon_utils::from_be_bytes(text + off);
 
-    for (size_t i = 0; i < text_blk_cnt - 1; i++) {
-      const uint64_t text_blk = ascon_utils::from_be_bytes(text + (i << 3));
-
-      state[0] ^= text_blk; // ciphered
-      ascon_utils::to_be_bytes(state[0], cipher + (i << 3));
-
-      ascon_perm::permute<b>(state);
-    }
-
-    state[0] ^= last_text_blk; // ciphered last text block
-
-    const size_t remaining_len = text_len & 7ul; // bytes
-    if (remaining_len > 0) {
-      uint8_t* cipher_ = cipher + text_len - remaining_len; // slice out
-
-      for (size_t i = 0; i < remaining_len; i++) {
-        cipher_[i] = static_cast<uint8_t>((state[0] >> ((7ul - i) << 3)));
-      }
-    }
-  } else if constexpr (check_r128(r)) {
-    uint64_t last_text_blk[2];
-    ascon_utils::pad_data(text_, pad_byte_len, last_text_blk);
-
-    const size_t text_blk_cnt = ((text_len + pad_byte_len) << 3) >> 7;
-
-    for (size_t i = 0; i < text_blk_cnt - 1; i++) {
-      const size_t offset_0 = (i << 1) << 3;
-      const size_t offset_1 = ((i << 1) + 1) << 3;
-
-      const uint64_t text_blk_0 = ascon_utils::from_be_bytes(text + offset_0);
-      const uint64_t text_blk_1 = ascon_utils::from_be_bytes(text + offset_1);
-
-      // ciphered
-      state[0] ^= text_blk_0;
-      state[1] ^= text_blk_1;
-      ascon_utils::to_be_bytes(state[0], cipher + offset_0);
-      ascon_utils::to_be_bytes(state[1], cipher + offset_1);
+      state[0] ^= word;
+      ascon_utils::to_be_bytes(state[0], cipher + off);
 
       ascon_perm::permute<b>(state);
+
+      off += 8ul;
+    } else {
+      // force compile-time branch evaluation
+      static_assert(rate == 128, "Rate must be 128 -bits");
+
+      const auto word0 = ascon_utils::from_be_bytes(text + off);
+      const auto word1 = ascon_utils::from_be_bytes(text + off + 8ul);
+
+      state[0] ^= word0;
+      state[1] ^= word1;
+
+      ascon_utils::to_be_bytes(state[0], cipher + off);
+      ascon_utils::to_be_bytes(state[1], cipher + off + 8ul);
+
+      ascon_perm::permute<b>(state);
+
+      off += 16ul;
     }
+  }
 
-    // ciphered last text block
-    state[0] ^= last_text_blk[0];
-    state[1] ^= last_text_blk[1];
+  if constexpr (check_r64(rate)) {
+    // force compile-time branch evaluation
+    static_assert(rate == 64, "Rate must be 64 -bits");
 
-    const size_t remaining_len = text_len & 15ul; // bytes
-    if (remaining_len > 0) {
-      uint8_t* cipher_ = cipher + text_len - remaining_len; // slice out
+    const auto word = ascon_utils::pad_data(text + off, pad_bytes);
+    state[0] ^= word;
 
-      const uint64_t br0[2] = { state[1], state[0] };
-      constexpr size_t br1[2] = { 15ul, 7ul };
+    const size_t rm_bytes = rm_bits >> 3;
+    for (size_t i = 0; i < rm_bytes; i++) {
+      cipher[off + i] = static_cast<uint8_t>(state[0] >> ((7ul - i) * 8));
+    }
+  } else {
+    // force compile-time branch evaluation
+    static_assert(rate == 128, "Rate must be 128 -bits");
 
-      for (size_t i = 0; i < remaining_len; i++) {
-        const bool f = i < 8;
-        cipher_[i] = static_cast<uint8_t>((br0[f] >> ((br1[f] - i) << 3)));
-      }
+    uint64_t buf[2];
+    ascon_utils::pad_data(text + off, pad_bytes, buf);
+
+    state[0] ^= buf[0];
+    state[1] ^= buf[1];
+
+    const size_t rm_bytes = rm_bits >> 3;
+
+    const uint64_t br0[2]{ state[1], state[0] };
+    constexpr size_t br1[2]{ 15ul, 7ul };
+
+    for (size_t i = 0; i < rm_bytes; i++) {
+      const bool f = i < 8;
+      cipher[off + i] = static_cast<uint8_t>((br0[f] >> ((br1[f] - i) * 8)));
     }
   }
 }
