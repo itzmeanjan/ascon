@@ -18,7 +18,7 @@ test_kat:
 	bash test_kat.sh
 
 clean:
-	find . -name 'a.out' -o -name '*.o' -o -name 'lib*.so' -o -name '__pycache__' | xargs rm -rf
+	find . -name '*.out' -o -name '*.o' -o -name 'lib*.so' -o -name '__pycache__' -o -name '*.gch' | xargs rm -rf
 
 format:
 	find . -name '*.cpp' -o -name '*.hpp' | xargs clang-format -i --style=Mozilla && python3 -m black wrapper/python/*.py
