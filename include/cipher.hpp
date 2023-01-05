@@ -2,6 +2,8 @@
 #include "permutation.hpp"
 #include "types.hpp"
 #include "utils.hpp"
+#include <cstring>
+#include <type_traits>
 
 // Utility functions for implementing Ascon-{128, 128a, 80pq} authenticated
 // encryption & verified decryption
@@ -199,6 +201,7 @@ process_plaintext(uint64_t* const __restrict state,
   const size_t till = ctlen - (rm_bits >> 3);
   size_t off = 0ul;
 
+  // first encrypt all bytes which can be packed into rate bits wide full words
   while (off < till) {
     if constexpr (check_r64(rate)) {
       // force compile-time branch evaluation
@@ -231,6 +234,8 @@ process_plaintext(uint64_t* const __restrict state,
     }
   }
 
+  // then encrypt remaining bytes which can't be packed into full words i.e.
+  // padding will be required
   if constexpr (check_r64(rate)) {
     // force compile-time branch evaluation
     static_assert(rate == 64, "Rate must be 64 -bits");
@@ -239,8 +244,12 @@ process_plaintext(uint64_t* const __restrict state,
     state[0] ^= word;
 
     const size_t rm_bytes = rm_bits >> 3;
-    for (size_t i = 0; i < rm_bytes; i++) {
-      cipher[off + i] = static_cast<uint8_t>(state[0] >> ((7ul - i) * 8));
+
+    if constexpr (std::endian::native == std::endian::little) {
+      const auto swapped = ascon_utils::bswap64(state[0]);
+      std::memcpy(cipher + off, &swapped, rm_bytes);
+    } else {
+      std::memcpy(cipher + off, &state[0], rm_bytes);
     }
   } else {
     // force compile-time branch evaluation
@@ -253,13 +262,18 @@ process_plaintext(uint64_t* const __restrict state,
     state[1] ^= buf[1];
 
     const size_t rm_bytes = rm_bits >> 3;
+    const size_t fbytes = std::min(rm_bytes, 8ul);
+    const size_t lbytes = std::min(rm_bytes - fbytes, 8ul);
 
-    const uint64_t br0[2]{ state[1], state[0] };
-    constexpr size_t br1[2]{ 15ul, 7ul };
+    if constexpr (std::endian::native == std::endian::little) {
+      const auto word0 = ascon_utils::bswap64(state[0]);
+      const auto word1 = ascon_utils::bswap64(state[1]);
 
-    for (size_t i = 0; i < rm_bytes; i++) {
-      const bool f = i < 8;
-      cipher[off + i] = static_cast<uint8_t>((br0[f] >> ((br1[f] - i) * 8)));
+      std::memcpy(cipher + off, &word0, fbytes);
+      std::memcpy(cipher + off + fbytes, &word1, lbytes);
+    } else {
+      std::memcpy(cipher + off, &state[0], fbytes);
+      std::memcpy(cipher + off + fbytes, &state[1], lbytes);
     }
   }
 }
