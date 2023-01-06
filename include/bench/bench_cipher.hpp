@@ -5,14 +5,12 @@
 // Benchmark Ascon Light Weight Cryptography Implementation
 namespace bench_ascon {
 
-// Fixed associated data length for Ascon AEAD scheme
-constexpr size_t DATA_LEN = 64ul;
-
 // Benchmark Ascon-128 authenticated encryption
 void
 enc_128(benchmark::State& state)
 {
   const size_t ct_len = static_cast<size_t>(state.range(0));
+  const size_t dt_len = static_cast<size_t>(state.range(1));
 
   uint8_t bytes[16];
 
@@ -22,11 +20,11 @@ enc_128(benchmark::State& state)
   ascon_utils::random_data(bytes, 16);
   const ascon::nonce_t n{ bytes };
 
-  uint8_t* data = static_cast<uint8_t*>(std::malloc(DATA_LEN));
+  uint8_t* data = static_cast<uint8_t*>(std::malloc(dt_len));
   uint8_t* text = static_cast<uint8_t*>(std::malloc(ct_len));
   uint8_t* enc = static_cast<uint8_t*>(std::malloc(ct_len));
 
-  ascon_utils::random_data(data, DATA_LEN);
+  ascon_utils::random_data(data, dt_len);
   ascon_utils::random_data(text, ct_len);
 
   std::memset(enc, 0, ct_len);
@@ -35,7 +33,7 @@ enc_128(benchmark::State& state)
   using namespace benchmark;
 
   for (auto _ : state) {
-    const auto tag = encrypt_128(k, n, data, DATA_LEN, text, ct_len, enc);
+    const auto tag = encrypt_128(k, n, data, dt_len, text, ct_len, enc);
 
     DoNotOptimize(k);
     DoNotOptimize(n);
@@ -46,7 +44,7 @@ enc_128(benchmark::State& state)
     ClobberMemory();
   }
 
-  const size_t per_itr = DATA_LEN + ct_len;
+  const size_t per_itr = dt_len + ct_len;
   state.SetBytesProcessed(static_cast<int64_t>(per_itr * state.iterations()));
 
   std::free(data);
@@ -59,6 +57,7 @@ void
 dec_128(benchmark::State& state)
 {
   const size_t ct_len = static_cast<size_t>(state.range(0));
+  const size_t dt_len = static_cast<size_t>(state.range(1));
 
   uint8_t bytes[16];
 
@@ -68,12 +67,12 @@ dec_128(benchmark::State& state)
   ascon_utils::random_data(bytes, 16);
   const ascon::nonce_t n{ bytes };
 
-  uint8_t* data = static_cast<uint8_t*>(std::malloc(DATA_LEN));
+  uint8_t* data = static_cast<uint8_t*>(std::malloc(dt_len));
   uint8_t* text = static_cast<uint8_t*>(std::malloc(ct_len));
   uint8_t* enc = static_cast<uint8_t*>(std::malloc(ct_len));
   uint8_t* dec = static_cast<uint8_t*>(std::malloc(ct_len));
 
-  ascon_utils::random_data(data, DATA_LEN);
+  ascon_utils::random_data(data, dt_len);
   ascon_utils::random_data(text, ct_len);
 
   std::memset(enc, 0, ct_len);
@@ -81,10 +80,10 @@ dec_128(benchmark::State& state)
 
   using namespace benchmark;
   using namespace ascon;
-  const tag_t t = encrypt_128(k, n, data, DATA_LEN, text, ct_len, enc);
+  const tag_t t = encrypt_128(k, n, data, dt_len, text, ct_len, enc);
 
   for (auto _ : state) {
-    DoNotOptimize(decrypt_128(k, n, data, DATA_LEN, enc, ct_len, dec, t));
+    DoNotOptimize(decrypt_128(k, n, data, dt_len, enc, ct_len, dec, t));
 
     DoNotOptimize(k);
     DoNotOptimize(n);
@@ -95,7 +94,7 @@ dec_128(benchmark::State& state)
     ClobberMemory();
   }
 
-  const size_t per_itr = DATA_LEN + ct_len;
+  const size_t per_itr = dt_len + ct_len;
   state.SetBytesProcessed(static_cast<int64_t>(per_itr * state.iterations()));
 
   std::free(data);
@@ -109,6 +108,7 @@ void
 enc_128a(benchmark::State& state)
 {
   const size_t ct_len = static_cast<size_t>(state.range(0));
+  const size_t dt_len = static_cast<size_t>(state.range(1));
 
   uint8_t bytes[16];
 
@@ -118,11 +118,11 @@ enc_128a(benchmark::State& state)
   ascon_utils::random_data(bytes, 16);
   const ascon::nonce_t n{ bytes };
 
-  uint8_t* data = static_cast<uint8_t*>(std::malloc(DATA_LEN));
+  uint8_t* data = static_cast<uint8_t*>(std::malloc(dt_len));
   uint8_t* text = static_cast<uint8_t*>(std::malloc(ct_len));
   uint8_t* enc = static_cast<uint8_t*>(std::malloc(ct_len));
 
-  ascon_utils::random_data(data, DATA_LEN);
+  ascon_utils::random_data(data, dt_len);
   ascon_utils::random_data(text, ct_len);
 
   std::memset(enc, 0, ct_len);
@@ -131,7 +131,7 @@ enc_128a(benchmark::State& state)
   using namespace benchmark;
 
   for (auto _ : state) {
-    const auto tag = encrypt_128a(k, n, data, DATA_LEN, text, ct_len, enc);
+    const auto tag = encrypt_128a(k, n, data, dt_len, text, ct_len, enc);
 
     DoNotOptimize(k);
     DoNotOptimize(n);
@@ -142,7 +142,7 @@ enc_128a(benchmark::State& state)
     ClobberMemory();
   }
 
-  const size_t per_itr = DATA_LEN + ct_len;
+  const size_t per_itr = dt_len + ct_len;
   state.SetBytesProcessed(static_cast<int64_t>(per_itr * state.iterations()));
 
   std::free(data);
@@ -155,6 +155,7 @@ void
 dec_128a(benchmark::State& state)
 {
   const size_t ct_len = static_cast<size_t>(state.range(0));
+  const size_t dt_len = static_cast<size_t>(state.range(1));
 
   uint8_t bytes[16];
 
@@ -164,12 +165,12 @@ dec_128a(benchmark::State& state)
   ascon_utils::random_data(bytes, 16);
   const ascon::nonce_t n{ bytes };
 
-  uint8_t* data = static_cast<uint8_t*>(std::malloc(DATA_LEN));
+  uint8_t* data = static_cast<uint8_t*>(std::malloc(dt_len));
   uint8_t* text = static_cast<uint8_t*>(std::malloc(ct_len));
   uint8_t* enc = static_cast<uint8_t*>(std::malloc(ct_len));
   uint8_t* dec = static_cast<uint8_t*>(std::malloc(ct_len));
 
-  ascon_utils::random_data(data, DATA_LEN);
+  ascon_utils::random_data(data, dt_len);
   ascon_utils::random_data(text, ct_len);
 
   std::memset(enc, 0, ct_len);
@@ -177,10 +178,10 @@ dec_128a(benchmark::State& state)
 
   using namespace benchmark;
   using namespace ascon;
-  const tag_t t = encrypt_128a(k, n, data, DATA_LEN, text, ct_len, enc);
+  const tag_t t = encrypt_128a(k, n, data, dt_len, text, ct_len, enc);
 
   for (auto _ : state) {
-    DoNotOptimize(decrypt_128a(k, n, data, DATA_LEN, enc, ct_len, dec, t));
+    DoNotOptimize(decrypt_128a(k, n, data, dt_len, enc, ct_len, dec, t));
 
     DoNotOptimize(k);
     DoNotOptimize(n);
@@ -191,7 +192,7 @@ dec_128a(benchmark::State& state)
     ClobberMemory();
   }
 
-  const size_t per_itr = DATA_LEN + ct_len;
+  const size_t per_itr = dt_len + ct_len;
   state.SetBytesProcessed(static_cast<int64_t>(per_itr * state.iterations()));
 
   std::free(data);
@@ -205,6 +206,7 @@ void
 enc_80pq(benchmark::State& state)
 {
   const size_t ct_len = static_cast<size_t>(state.range(0));
+  const size_t dt_len = static_cast<size_t>(state.range(1));
 
   uint8_t bytes[20];
 
@@ -214,11 +216,11 @@ enc_80pq(benchmark::State& state)
   ascon_utils::random_data(bytes, 16);
   const ascon::nonce_t n{ bytes };
 
-  uint8_t* data = static_cast<uint8_t*>(std::malloc(DATA_LEN));
+  uint8_t* data = static_cast<uint8_t*>(std::malloc(dt_len));
   uint8_t* text = static_cast<uint8_t*>(std::malloc(ct_len));
   uint8_t* enc = static_cast<uint8_t*>(std::malloc(ct_len));
 
-  ascon_utils::random_data(data, DATA_LEN);
+  ascon_utils::random_data(data, dt_len);
   ascon_utils::random_data(text, ct_len);
 
   std::memset(enc, 0, ct_len);
@@ -227,7 +229,7 @@ enc_80pq(benchmark::State& state)
   using namespace benchmark;
 
   for (auto _ : state) {
-    const auto tag = encrypt_80pq(k, n, data, DATA_LEN, text, ct_len, enc);
+    const auto tag = encrypt_80pq(k, n, data, dt_len, text, ct_len, enc);
 
     DoNotOptimize(k);
     DoNotOptimize(n);
@@ -238,7 +240,7 @@ enc_80pq(benchmark::State& state)
     ClobberMemory();
   }
 
-  const size_t per_itr = DATA_LEN + ct_len;
+  const size_t per_itr = dt_len + ct_len;
   state.SetBytesProcessed(static_cast<int64_t>(per_itr * state.iterations()));
 
   std::free(data);
@@ -251,6 +253,7 @@ void
 dec_80pq(benchmark::State& state)
 {
   const size_t ct_len = static_cast<size_t>(state.range(0));
+  const size_t dt_len = static_cast<size_t>(state.range(1));
 
   uint8_t bytes[20];
 
@@ -260,12 +263,12 @@ dec_80pq(benchmark::State& state)
   ascon_utils::random_data(bytes, 16);
   const ascon::nonce_t n{ bytes };
 
-  uint8_t* data = static_cast<uint8_t*>(std::malloc(DATA_LEN));
+  uint8_t* data = static_cast<uint8_t*>(std::malloc(dt_len));
   uint8_t* text = static_cast<uint8_t*>(std::malloc(ct_len));
   uint8_t* enc = static_cast<uint8_t*>(std::malloc(ct_len));
   uint8_t* dec = static_cast<uint8_t*>(std::malloc(ct_len));
 
-  ascon_utils::random_data(data, DATA_LEN);
+  ascon_utils::random_data(data, dt_len);
   ascon_utils::random_data(text, ct_len);
 
   std::memset(enc, 0, ct_len);
@@ -273,10 +276,10 @@ dec_80pq(benchmark::State& state)
 
   using namespace benchmark;
   using namespace ascon;
-  const tag_t t = encrypt_80pq(k, n, data, DATA_LEN, text, ct_len, enc);
+  const tag_t t = encrypt_80pq(k, n, data, dt_len, text, ct_len, enc);
 
   for (auto _ : state) {
-    DoNotOptimize(decrypt_80pq(k, n, data, DATA_LEN, enc, ct_len, dec, t));
+    DoNotOptimize(decrypt_80pq(k, n, data, dt_len, enc, ct_len, dec, t));
 
     DoNotOptimize(k);
     DoNotOptimize(n);
@@ -287,7 +290,7 @@ dec_80pq(benchmark::State& state)
     ClobberMemory();
   }
 
-  const size_t per_itr = DATA_LEN + ct_len;
+  const size_t per_itr = dt_len + ct_len;
   state.SetBytesProcessed(static_cast<int64_t>(per_itr * state.iterations()));
 
   std::free(data);

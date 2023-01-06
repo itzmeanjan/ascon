@@ -6,7 +6,6 @@
 #include <iomanip>
 #include <random>
 #include <sstream>
-#include <type_traits>
 
 // Utility functions for Ascon Light Weight Cryptography Implementation
 namespace ascon_utils {
@@ -34,7 +33,7 @@ bswap64(const uint64_t a)
 
 // Given big-endian byte array of length 8, this function interprets it as
 // 64 -bit unsigned integer
-static inline uint64_t
+inline uint64_t
 from_be_bytes(const uint8_t* const i_bytes)
 {
   uint64_t res = 0ul;
@@ -49,7 +48,7 @@ from_be_bytes(const uint8_t* const i_bytes)
 
 // Given a 64 -bit unsigned integer, this function interprets it as a big-endian
 // byte array
-static inline void
+inline void
 to_be_bytes(const uint64_t num, uint8_t* const bytes)
 {
   if constexpr (std::endian::native == std::endian::little) {
@@ -62,7 +61,7 @@ to_be_bytes(const uint64_t num, uint8_t* const bytes)
 
 // Generate `len` -many random sampled data of type T | T = unsigned integer
 template<typename T>
-static inline void
+inline void
 random_data(T* const data, const size_t len)
   requires(std::is_unsigned_v<T>)
 {
@@ -81,7 +80,7 @@ random_data(T* const data, const size_t len)
 // See Ascon-{128, Hash, HashA} padding rule in section 2.4.{2,3} & 2.5.2 of
 // Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-static inline uint64_t
+inline uint64_t
 pad_data(const uint8_t* const data, const size_t pad_byte_len)
 {
   const size_t dlen = 8ul - pad_byte_len;
@@ -103,7 +102,7 @@ pad_data(const uint8_t* const data, const size_t pad_byte_len)
 //
 // See Ascon-128a padding rule in section 2.4.{2,3} of Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-static inline void
+inline void
 pad_data(
   const uint8_t* const __restrict data,
   const size_t pad_byte_len,
@@ -132,7 +131,7 @@ pad_data(
 }
 
 // Converts byte array into hex string; see https://stackoverflow.com/a/14051107
-static inline const std::string
+inline const std::string
 to_hex(const uint8_t* const bytes, const size_t len)
 {
   std::stringstream ss;

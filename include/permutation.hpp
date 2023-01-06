@@ -80,7 +80,7 @@ round(uint64_t* const state, const size_t r_idx)
 }
 
 // Compile time check to ensure template argument of `permute(...)` is <= 12
-static inline constexpr bool
+consteval bool
 check_lte12(const size_t a)
 {
   return a <= 12;
