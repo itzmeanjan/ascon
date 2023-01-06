@@ -3,7 +3,6 @@
 #include "types.hpp"
 #include "utils.hpp"
 #include <cstring>
-#include <type_traits>
 
 // Utility functions for implementing Ascon-{128, 128a, 80pq} authenticated
 // encryption & verified decryption

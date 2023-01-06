@@ -12,7 +12,7 @@ namespace ascon {
 // See parameters in table 1 of Ascon specification
 //
 // Note, use deciphered text only when this function returns true !
-static inline bool
+inline bool
 decrypt_128(const secret_key_128_t& k,
             const nonce_t& n,
             const uint8_t* const __restrict associated_data,
@@ -27,10 +27,8 @@ decrypt_128(const secret_key_128_t& k,
   uint64_t state[5];
 
   initialize<ASCON_128_IV, 12>(state, k, n);
-
   process_associated_data<6, 64>(state, associated_data, data_len);
   process_ciphertext<6, 64>(state, cipher, cipher_len, text);
-
   const tag_t t_ = finalize<12, 64>(state, k);
 
   const uint64_t flg0 = t.limbs[0] ^ t_.limbs[0];
@@ -39,7 +37,6 @@ decrypt_128(const secret_key_128_t& k,
   const bool flg = static_cast<bool>(flg0 | flg1);
 
   std::memset(text, 0, flg * cipher_len);
-
   return !flg;
 }
 
@@ -50,7 +47,7 @@ decrypt_128(const secret_key_128_t& k,
 // See parameters in table 1 of Ascon specification
 //
 // Note, use deciphered text only when this function returns true !
-static inline bool
+inline bool
 decrypt_128a(const secret_key_128_t& k,
              const nonce_t& n,
              const uint8_t* const __restrict associated_data,
@@ -65,10 +62,8 @@ decrypt_128a(const secret_key_128_t& k,
   uint64_t state[5];
 
   initialize<ASCON_128a_IV, 12>(state, k, n);
-
   process_associated_data<8, 128>(state, associated_data, data_len);
   process_ciphertext<8, 128>(state, cipher, cipher_len, text);
-
   const tag_t t_ = finalize<12, 128>(state, k);
 
   const uint64_t flg0 = t.limbs[0] ^ t_.limbs[0];
@@ -77,7 +72,6 @@ decrypt_128a(const secret_key_128_t& k,
   const bool flg = static_cast<bool>(flg0 | flg1);
 
   std::memset(text, 0, flg * cipher_len);
-
   return !flg;
 }
 
@@ -88,7 +82,7 @@ decrypt_128a(const secret_key_128_t& k,
 // See parameters in last paragraph of section 2.2 in Ascon specification
 //
 // Note, use deciphered text only when this function returns true !
-static inline bool
+inline bool
 decrypt_80pq(const secret_key_160_t& k,
              const nonce_t& n,
              const uint8_t* const __restrict associated_data,
@@ -103,10 +97,8 @@ decrypt_80pq(const secret_key_160_t& k,
   uint64_t state[5];
 
   initialize<12>(state, k, n);
-
   process_associated_data<6, 64>(state, associated_data, data_len);
   process_ciphertext<6, 64>(state, cipher, cipher_len, text);
-
   const tag_t t_ = finalize<12, 64>(state, k);
 
   const uint64_t flg0 = t.limbs[0] ^ t_.limbs[0];
@@ -115,7 +107,6 @@ decrypt_80pq(const secret_key_160_t& k,
   const bool flg = static_cast<bool>(flg0 | flg1);
 
   std::memset(text, 0, flg * cipher_len);
-
   return !flg;
 }
 

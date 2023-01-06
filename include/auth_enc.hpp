@@ -10,7 +10,7 @@ namespace ascon {
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
 //
 // See parameters in table 1 of Ascon specification
-static inline const tag_t
+inline const tag_t
 encrypt_128(const secret_key_128_t& k,
             const nonce_t& n,
             const uint8_t* const __restrict associated_data,
@@ -38,7 +38,7 @@ encrypt_128(const secret_key_128_t& k,
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
 //
 // See parameters in table 1 of Ascon specification
-static inline const tag_t
+inline const tag_t
 encrypt_128a(const secret_key_128_t& k,
              const nonce_t& n,
              const uint8_t* const __restrict associated_data,
@@ -53,11 +53,10 @@ encrypt_128a(const secret_key_128_t& k,
   uint64_t state[5];
 
   initialize<ASCON_128a_IV, 12>(state, k, n);
-
   process_associated_data<8, 128>(state, associated_data, data_len);
   process_plaintext<8, 128>(state, text, text_len, cipher);
-
   const tag_t t = finalize<12, 128>(state, k);
+
   return t;
 }
 
@@ -66,7 +65,7 @@ encrypt_128a(const secret_key_128_t& k,
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
 //
 // See parameters in last paragraph of section 2.2 in Ascon specification
-static inline const tag_t
+inline const tag_t
 encrypt_80pq(const secret_key_160_t& k,
              const nonce_t& n,
              const uint8_t* const __restrict associated_data,
@@ -81,11 +80,10 @@ encrypt_80pq(const secret_key_160_t& k,
   uint64_t state[5];
 
   initialize<12>(state, k, n);
-
   process_associated_data<6, 64>(state, associated_data, data_len);
   process_plaintext<6, 64>(state, text, text_len, cipher);
-
   const tag_t t = finalize<12, 64>(state, k);
+
   return t;
 }
 
