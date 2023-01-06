@@ -103,8 +103,8 @@ check_r128(const size_t r)
   return !static_cast<bool>(r ^ 128);
 }
 
-// Compile-time check rate bit length for Ascon-128 & Ascon-128a; see table 1 of
-// Ascon specification
+// Compile-time check rate bit length for Ascon-128, Ascon-128a and Ascon-80pq;
+// see table 1 of Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
 consteval bool
 check_r(const size_t r)
@@ -415,47 +415,45 @@ process_ciphertext(uint64_t* const __restrict state,
 // Ascon-128/128a finalization step, generates 128 -bit tag; taken from
 // section 2.4.4 of Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-template<const size_t a, const size_t r>
+template<const size_t a, const size_t rate>
 static inline const ascon::tag_t
 finalize(uint64_t* const state,
          const ascon::secret_key_128_t& k // 128 -bit secret key
          )
-  requires(check_r(r))
+  requires(check_r(rate))
 {
-  if constexpr (check_r64(r)) {
+  if constexpr (check_r64(rate)) {
+    // force compile-time branch evaluation
+    static_assert(rate == 64, "Rate must be 64 -bits");
+
     state[1] ^= k.limbs[0];
     state[2] ^= k.limbs[1];
-  } else if constexpr (check_r128(r)) {
+  } else {
+    // force compile-time branch evaluation
+    static_assert(rate == 128, "Rate must be 128 -bits");
+
     state[2] ^= k.limbs[0];
     state[3] ^= k.limbs[1];
   }
 
   ascon_perm::permute<a>(state);
 
-  // 128 -bit tag
-  ascon::tag_t t(state[3] ^ k.limbs[0], state[4] ^ k.limbs[1]);
-  return t;
+  return { state[3] ^ k.limbs[0], state[4] ^ k.limbs[1] };
 }
 
 // Ascon-80pq finalization step, generates 128 -bit tag; taken from
 // section 2.4.4 of Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-template<const size_t a, const size_t r>
+template<const size_t a, const size_t rate>
 static inline const ascon::tag_t
 finalize(uint64_t* const state,
          const ascon::secret_key_160_t& k // 160 -bit secret key
          )
-  requires(check_r(r))
+  requires(check_r64(rate))
 {
-  if constexpr (check_r64(r)) {
-    state[1] ^= k.limbs[0];
-    state[2] ^= k.limbs[1];
-    state[3] ^= ((k.limbs[2] & 0xfffffffful) << 32);
-  } else if constexpr (check_r128(r)) {
-    state[2] ^= k.limbs[0];
-    state[3] ^= k.limbs[1];
-    state[4] ^= ((k.limbs[2] & 0xfffffffful) << 32);
-  }
+  state[1] ^= k.limbs[0];
+  state[2] ^= k.limbs[1];
+  state[3] ^= k.limbs[2] << 32;
 
   ascon_perm::permute<a>(state);
 
@@ -468,7 +466,7 @@ finalize(uint64_t* const state,
 
   // keeps 96 to 127 -bits of 160 -bit secret key, on upper 32 -bits of
   // 64 -bit unsigned integer
-  const uint64_t tmp2 = (k.limbs[1] & 0xffffffff) << 32;
+  const uint64_t tmp2 = (k.limbs[1] & 0xfffffffful) << 32;
   // secret key's last 32 -bits ( i.e. from bit 128 to 159 ) are placed on lower
   // 32 -bits of 64 -bit unsigned integer
   const uint64_t tmp3 = k.limbs[2] & 0xfffffffful;
@@ -477,9 +475,7 @@ finalize(uint64_t* const state,
   const uint64_t k_64_a = tmp0 | tmp1;
   const uint64_t k_64_b = tmp2 | tmp3;
 
-  // 128 -bit tag
-  const ascon::tag_t t(state[3] ^ k_64_a, state[4] ^ k_64_b);
-  return t;
+  return { state[3] ^ k_64_a, state[4] ^ k_64_b };
 }
 
 }
