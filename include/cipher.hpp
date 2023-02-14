@@ -34,9 +34,8 @@ initialize(uint64_t* const __restrict state,     // uninitialized hash state
            const uint8_t* const __restrict key,  // {128, 160} -bit secret key
            const uint8_t* const __restrict nonce // 128 -bit nonce
            )
-  requires(((IV == ASCON_128_IV) || (IV == ASCON_128a_IV) ||
-            (IV == ASCON_80pq_IV)) &&
-           ((klen == 128) || (klen == 160)))
+  requires(((klen == 128) && ((IV == ASCON_128_IV) || (IV == ASCON_128a_IV))) ||
+           ((klen == 160) && (IV == ASCON_80pq_IV)))
 {
   if constexpr (klen == 128) {
     // For Ascon-128{a}
@@ -380,7 +379,8 @@ finalize(uint64_t* const __restrict state,
          const uint8_t* const __restrict key, // {128, 160} -bit secret key
          uint8_t* const __restrict tag        // 128 -bit tag
          )
-  requires(((rate == 64) || (rate == 128)) && ((klen == 128) || (klen == 160)))
+  requires(((klen == 128) && ((rate == 64) || (rate == 128))) ||
+           ((klen == 160) && (rate == 64)))
 {
   if constexpr (klen == 128) {
     const auto key0 = ascon_utils::from_be_bytes<uint64_t>(key);
@@ -411,7 +411,7 @@ finalize(uint64_t* const __restrict state,
 
     state[1] ^= key0;
     state[2] ^= key1;
-    state[3] ^= (static_cast<uint64_t>(key2) << 32);
+    state[3] ^= static_cast<uint64_t>(key2);
 
     ascon_perm::permute<a>(state);
 
