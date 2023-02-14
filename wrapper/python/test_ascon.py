@@ -153,9 +153,9 @@ def test_ascon_128_kat():
             ad = [i.strip() for i in ad.split("=")][-1]
 
             # 128 -bit secret key
-            key = int(f"0x{key}", base=16).to_bytes(16, "big")
+            key = bytes.fromhex(key)
             # 128 -bit nonce
-            nonce = int(f"0x{nonce}", base=16).to_bytes(16, "big")
+            nonce = bytes.fromhex(nonce)
             # plain text
             pt = np.asarray(
                 [
@@ -219,9 +219,9 @@ def test_ascon_128a_kat():
             ad = [i.strip() for i in ad.split("=")][-1]
 
             # 128 -bit secret key
-            key = int(f"0x{key}", base=16).to_bytes(16, "big")
+            key = bytes.fromhex(key)
             # 128 -bit nonce
-            nonce = int(f"0x{nonce}", base=16).to_bytes(16, "big")
+            nonce = bytes.fromhex(nonce)
             # plain text
             pt = np.asarray(
                 [

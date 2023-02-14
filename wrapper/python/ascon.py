@@ -23,15 +23,6 @@ assert exists(SO_PATH), "`make lib` to generate shared library !"
 SO_LIB: ct.CDLL = ct.CDLL(SO_PATH)
 
 
-class secret_key_128_t(ct.Structure):
-    """
-    128 -bit Ascon-{128, 128a} secret key; see table 1 of Ascon specification
-    https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-    """
-
-    _fields_ = [("limbs", ct.c_uint64 * 2)]  # uint64_t[2]
-
-
 class secret_key_160_t(ct.Structure):
     """
     160 -bit Ascon-80pq secret key; see last paragraph of section 2.2 of Ascon specification
@@ -61,15 +52,7 @@ class tag_t(ct.Structure):
 
 # setting proper data type for function arguments
 len_t = ct.c_size_t
-
-msg_t = np.ctypeslib.ndpointer(dtype=np.uint8, ndim=1, flags="CONTIGUOUS")
-digest_t = np.ctypeslib.ndpointer(dtype=np.uint8, ndim=1, flags="CONTIGUOUS")
-
-data_t = np.ctypeslib.ndpointer(dtype=np.uint8, ndim=1, flags="CONTIGUOUS")
-text_t = np.ctypeslib.ndpointer(dtype=np.uint8, ndim=1, flags="CONTIGUOUS")
-cipher_t = np.ctypeslib.ndpointer(dtype=np.uint8, ndim=1, flags="CONTIGUOUS")
-
-secret_key_128_tp = ct.POINTER(secret_key_128_t)
+bytes_t = np.ctypeslib.ndpointer(dtype=np.uint8, ndim=1, flags="CONTIGUOUS")
 secret_key_160_tp = ct.POINTER(secret_key_160_t)
 nonce_tp = ct.POINTER(nonce_t)
 tag_tp = ct.POINTER(tag_t)
@@ -90,7 +73,7 @@ def hash(msg: np.ndarray) -> np.ndarray:
     # allocate memory for storing 256 -bit Ascon digest
     digest = np.empty(32, dtype=np.uint8)
 
-    SO_LIB.hash.argtypes = [msg_t, len_t, digest_t]
+    SO_LIB.hash.argtypes = [bytes_t, len_t, bytes_t]
     SO_LIB.hash(msg, msg.size, digest)
 
     # return 32 -bytes Ascon digest back
@@ -112,7 +95,7 @@ def hash_a(msg: np.ndarray) -> np.ndarray:
     # allocate memory for storing 256 -bit Ascon digest
     digest = np.empty(32, dtype=np.uint8)
 
-    SO_LIB.hash_a.argtypes = [msg_t, len_t, digest_t]
+    SO_LIB.hash_a.argtypes = [bytes_t, len_t, bytes_t]
     SO_LIB.hash_a(msg, msg.size, digest)
 
     # return 32 -bytes Ascon digest back
@@ -143,38 +126,18 @@ def encrypt_128(
 
     d_len = data.size  # >= 0 bytes
     t_len = text.size  # >= 0 bytes
-    cipher = np.empty(t_len, dtype=u8)  # allocate memory for keeping cipher
+    cipher = np.empty(t_len, dtype=u8)
+    tag = np.empty(16, dtype=u8)
 
     assert len(key) == 16  # 128 -bit secret key
     assert len(nonce) == 16  # 128 -bit nonce
 
-    l0 = int.from_bytes(key[:8], "big", signed=False)
-    l1 = int.from_bytes(key[8:], "big", signed=False)
-
-    key_ = secret_key_128_t(limbs=(l0, l1))
-    key_ = ct.byref(key_)
-
-    l0 = int.from_bytes(nonce[:8], "big", signed=False)
-    l1 = int.from_bytes(nonce[8:], "big", signed=False)
-
-    nonce_ = nonce_t(limbs=(l0, l1))
-    nonce_ = ct.byref(nonce_)
-
-    args = [secret_key_128_tp, nonce_tp, data_t, len_t, text_t, len_t, cipher_t]
-
-    # set function return type
-    SO_LIB.encrypt_128.restype = tag_t
-    # set function signature
+    args = [ct.c_char_p, ct.c_char_p, bytes_t, len_t, bytes_t, len_t, bytes_t, bytes_t]
     SO_LIB.encrypt_128.argtypes = args
-
-    # encrypt using Ascon-128
-    tag = SO_LIB.encrypt_128(key_, nonce_, data, d_len, text, t_len, cipher)
-
-    # converting tag to byte array
-    tag_ = tag.limbs[0].to_bytes(8, "big") + tag.limbs[1].to_bytes(8, "big")
+    SO_LIB.encrypt_128(key, nonce, data, d_len, text, t_len, cipher, tag)
 
     # return cipher text, tag ( 128 -bit )
-    return cipher, tag_
+    return cipher, tag.tobytes()
 
 
 def decrypt_128(
@@ -209,33 +172,19 @@ def decrypt_128(
     assert len(nonce) == 16  # 128 -bit nonce
     assert len(tag) == 16  # 128 -bit tag
 
-    l0 = int.from_bytes(key[:8], "big", signed=False)
-    l1 = int.from_bytes(key[8:], "big", signed=False)
-
-    key_ = secret_key_128_t(limbs=(l0, l1))
-    key_ = ct.byref(key_)
-
-    l0 = int.from_bytes(nonce[:8], "big", signed=False)
-    l1 = int.from_bytes(nonce[8:], "big", signed=False)
-
-    nonce_ = nonce_t(limbs=(l0, l1))
-    nonce_ = ct.byref(nonce_)
-
-    l0 = int.from_bytes(tag[:8], "big", signed=False)
-    l1 = int.from_bytes(tag[8:], "big", signed=False)
-
-    tag_ = tag_t(limbs=(l0, l1))
-    tag_ = ct.byref(tag_)
-
-    args = [secret_key_128_tp, nonce_tp, data_t, len_t, cipher_t, len_t, text_t, tag_tp]
-
-    # set function return type
+    args = [
+        ct.c_char_p,
+        ct.c_char_p,
+        bytes_t,
+        len_t,
+        bytes_t,
+        len_t,
+        bytes_t,
+        ct.c_char_p,
+    ]
     SO_LIB.decrypt_128.restype = ct.c_bool
-    # set function signature
     SO_LIB.decrypt_128.argtypes = args
-
-    # decrypt using Ascon-128
-    v = SO_LIB.decrypt_128(key_, nonce_, data, d_len, cipher, c_len, text, tag_)
+    v = SO_LIB.decrypt_128(key, nonce, data, d_len, cipher, c_len, text, tag)
 
     # return decryption status, decrypted plain text
     return v, text
@@ -265,38 +214,18 @@ def encrypt_128a(
 
     d_len = data.size  # >= 0 bytes
     t_len = text.size  # >= 0 bytes
-    cipher = np.empty(t_len, dtype=u8)  # allocate memory for keeping cipher
+    cipher = np.empty(t_len, dtype=u8)
+    tag = np.empty(16, dtype=u8)
 
     assert len(key) == 16  # 128 -bit secret key
     assert len(nonce) == 16  # 128 -bit nonce
 
-    l0 = int.from_bytes(key[:8], "big", signed=False)
-    l1 = int.from_bytes(key[8:], "big", signed=False)
-
-    key_ = secret_key_128_t(limbs=(l0, l1))
-    key_ = ct.byref(key_)
-
-    l0 = int.from_bytes(nonce[:8], "big", signed=False)
-    l1 = int.from_bytes(nonce[8:], "big", signed=False)
-
-    nonce_ = nonce_t(limbs=(l0, l1))
-    nonce_ = ct.byref(nonce_)
-
-    args = [secret_key_128_tp, nonce_tp, data_t, len_t, text_t, len_t, cipher_t]
-
-    # set function return type
-    SO_LIB.encrypt_128a.restype = tag_t
-    # set function signature
+    args = [ct.c_char_p, ct.c_char_p, bytes_t, len_t, bytes_t, len_t, bytes_t, bytes_t]
     SO_LIB.encrypt_128a.argtypes = args
-
-    # encrypt using Ascon-128a
-    tag = SO_LIB.encrypt_128a(key_, nonce_, data, d_len, text, t_len, cipher)
-
-    # converting tag to byte array
-    tag_ = tag.limbs[0].to_bytes(8, "big") + tag.limbs[1].to_bytes(8, "big")
+    SO_LIB.encrypt_128a(key, nonce, data, d_len, text, t_len, cipher, tag)
 
     # return cipher text, tag ( 128 -bit )
-    return cipher, tag_
+    return cipher, tag.tobytes()
 
 
 def decrypt_128a(
@@ -331,33 +260,19 @@ def decrypt_128a(
     assert len(nonce) == 16  # 128 -bit nonce
     assert len(tag) == 16  # 128 -bit tag
 
-    l0 = int.from_bytes(key[:8], "big", signed=False)
-    l1 = int.from_bytes(key[8:], "big", signed=False)
-
-    key_ = secret_key_128_t(limbs=(l0, l1))
-    key_ = ct.byref(key_)
-
-    l0 = int.from_bytes(nonce[:8], "big", signed=False)
-    l1 = int.from_bytes(nonce[8:], "big", signed=False)
-
-    nonce_ = nonce_t(limbs=(l0, l1))
-    nonce_ = ct.byref(nonce_)
-
-    l0 = int.from_bytes(tag[:8], "big", signed=False)
-    l1 = int.from_bytes(tag[8:], "big", signed=False)
-
-    tag_ = tag_t(limbs=(l0, l1))
-    tag_ = ct.byref(tag_)
-
-    args = [secret_key_128_tp, nonce_tp, data_t, len_t, cipher_t, len_t, text_t, tag_tp]
-
-    # set function return type
+    args = [
+        ct.c_char_p,
+        ct.c_char_p,
+        bytes_t,
+        len_t,
+        bytes_t,
+        len_t,
+        bytes_t,
+        ct.c_char_p,
+    ]
     SO_LIB.decrypt_128a.restype = ct.c_bool
-    # set function signature
     SO_LIB.decrypt_128a.argtypes = args
-
-    # decrypt using Ascon-128a
-    v = SO_LIB.decrypt_128a(key_, nonce_, data, d_len, cipher, c_len, text, tag_)
+    v = SO_LIB.decrypt_128a(key, nonce, data, d_len, cipher, c_len, text, tag)
 
     # return decryption status, decrypted plain text
     return v, text
@@ -405,7 +320,7 @@ def encrypt_80pq(
     nonce_ = nonce_t(limbs=(l0, l1))
     nonce_ = ct.byref(nonce_)
 
-    args = [secret_key_160_tp, nonce_tp, data_t, len_t, text_t, len_t, cipher_t]
+    args = [secret_key_160_tp, nonce_tp, bytes_t, len_t, bytes_t, len_t, bytes_t]
 
     # set function return type
     SO_LIB.encrypt_80pq.restype = tag_t
@@ -473,7 +388,16 @@ def decrypt_80pq(
     tag_ = tag_t(limbs=(l0, l1))
     tag_ = ct.byref(tag_)
 
-    args = [secret_key_160_tp, nonce_tp, data_t, len_t, cipher_t, len_t, text_t, tag_tp]
+    args = [
+        secret_key_160_tp,
+        nonce_tp,
+        bytes_t,
+        len_t,
+        bytes_t,
+        len_t,
+        bytes_t,
+        tag_tp,
+    ]
 
     # set function return type
     SO_LIB.decrypt_80pq.restype = ct.c_bool
