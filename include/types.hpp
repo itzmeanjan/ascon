@@ -7,32 +7,6 @@
 // decryption and hashing ) Implementation
 namespace ascon {
 
-// 128 -bit Ascon secret key, used for authenticated encryption/ decryption;
-// see table 1 in section 2.2 of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-struct secret_key_128_t
-{
-  uint64_t limbs[2]{};
-
-  inline secret_key_128_t(const uint64_t l0, const uint64_t l1)
-  {
-    limbs[0] = l0;
-    limbs[1] = l1;
-  }
-
-  inline secret_key_128_t(const uint8_t* const bytes)
-  {
-    limbs[0] = ascon_utils::from_be_bytes(bytes);
-    limbs[1] = ascon_utils::from_be_bytes(bytes + 8u);
-  }
-
-  inline void to_bytes(uint8_t* const out) const
-  {
-    ascon_utils::to_be_bytes(limbs[0], out);
-    ascon_utils::to_be_bytes(limbs[1], out + 8u);
-  }
-};
-
 // 160 -bit Ascon-80pq secret key, used for authenticated encryption/
 // decryption; see last paragraph of section 2.2 of Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf

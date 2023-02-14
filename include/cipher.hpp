@@ -43,22 +43,25 @@ check_iv(const uint64_t iv)
 // it's parameterized
 template<const uint64_t IV, const size_t a>
 static inline void
-initialize(uint64_t* const state,            // uninitialized hash state
-           const ascon::secret_key_128_t& k, // 128 -bit secret key
-           const ascon::nonce_t& n           // 128 -bit nonce
+initialize(uint64_t* const __restrict state,     // uninitialized hash state
+           const uint8_t* const __restrict key,  // 128 -bit secret key
+           const uint8_t* const __restrict nonce // 128 -bit nonce
            )
   requires(check_iv(IV))
 {
+  const auto key0 = ascon_utils::from_be_bytes(key);
+  const auto key1 = ascon_utils::from_be_bytes(key + 8);
+
   state[0] = IV;
-  state[1] = k.limbs[0];
-  state[2] = k.limbs[1];
-  state[3] = n.limbs[0];
-  state[4] = n.limbs[1];
+  state[1] = key0;
+  state[2] = key1;
+  state[3] = ascon_utils::from_be_bytes(nonce);
+  state[4] = ascon_utils::from_be_bytes(nonce + 8);
 
   ascon_perm::permute<a>(state);
 
-  state[3] ^= k.limbs[0];
-  state[4] ^= k.limbs[1];
+  state[3] ^= key0;
+  state[4] ^= key1;
 }
 
 // Initialize cipher state for Ascon-80pq authenticated cipher;
@@ -88,29 +91,6 @@ initialize(uint64_t* const state,            // uninitialized hash state
   state[4] ^= (((k.limbs[1] & 0xfffffffful) << 32) | l_u32);
 }
 
-// Compile-time check that rate bit length is 64
-static inline constexpr bool
-check_r64(const size_t r)
-{
-  return !static_cast<bool>(r ^ 64);
-}
-
-// Compile-time check that rate bit length is 128
-static inline constexpr bool
-check_r128(const size_t r)
-{
-  return !static_cast<bool>(r ^ 128);
-}
-
-// Compile-time check rate bit length for Ascon-128, Ascon-128a and Ascon-80pq;
-// see table 1 of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-consteval bool
-check_r(const size_t r)
-{
-  return check_r64(r) || check_r128(r);
-}
-
 // Process `s` -many blocks of associated data, each of with rate ( = {64, 128}
 // ) -bits; see section 2.4.2 of Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
@@ -120,7 +100,7 @@ process_associated_data(uint64_t* const __restrict state,
                         const uint8_t* const __restrict data, // associated data
                         const size_t dlen // in terms of bytes, can be >= 0
                         )
-  requires(check_r(rate))
+  requires((rate == 64) || (rate == 128))
 {
   if (dlen > 0) {
     const size_t dbits = dlen << 3;
@@ -133,7 +113,7 @@ process_associated_data(uint64_t* const __restrict state,
 
     // first mix all bytes which can form full words ( rate bits wide )
     while (off < till) {
-      if constexpr (check_r64(rate)) {
+      if constexpr (rate == 64) {
         // force compile-time branch evaluation
         static_assert(rate == 64, "Rate must be 64 -bits");
 
@@ -157,7 +137,7 @@ process_associated_data(uint64_t* const __restrict state,
     }
 
     // finally do padding and then mixing of padded word ( rate bits wide )
-    if constexpr (check_r64(rate)) {
+    if constexpr (rate == 64) {
       // force compile-time branch evaluation
       static_assert(rate == 64, "Rate must be 64 -bits");
 
@@ -190,7 +170,7 @@ process_plaintext(uint64_t* const __restrict state,
                   const size_t ctlen, // in terms of bytes, can be >= 0
                   uint8_t* const __restrict cipher // has length same as `text`
                   )
-  requires(check_r(rate))
+  requires((rate == 64) || (rate == 128))
 {
   const size_t tbits = ctlen << 3;
   const size_t rm_bits = tbits & (rate - 1ul);
@@ -202,7 +182,7 @@ process_plaintext(uint64_t* const __restrict state,
 
   // first encrypt all bytes which can be packed into rate bits wide full words
   while (off < till) {
-    if constexpr (check_r64(rate)) {
+    if constexpr (rate == 64) {
       // force compile-time branch evaluation
       static_assert(rate == 64, "Rate must be 64 -bits");
 
@@ -235,7 +215,7 @@ process_plaintext(uint64_t* const __restrict state,
 
   // then encrypt remaining bytes which can't be packed into a full word i.e.
   // padding will be required
-  if constexpr (check_r64(rate)) {
+  if constexpr (rate == 64) {
     // force compile-time branch evaluation
     static_assert(rate == 64, "Rate must be 64 -bits");
 
@@ -288,7 +268,7 @@ process_ciphertext(uint64_t* const __restrict state,
                    const size_t ctlen, // in terms of bytes, can be >= 0
                    uint8_t* const __restrict text // has length same as `cipher`
                    )
-  requires(check_r(rate))
+  requires((rate == 64) || (rate == 128))
 {
   const size_t ctbits = ctlen << 3;
   const size_t rm_bits = ctbits & (rate - 1ul);
@@ -299,7 +279,7 @@ process_ciphertext(uint64_t* const __restrict state,
 
   // first decrypt all bytes which can be packed into rate bits wide full words
   while (off < till) {
-    if constexpr (check_r64(rate)) {
+    if constexpr (rate == 64) {
       // force compile-time branch evaluation
       static_assert(rate == 64, "Rate must be 64 -bits");
 
@@ -335,7 +315,7 @@ process_ciphertext(uint64_t* const __restrict state,
 
   // then decrypt remaining bytes which can't be packed into a full word i.e.
   // padding was required during encryption
-  if constexpr (check_r64(rate)) {
+  if constexpr (rate == 64) {
     // force compile-time branch evaluation
     static_assert(rate == 64, "Rate must be 64 -bits");
 
@@ -415,29 +395,34 @@ process_ciphertext(uint64_t* const __restrict state,
 // section 2.4.4 of Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
 template<const size_t a, const size_t rate>
-static inline const ascon::tag_t
-finalize(uint64_t* const state,
-         const ascon::secret_key_128_t& k // 128 -bit secret key
+static inline void
+finalize(uint64_t* const __restrict state,
+         const uint8_t* const __restrict key, // 128 -bit secret key
+         uint8_t* const __restrict tag        // 128 -bit tag
          )
-  requires(check_r(rate))
+  requires((rate == 64) || (rate == 128))
 {
-  if constexpr (check_r64(rate)) {
+  const auto key0 = ascon_utils::from_be_bytes(key);
+  const auto key1 = ascon_utils::from_be_bytes(key + 8);
+
+  if constexpr (rate == 64) {
     // force compile-time branch evaluation
     static_assert(rate == 64, "Rate must be 64 -bits");
 
-    state[1] ^= k.limbs[0];
-    state[2] ^= k.limbs[1];
+    state[1] ^= key0;
+    state[2] ^= key1;
   } else {
     // force compile-time branch evaluation
     static_assert(rate == 128, "Rate must be 128 -bits");
 
-    state[2] ^= k.limbs[0];
-    state[3] ^= k.limbs[1];
+    state[2] ^= key0;
+    state[3] ^= key1;
   }
 
   ascon_perm::permute<a>(state);
 
-  return { state[3] ^ k.limbs[0], state[4] ^ k.limbs[1] };
+  ascon_utils::to_be_bytes(state[3] ^ key0, tag);
+  ascon_utils::to_be_bytes(state[4] ^ key1, tag + 8);
 }
 
 // Ascon-80pq finalization step, generates 128 -bit tag; taken from
@@ -448,7 +433,7 @@ static inline const ascon::tag_t
 finalize(uint64_t* const state,
          const ascon::secret_key_160_t& k // 160 -bit secret key
          )
-  requires(check_r64(rate))
+  requires(rate == 64)
 {
   state[1] ^= k.limbs[0];
   state[2] ^= k.limbs[1];
