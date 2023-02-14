@@ -22,40 +22,8 @@ assert exists(SO_PATH), "`make lib` to generate shared library !"
 
 SO_LIB: ct.CDLL = ct.CDLL(SO_PATH)
 
-
-class secret_key_160_t(ct.Structure):
-    """
-    160 -bit Ascon-80pq secret key; see last paragraph of section 2.2 of Ascon specification
-    https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-    """
-
-    _fields_ = [("limbs", ct.c_uint64 * 3)]  # uint64_t[3]
-
-
-class nonce_t(ct.Structure):
-    """
-    128 -bit Ascon nonce; see table 1 of Ascon specification
-    https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-    """
-
-    _fields_ = [("limbs", ct.c_uint64 * 2)]  # uint64_t[2]
-
-
-class tag_t(ct.Structure):
-    """
-    128 -bit Ascon tag; see table 1 of Ascon specification
-    https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-    """
-
-    _fields_ = [("limbs", ct.c_uint64 * 2)]  # uint64_t[2]
-
-
-# setting proper data type for function arguments
 len_t = ct.c_size_t
 bytes_t = np.ctypeslib.ndpointer(dtype=np.uint8, ndim=1, flags="CONTIGUOUS")
-secret_key_160_tp = ct.POINTER(secret_key_160_t)
-nonce_tp = ct.POINTER(nonce_t)
-tag_tp = ct.POINTER(tag_t)
 
 
 def hash(msg: np.ndarray) -> np.ndarray:
@@ -302,39 +270,18 @@ def encrypt_80pq(
 
     d_len = data.size  # >= 0 bytes
     t_len = text.size  # >= 0 bytes
-    cipher = np.empty(t_len, dtype=u8)  # allocate memory for keeping cipher
+    cipher = np.empty(t_len, dtype=u8)
+    tag = np.empty(16, dtype=u8)
 
     assert len(key) == 20  # 160 -bit secret key
     assert len(nonce) == 16  # 128 -bit public message nonce
 
-    l0 = int.from_bytes(key[:8], "big", signed=False)
-    l1 = int.from_bytes(key[8:16], "big", signed=False)
-    l2 = int.from_bytes(key[16:], "big", signed=False)
-
-    key_ = secret_key_160_t(limbs=(l0, l1, l2))
-    key_ = ct.byref(key_)
-
-    l0 = int.from_bytes(nonce[:8], "big", signed=False)
-    l1 = int.from_bytes(nonce[8:], "big", signed=False)
-
-    nonce_ = nonce_t(limbs=(l0, l1))
-    nonce_ = ct.byref(nonce_)
-
-    args = [secret_key_160_tp, nonce_tp, bytes_t, len_t, bytes_t, len_t, bytes_t]
-
-    # set function return type
-    SO_LIB.encrypt_80pq.restype = tag_t
-    # set function signature
+    args = [ct.c_char_p, ct.c_char_p, bytes_t, len_t, bytes_t, len_t, bytes_t, bytes_t]
     SO_LIB.encrypt_80pq.argtypes = args
-
-    # encrypt using Ascon-80pq
-    tag = SO_LIB.encrypt_80pq(key_, nonce_, data, d_len, text, t_len, cipher)
-
-    # converting tag to byte array
-    tag_ = tag.limbs[0].to_bytes(8, "big") + tag.limbs[1].to_bytes(8, "big")
+    SO_LIB.encrypt_80pq(key, nonce, data, d_len, text, t_len, cipher, tag)
 
     # return cipher text, tag ( 128 -bit )
-    return cipher, tag_
+    return cipher, tag.tobytes()
 
 
 def decrypt_80pq(
@@ -369,43 +316,19 @@ def decrypt_80pq(
     assert len(nonce) == 16  # 128 -bit nonce
     assert len(tag) == 16  # 128 -bit tag
 
-    l0 = int.from_bytes(key[:8], "big", signed=False)
-    l1 = int.from_bytes(key[8:16], "big", signed=False)
-    l2 = int.from_bytes(key[16:], "big", signed=False)
-
-    key_ = secret_key_160_t(limbs=(l0, l1, l2))
-    key_ = ct.byref(key_)
-
-    l0 = int.from_bytes(nonce[:8], "big", signed=False)
-    l1 = int.from_bytes(nonce[8:], "big", signed=False)
-
-    nonce_ = nonce_t(limbs=(l0, l1))
-    nonce_ = ct.byref(nonce_)
-
-    l0 = int.from_bytes(tag[:8], "big", signed=False)
-    l1 = int.from_bytes(tag[8:], "big", signed=False)
-
-    tag_ = tag_t(limbs=(l0, l1))
-    tag_ = ct.byref(tag_)
-
     args = [
-        secret_key_160_tp,
-        nonce_tp,
+        ct.c_char_p,
+        ct.c_char_p,
         bytes_t,
         len_t,
         bytes_t,
         len_t,
         bytes_t,
-        tag_tp,
+        ct.c_char_p,
     ]
-
-    # set function return type
     SO_LIB.decrypt_80pq.restype = ct.c_bool
-    # set function signature
     SO_LIB.decrypt_80pq.argtypes = args
-
-    # decrypt using Ascon-80pq
-    v = SO_LIB.decrypt_80pq(key_, nonce_, data, d_len, cipher, c_len, text, tag_)
+    v = SO_LIB.decrypt_80pq(key, nonce, data, d_len, cipher, c_len, text, tag)
 
     # return decryption status, decrypted plain text
     return v, text
