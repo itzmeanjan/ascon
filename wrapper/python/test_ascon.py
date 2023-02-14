@@ -4,7 +4,7 @@ import ascon
 from random import randint, randbytes
 
 H = 0xFFFF_FFFF_FFFF_FFFF
-assert(H == ((1 << 64) - 1))
+assert H == ((1 << 64) - 1)
 
 
 def test_hash_kat():
