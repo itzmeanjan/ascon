@@ -86,50 +86,39 @@ ascon_128a(const size_t dlen, // bytes; >= 0
 // Test correctness of Ascon-80pq authenticated encryption and verified
 // decryption implementation
 void
-ascon_80pq(const size_t d_len /* bytes */, const size_t t_len /* bytes */)
+ascon_80pq(const size_t dlen, // bytes; >= 0
+           const size_t ctlen // bytes; >= 0
+)
 {
-  uint8_t bytes[20];
+  auto key = static_cast<uint8_t*>(std::malloc(20));
+  auto nonce = static_cast<uint8_t*>(std::malloc(16));
+  auto data = static_cast<uint8_t*>(std::malloc(dlen));
+  auto text = static_cast<uint8_t*>(std::malloc(ctlen));
+  auto enc = static_cast<uint8_t*>(std::malloc(ctlen));
+  auto dec = static_cast<uint8_t*>(std::malloc(ctlen));
+  auto tag = static_cast<uint8_t*>(std::malloc(16));
 
-  ascon_utils::random_data(bytes, 20);
-  const ascon::secret_key_160_t k{ bytes };
+  ascon_utils::random_data(key, 20);
+  ascon_utils::random_data(nonce, 16);
+  ascon_utils::random_data(data, dlen);
+  ascon_utils::random_data(text, ctlen);
 
-  ascon_utils::random_data(bytes, 16);
-  const ascon::nonce_t n{ bytes };
+  ascon::encrypt_80pq(key, nonce, data, dlen, text, ctlen, enc, tag);
+  bool v = ascon::decrypt_80pq(key, nonce, data, dlen, enc, ctlen, dec, tag);
 
-  uint8_t* data = static_cast<uint8_t*>(malloc(sizeof(uint8_t) * d_len));
-  ascon_utils::random_data(data, d_len);
-
-  uint8_t* text = static_cast<uint8_t*>(malloc(sizeof(uint8_t) * t_len));
-  ascon_utils::random_data(text, t_len);
-
-  const size_t enc_len = t_len; // bytes
-  uint8_t* enc = static_cast<uint8_t*>(malloc(sizeof(uint8_t) * enc_len));
-  memset(enc, 0, enc_len);
-
-  const size_t dec_len = enc_len; // bytes
-  uint8_t* dec = static_cast<uint8_t*>(malloc(sizeof(uint8_t) * dec_len));
-  memset(dec, 0, dec_len);
-
-  // 128 -bit tag
-  using tag_t = ascon::tag_t;
-
-  const tag_t t = ascon::encrypt_80pq(k, n, data, d_len, text, t_len, enc);
-  const bool v = ascon::decrypt_80pq(k, n, data, d_len, enc, t_len, dec, t);
-
-  // ensures that text has been decrypted & verified !
+  // ensures that text has been verifiably decrypted !
   assert(v);
-
-  // byte-by-byte check to be sure that `encrypt -> decrypt` process behaved as
-  // expected !
-  for (size_t i = 0; i < t_len; i++) {
+  for (size_t i = 0; i < ctlen; i++) {
     assert(text[i] == dec[i]);
   }
 
-  // deallocate memory
-  free(data);
-  free(text);
-  free(enc);
-  free(dec);
+  std::free(key);
+  std::free(nonce);
+  std::free(data);
+  std::free(text);
+  std::free(enc);
+  std::free(dec);
+  std::free(tag);
 }
 
 }

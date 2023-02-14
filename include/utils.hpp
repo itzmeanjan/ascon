@@ -10,52 +10,67 @@
 // Utility functions for Ascon Light Weight Cryptography Implementation
 namespace ascon_utils {
 
-// Given a 64 -bit unsigned integer word, this routine swaps byte order and
-// returns byte swapped 64 -bit word.
+// Given a 32/ 64 -bit unsigned integer word, this routine swaps byte order and
+// returns byte swapped 32/ 64 -bit word.
 //
 // Collects inspiration from https://stackoverflow.com/a/36552262
-static inline constexpr uint64_t
-bswap64(const uint64_t a)
+template<typename T>
+static inline constexpr T
+bswap(const T a)
+  requires(std::unsigned_integral<T> && ((sizeof(T) == 4) || (sizeof(T) == 8)))
 {
+  if constexpr (sizeof(T) == 4) {
 #if defined __GNUG__
-  return __builtin_bswap64(a);
+    return __builtin_bswap32(a);
 #else
-  return ((a & 0x00000000000000fful) << 56) |
-         ((a & 0x000000000000ff00ul) << 40) |
-         ((a & 0x0000000000ff0000ul) << 24) |
-         ((a & 0x00000000ff000000ul) << 0x8) |
-         ((a & 0x000000ff00000000ul) >> 0x8) |
-         ((a & 0x0000ff0000000000ul) >> 24) |
-         ((a & 0x00ff000000000000ul) >> 40) |
-         ((a & 0xff00000000000000ul) >> 56);
+    return ((a & 0x000000ffu) << 24) | ((a & 0x0000ff00u) << 8) |
+           ((a & 0x00ff0000u) >> 8) | ((a & 0xff000000u) >> 24);
 #endif
+  } else {
+#if defined __GNUG__
+    return __builtin_bswap64(a);
+#else
+    return ((a & 0x00000000000000fful) << 56) |
+           ((a & 0x000000000000ff00ul) << 40) |
+           ((a & 0x0000000000ff0000ul) << 24) |
+           ((a & 0x00000000ff000000ul) << 0x8) |
+           ((a & 0x000000ff00000000ul) >> 0x8) |
+           ((a & 0x0000ff0000000000ul) >> 24) |
+           ((a & 0x00ff000000000000ul) >> 40) |
+           ((a & 0xff00000000000000ul) >> 56);
+#endif
+  }
 }
 
-// Given big-endian byte array of length 8, this function interprets it as
-// 64 -bit unsigned integer
-inline uint64_t
+// Given big-endian byte array of length 4/ 8, this function interprets it as
+// 32/ 64 -bit unsigned integer
+template<typename T>
+inline T
 from_be_bytes(const uint8_t* const i_bytes)
+  requires(std::unsigned_integral<T> && ((sizeof(T) == 4) || (sizeof(T) == 8)))
 {
-  uint64_t res = 0ul;
-  std::memcpy(&res, i_bytes, 8);
+  T res = 0;
+  std::memcpy(&res, i_bytes, sizeof(T));
 
   if constexpr (std::endian::native == std::endian::little) {
-    return bswap64(res);
+    return bswap(res);
   } else {
     return res;
   }
 }
 
-// Given a 64 -bit unsigned integer, this function interprets it as a big-endian
-// byte array
+// Given a 32/ 64 -bit unsigned integer, this function interprets it as a
+// big-endian byte array of length 4/ 8
+template<typename T>
 inline void
-to_be_bytes(const uint64_t num, uint8_t* const bytes)
+to_be_bytes(const T num, uint8_t* const bytes)
+  requires(std::unsigned_integral<T> && ((sizeof(T) == 4) || (sizeof(T) == 8)))
 {
   if constexpr (std::endian::native == std::endian::little) {
-    const uint64_t res = bswap64(num);
-    std::memcpy(bytes, &res, 8);
+    const auto res = bswap(num);
+    std::memcpy(bytes, &res, sizeof(T));
   } else {
-    std::memcpy(bytes, &num, 8);
+    std::memcpy(bytes, &num, sizeof(T));
   }
 }
 
@@ -91,7 +106,7 @@ pad_data(const uint8_t* const data, const size_t pad_byte_len)
   std::memcpy(&res, data, dlen);
 
   if constexpr (std::endian::native == std::endian::little) {
-    res = bswap64(res);
+    res = bswap(res);
   }
 
   return res | pad_mask;
@@ -119,8 +134,8 @@ pad_data(
   std::memcpy(&data_blk[1], data + fw_len, sw_len);
 
   if constexpr (std::endian::native == std::endian::little) {
-    data_blk[0] = bswap64(data_blk[0]);
-    data_blk[1] = bswap64(data_blk[1]);
+    data_blk[0] = bswap(data_blk[0]);
+    data_blk[1] = bswap(data_blk[1]);
   }
 
   const bool flg = pad_byte_len > 8;

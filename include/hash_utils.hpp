@@ -47,7 +47,7 @@ absorb(uint64_t* const __restrict state,
   size_t off = 0ul;
 
   while (off < till) {
-    const auto word = ascon_utils::from_be_bytes(msg + off);
+    const auto word = ascon_utils::from_be_bytes<uint64_t>(msg + off);
     state[0] ^= word;
     ascon_perm::permute<b>(state);
 
