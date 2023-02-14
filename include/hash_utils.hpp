@@ -54,7 +54,7 @@ absorb(uint64_t* const __restrict state,
     off += 8ul;
   }
 
-  const auto word = ascon_utils::pad_data(msg + off, pad_bytes);
+  const auto word = ascon_utils::pad64(msg + off, pad_bytes);
   state[0] ^= word;
 }
 

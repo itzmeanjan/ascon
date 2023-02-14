@@ -95,8 +95,8 @@ random_data(T* const data, const size_t len)
 // See Ascon-{128, Hash, HashA} padding rule in section 2.4.{2,3} & 2.5.2 of
 // Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-inline uint64_t
-pad_data(const uint8_t* const data, const size_t pad_byte_len)
+static inline uint64_t
+pad64(const uint8_t* const data, const size_t pad_byte_len)
 {
   const size_t dlen = 8ul - pad_byte_len;
   const size_t pad_bit_len = pad_byte_len << 3;
@@ -117,32 +117,32 @@ pad_data(const uint8_t* const data, const size_t pad_byte_len)
 //
 // See Ascon-128a padding rule in section 2.4.{2,3} of Ascon specification
 // https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-inline void
-pad_data(
-  const uint8_t* const __restrict data,
-  const size_t pad_byte_len,
-  uint64_t* const __restrict data_blk // padded block; assert len(data_blk) = 2
-)
+static inline std::pair<uint64_t, uint64_t>
+pad128(const uint8_t* const __restrict data, const size_t pad_byte_len)
 {
-  std::memset(data_blk, 0, 16);
-
   const size_t dlen = 16ul - pad_byte_len;
   const size_t fw_len = std::min(dlen, 8ul);
   const size_t sw_len = dlen - fw_len;
 
-  std::memcpy(&data_blk[0], data, fw_len);
-  std::memcpy(&data_blk[1], data + fw_len, sw_len);
+  uint64_t res0 = 0;
+  uint64_t res1 = 0;
+
+  std::memcpy(&res0, data, fw_len);
+  std::memcpy(&res1, data + fw_len, sw_len);
 
   if constexpr (std::endian::native == std::endian::little) {
-    data_blk[0] = bswap(data_blk[0]);
-    data_blk[1] = bswap(data_blk[1]);
+    res0 = bswap(res0);
+    res1 = bswap(res1);
   }
 
   const bool flg = pad_byte_len > 8;
   const size_t pad_bit_len = (pad_byte_len - 8 * flg) << 3;
   const size_t pad_mask = 1ul << (pad_bit_len - 1ul);
 
-  data_blk[!flg] |= pad_mask;
+  uint64_t br[]{ res0, res1 };
+  br[!flg] |= pad_mask;
+
+  return { br[0], br[1] };
 }
 
 // Converts byte array into hex string; see https://stackoverflow.com/a/14051107

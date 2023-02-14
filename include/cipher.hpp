@@ -123,17 +123,16 @@ process_associated_data(uint64_t* const __restrict state,
       // force compile-time branch evaluation
       static_assert(rate == 64, "Rate must be 64 -bits");
 
-      const auto word = ascon_utils::pad_data(data + off, pad_bytes);
+      const auto word = ascon_utils::pad64(data + off, pad_bytes);
       state[0] ^= word;
       ascon_perm::permute<b>(state);
     } else {
       // force compile-time branch evaluation
       static_assert(rate == 128, "Rate must be 128 -bits");
 
-      uint64_t buf[2];
-      ascon_utils::pad_data(data + off, pad_bytes, buf);
-      state[0] ^= buf[0];
-      state[1] ^= buf[1];
+      const auto words = ascon_utils::pad128(data + off, pad_bytes);
+      state[0] ^= words.first;
+      state[1] ^= words.second;
       ascon_perm::permute<b>(state);
     }
   }
@@ -201,7 +200,7 @@ process_plaintext(uint64_t* const __restrict state,
     // force compile-time branch evaluation
     static_assert(rate == 64, "Rate must be 64 -bits");
 
-    const auto word = ascon_utils::pad_data(text + off, pad_bytes);
+    const auto word = ascon_utils::pad64(text + off, pad_bytes);
     state[0] ^= word;
 
     const size_t rm_bytes = rm_bits >> 3;
@@ -216,11 +215,9 @@ process_plaintext(uint64_t* const __restrict state,
     // force compile-time branch evaluation
     static_assert(rate == 128, "Rate must be 128 -bits");
 
-    uint64_t buf[2];
-    ascon_utils::pad_data(text + off, pad_bytes, buf);
-
-    state[0] ^= buf[0];
-    state[1] ^= buf[1];
+    const auto words = ascon_utils::pad128(text + off, pad_bytes);
+    state[0] ^= words.first;
+    state[1] ^= words.second;
 
     const size_t rm_bytes = rm_bits >> 3;
     const size_t fbytes = std::min(rm_bytes, 8ul);
