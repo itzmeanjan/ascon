@@ -22,24 +22,6 @@ extern "C"
                    uint8_t* const __restrict,
                    uint8_t* const __restrict tag);
 
-  void encrypt_128a(const uint8_t* const __restrict,
-                    const uint8_t* const __restrict,
-                    const uint8_t* const __restrict,
-                    const size_t,
-                    const uint8_t* const __restrict,
-                    const size_t,
-                    uint8_t* const __restrict,
-                    uint8_t* const __restrict tag);
-
-  void encrypt_80pq(const uint8_t* const __restrict,
-                    const uint8_t* const __restrict,
-                    const uint8_t* const __restrict,
-                    const size_t,
-                    const uint8_t* const __restrict,
-                    const size_t,
-                    uint8_t* const __restrict,
-                    uint8_t* const __restrict tag);
-
   bool decrypt_128(const uint8_t* const __restrict,
                    const uint8_t* const __restrict,
                    const uint8_t* const __restrict,
@@ -49,6 +31,15 @@ extern "C"
                    uint8_t* const __restrict,
                    const uint8_t* const __restrict);
 
+  void encrypt_128a(const uint8_t* const __restrict,
+                    const uint8_t* const __restrict,
+                    const uint8_t* const __restrict,
+                    const size_t,
+                    const uint8_t* const __restrict,
+                    const size_t,
+                    uint8_t* const __restrict,
+                    uint8_t* const __restrict tag);
+
   bool decrypt_128a(const uint8_t* const __restrict,
                     const uint8_t* const __restrict,
                     const uint8_t* const __restrict,
@@ -57,6 +48,15 @@ extern "C"
                     const size_t,
                     uint8_t* const __restrict,
                     const uint8_t* const __restrict);
+
+  void encrypt_80pq(const uint8_t* const __restrict,
+                    const uint8_t* const __restrict,
+                    const uint8_t* const __restrict,
+                    const size_t,
+                    const uint8_t* const __restrict,
+                    const size_t,
+                    uint8_t* const __restrict,
+                    uint8_t* const __restrict tag);
 
   bool decrypt_80pq(const uint8_t* const __restrict,
                     const uint8_t* const __restrict,

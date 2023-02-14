@@ -1,12 +1,10 @@
 #!/usr/bin/python3
 
-from curses.ascii import DLE
 import ascon
-import numpy as np
 from random import randint, randbytes
 
-# = (1 << 64) - 1
 H = 0xFFFF_FFFF_FFFF_FFFF
+assert(H == ((1 << 64) - 1))
 
 
 def test_hash_kat():
@@ -16,8 +14,6 @@ def test_hash_kat():
     https://github.com/meichlseder/pyascon/blob/236aadd9e09f40bc57064eba7cbade6f46a4c532/genkat.py
     """
 
-    count = 0  # -many KATs to be run
-
     with open("LWC_HASH_KAT_256.txt", "r") as fd:
         while True:
             cnt = fd.readline()
@@ -28,42 +24,20 @@ def test_hash_kat():
             msg = fd.readline()
             md = fd.readline()
 
-            # extract out required fields
             cnt = int([i.strip() for i in cnt.split("=")][-1])
             msg = [i.strip() for i in msg.split("=")][-1]
             md = [i.strip() for i in md.split("=")][-1]
 
-            # convert input message to numpy ndarray of uint8_t
-            msg = np.asarray(
-                [
-                    int(f"0x{msg[(i << 1): ((i+1) << 1)]}", base=16)
-                    for i in range(len(msg) >> 1)
-                ],
-                dtype=np.uint8,
-            )
+            msg = bytes.fromhex(msg)
+            md = bytes.fromhex(md)
 
-            # convert output digest to numpy ndarray of uint8_t
-            md = np.asarray(
-                [
-                    int(f"0x{md[(i << 1): ((i+1) << 1)]}", base=16)
-                    for i in range(len(md) >> 1)
-                ],
-                dtype=np.uint8,
-            )
-
-            # compute Ascon Hash using my implementation
             digest = ascon.hash(msg)
-            # check 32 -bytes element-wise
-            check = (md == digest).all()
 
+            check = md == digest
             assert check, f"[Ascon Hash KAT {cnt}] expected {md}, found {digest} !"
 
             # don't need this line, so discard
             fd.readline()
-            # to keep track of how many KATs executed !
-            count = cnt
-
-    print(f"[test] passed {count} -many Ascon Hash KAT(s)")
 
 
 def test_hashA_kat():
@@ -73,8 +47,6 @@ def test_hashA_kat():
     https://github.com/meichlseder/pyascon/blob/236aadd9e09f40bc57064eba7cbade6f46a4c532/genkat.py
     """
 
-    count = 0  # -many KATs to be run
-
     with open("LWC_HASH_KAT_256.txt", "r") as fd:
         while True:
             cnt = fd.readline()
@@ -85,42 +57,19 @@ def test_hashA_kat():
             msg = fd.readline()
             md = fd.readline()
 
-            # extract out required fields
             cnt = int([i.strip() for i in cnt.split("=")][-1])
             msg = [i.strip() for i in msg.split("=")][-1]
             md = [i.strip() for i in md.split("=")][-1]
 
-            # convert input message to numpy ndarray of uint8_t
-            msg = np.asarray(
-                [
-                    int(f"0x{msg[(i << 1): ((i+1) << 1)]}", base=16)
-                    for i in range(len(msg) >> 1)
-                ],
-                dtype=np.uint8,
-            )
+            msg = bytes.fromhex(msg)
+            md = bytes.fromhex(md)
 
-            # convert output digest to numpy ndarray of uint8_t
-            md = np.asarray(
-                [
-                    int(f"0x{md[(i << 1): ((i+1) << 1)]}", base=16)
-                    for i in range(len(md) >> 1)
-                ],
-                dtype=np.uint8,
-            )
-
-            # compute Ascon HashA using my implementation
             digest = ascon.hash_a(msg)
-            # check 32 -bytes element-wise
-            check = (md == digest).all()
 
-            assert check, f"[Ascon Hash KAT {cnt}] expected {md}, found {digest} !"
+            check = md == digest
+            assert check, f"[Ascon HashA KAT {cnt}] expected {md}, found {digest} !"
 
-            # don't need this line, so discard
             fd.readline()
-            # to keep track of how many KATs executed !
-            count = cnt
-
-    print(f"[test] passed {count} -many Ascon HashA KAT(s)")
 
 
 def test_ascon_128_kat():
@@ -130,8 +79,6 @@ def test_ascon_128_kat():
     https://github.com/meichlseder/pyascon/blob/236aadd9e09f40bc57064eba7cbade6f46a4c532/genkat.py
     """
 
-    count = 0  # -many KATs to be run
-
     with open("LWC_AEAD_KAT_128_128.txt", "r") as fd:
         while True:
             cnt = fd.readline()
@@ -145,48 +92,26 @@ def test_ascon_128_kat():
             ad = fd.readline()
             ct = fd.readline()
 
-            # extract out required fields
             cnt = int([i.strip() for i in cnt.split("=")][-1])
             key = [i.strip() for i in key.split("=")][-1]
             nonce = [i.strip() for i in nonce.split("=")][-1]
             pt = [i.strip() for i in pt.split("=")][-1]
             ad = [i.strip() for i in ad.split("=")][-1]
+            ct = [i.strip() for i in ct.split("=")][-1]
 
-            # 128 -bit secret key
             key = bytes.fromhex(key)
-            # 128 -bit nonce
             nonce = bytes.fromhex(nonce)
-            # plain text
-            pt = np.asarray(
-                [
-                    int(f"0x{pt[(i << 1): ((i+1) << 1)]}", base=16)
-                    for i in range(len(pt) >> 1)
-                ],
-                dtype=np.uint8,
-            )
-            # associated data
-            ad = np.asarray(
-                [
-                    int(f"0x{ad[(i << 1): ((i+1) << 1)]}", base=16)
-                    for i in range(len(ad) >> 1)
-                ],
-                dtype=np.uint8,
-            )
+            pt = bytes.fromhex(pt)
+            ad = bytes.fromhex(ad)
+            ct = bytes.fromhex(ct)
 
             cipher, tag = ascon.encrypt_128(key, nonce, ad, pt)
             flag, text = ascon.decrypt_128(key, nonce, ad, cipher, tag)
 
-            check = (pt == text).all()
-            assert (
-                check and flag
-            ), f"[Ascon-128 KAT {cnt}] expected {pt}, found {text} !"
+            check = (pt == text) and (ct == cipher + tag) and flag
+            assert check, f"[Ascon-128 KAT {cnt}] expected {pt}, found {text} !"
 
-            # don't need this line, so discard
             fd.readline()
-            # to keep track of how many KATs executed !
-            count = cnt
-
-    print(f"[test] passed {count} -many Ascon-128 KAT(s)")
 
 
 def test_ascon_128a_kat():
@@ -196,8 +121,6 @@ def test_ascon_128a_kat():
     https://github.com/meichlseder/pyascon/blob/236aadd9e09f40bc57064eba7cbade6f46a4c532/genkat.py
     """
 
-    count = 0  # -many KATs to be run
-
     with open("LWC_AEAD_KAT_128_128.txt", "r") as fd:
         while True:
             cnt = fd.readline()
@@ -211,48 +134,26 @@ def test_ascon_128a_kat():
             ad = fd.readline()
             ct = fd.readline()
 
-            # extract out required fields
             cnt = int([i.strip() for i in cnt.split("=")][-1])
             key = [i.strip() for i in key.split("=")][-1]
             nonce = [i.strip() for i in nonce.split("=")][-1]
             pt = [i.strip() for i in pt.split("=")][-1]
             ad = [i.strip() for i in ad.split("=")][-1]
+            ct = [i.strip() for i in ct.split("=")][-1]
 
-            # 128 -bit secret key
             key = bytes.fromhex(key)
-            # 128 -bit nonce
             nonce = bytes.fromhex(nonce)
-            # plain text
-            pt = np.asarray(
-                [
-                    int(f"0x{pt[(i << 1): ((i+1) << 1)]}", base=16)
-                    for i in range(len(pt) >> 1)
-                ],
-                dtype=np.uint8,
-            )
-            # associated data
-            ad = np.asarray(
-                [
-                    int(f"0x{ad[(i << 1): ((i+1) << 1)]}", base=16)
-                    for i in range(len(ad) >> 1)
-                ],
-                dtype=np.uint8,
-            )
+            pt = bytes.fromhex(pt)
+            ad = bytes.fromhex(ad)
+            ct = bytes.fromhex(ct)
 
             cipher, tag = ascon.encrypt_128a(key, nonce, ad, pt)
             flag, text = ascon.decrypt_128a(key, nonce, ad, cipher, tag)
 
-            check = (pt == text).all()
-            assert (
-                check and flag
-            ), f"[Ascon-128a KAT {cnt}] expected {pt}, found {text} !"
+            check = (pt == text) and (ct == cipher + tag) and flag
+            assert check, f"[Ascon-128a KAT {cnt}] expected {pt}, found {text} !"
 
-            # don't need this line, so discard
             fd.readline()
-            # to keep track of how many KATs executed !
-            count = cnt
-
-    print(f"[test] passed {count} -many Ascon-128a KAT(s)")
 
 
 def test_ascon_80pq_kat():
@@ -261,8 +162,6 @@ def test_ascon_80pq_kat():
     using Known Answer Tests as input; generated by
     https://github.com/meichlseder/pyascon/blob/236aadd9e09f40bc57064eba7cbade6f46a4c532/genkat.py
     """
-
-    count = 0  # -many KATs to be run
 
     with open("LWC_AEAD_KAT_160_128.txt", "r") as fd:
         while True:
@@ -277,48 +176,26 @@ def test_ascon_80pq_kat():
             ad = fd.readline()
             ct = fd.readline()
 
-            # extract out required fields
             cnt = int([i.strip() for i in cnt.split("=")][-1])
             key = [i.strip() for i in key.split("=")][-1]
             nonce = [i.strip() for i in nonce.split("=")][-1]
             pt = [i.strip() for i in pt.split("=")][-1]
             ad = [i.strip() for i in ad.split("=")][-1]
+            ct = [i.strip() for i in ct.split("=")][-1]
 
-            # 160 -bit secret key
-            key = int(f"0x{key}", base=16).to_bytes(20, "big")
-            # 128 -bit nonce
-            nonce = int(f"0x{nonce}", base=16).to_bytes(16, "big")
-            # plain text
-            pt = np.asarray(
-                [
-                    int(f"0x{pt[(i << 1): ((i+1) << 1)]}", base=16)
-                    for i in range(len(pt) >> 1)
-                ],
-                dtype=np.uint8,
-            )
-            # associated data
-            ad = np.asarray(
-                [
-                    int(f"0x{ad[(i << 1): ((i+1) << 1)]}", base=16)
-                    for i in range(len(ad) >> 1)
-                ],
-                dtype=np.uint8,
-            )
+            key = bytes.fromhex(key)
+            nonce = bytes.fromhex(nonce)
+            pt = bytes.fromhex(pt)
+            ad = bytes.fromhex(ad)
+            ct = bytes.fromhex(ct)
 
             cipher, tag = ascon.encrypt_80pq(key, nonce, ad, pt)
             flag, text = ascon.decrypt_80pq(key, nonce, ad, cipher, tag)
 
-            check = (pt == text).all()
-            assert (
-                check and flag
-            ), f"[Ascon-80pq KAT {cnt}] expected {pt}, found {text} !"
+            check = (pt == text) and (ct == cipher + tag) and flag
+            assert check, f"[Ascon-80pq KAT {cnt}] expected {pt}, found {text} !"
 
-            # don't need this line, so discard
             fd.readline()
-            # to keep track of how many KATs executed !
-            count = cnt
-
-    print(f"[test] passed {count} -many Ascon-80pq KAT(s)")
 
 
 def flip_bit(inp: bytes) -> bytes:
@@ -360,36 +237,27 @@ def test_ascon_128_kat_auth_fail():
     nonce = randbytes(16)
     data = randbytes(DLEN)
     txt = randbytes(CTLEN)
+    zeros = bytes(CTLEN)
 
-    data_ = np.frombuffer(data, dtype=np.uint8)
-    txt_ = np.frombuffer(txt, dtype=np.uint8)
-    zeros = np.zeros(CTLEN, dtype=np.uint8)
-
-    enc, tag = ascon.encrypt_128(key, nonce, data_, txt_)
+    enc, tag = ascon.encrypt_128(key, nonce, data, txt)
 
     # case 0
-    fdata = flip_bit(data)
-    fdata_ = np.frombuffer(fdata, dtype=np.uint8)
-
-    flg, dec = ascon.decrypt_128(key, nonce, fdata_, enc, tag)
+    flg, dec = ascon.decrypt_128(key, nonce, flip_bit(data), enc, tag)
 
     assert not flg, "Ascon128 authentication must fail !"
-    assert np.all(zeros == dec), "Unverified plain text must not be released !"
+    assert zeros == dec, "Unverified plain text must not be released !"
 
     # case 1
-    fenc = flip_bit(enc.tobytes())
-    fenc_ = np.frombuffer(fenc, dtype=np.uint8)
-
-    flg, dec = ascon.decrypt_128(key, nonce, data_, fenc_, tag)
+    flg, dec = ascon.decrypt_128(key, nonce, data, flip_bit(enc), tag)
 
     assert not flg, "Ascon128 authentication must fail !"
-    assert np.all(zeros == dec), "Unverified plain text must not be released !"
+    assert zeros == dec, "Unverified plain text must not be released !"
 
     # case 2
-    flg, dec = ascon.decrypt_128(key, nonce, fdata_, fenc_, tag)
+    flg, dec = ascon.decrypt_128(key, nonce, flip_bit(data), flip_bit(enc), tag)
 
     assert not flg, "Ascon128 authentication must fail !"
-    assert np.all(zeros == dec), "Unverified plain text must not be released !"
+    assert zeros == dec, "Unverified plain text must not be released !"
 
 
 def test_ascon_128a_kat_auth_fail():
@@ -406,36 +274,27 @@ def test_ascon_128a_kat_auth_fail():
     nonce = randbytes(16)
     data = randbytes(DLEN)
     txt = randbytes(CTLEN)
+    zeros = bytes(CTLEN)
 
-    data_ = np.frombuffer(data, dtype=np.uint8)
-    txt_ = np.frombuffer(txt, dtype=np.uint8)
-    zeros = np.zeros(CTLEN, dtype=np.uint8)
-
-    enc, tag = ascon.encrypt_128a(key, nonce, data_, txt_)
+    enc, tag = ascon.encrypt_128a(key, nonce, data, txt)
 
     # case 0
-    fdata = flip_bit(data)
-    fdata_ = np.frombuffer(fdata, dtype=np.uint8)
+    flg, dec = ascon.decrypt_128a(key, nonce, flip_bit(data), enc, tag)
 
-    flg, dec = ascon.decrypt_128a(key, nonce, fdata_, enc, tag)
-
-    assert not flg, "Ascon128a aauthentication must fail !"
-    assert np.all(zeros == dec), "Unverified plain text must not be released !"
+    assert not flg, "Ascon128a authentication must fail !"
+    assert zeros == dec, "Unverified plain text must not be released !"
 
     # case 1
-    fenc = flip_bit(enc.tobytes())
-    fenc_ = np.frombuffer(fenc, dtype=np.uint8)
-
-    flg, dec = ascon.decrypt_128a(key, nonce, data_, fenc_, tag)
+    flg, dec = ascon.decrypt_128a(key, nonce, data, flip_bit(enc), tag)
 
     assert not flg, "Ascon128a authentication must fail !"
-    assert np.all(zeros == dec), "Unverified plain text must not be released !"
+    assert zeros == dec, "Unverified plain text must not be released !"
 
     # case 2
-    flg, dec = ascon.decrypt_128a(key, nonce, fdata_, fenc_, tag)
+    flg, dec = ascon.decrypt_128a(key, nonce, flip_bit(data), flip_bit(enc), tag)
 
     assert not flg, "Ascon128a authentication must fail !"
-    assert np.all(zeros == dec), "Unverified plain text must not be released !"
+    assert zeros == dec, "Unverified plain text must not be released !"
 
 
 def test_ascon_80pq_kat_auth_fail():
@@ -452,36 +311,27 @@ def test_ascon_80pq_kat_auth_fail():
     nonce = randbytes(16)
     data = randbytes(DLEN)
     txt = randbytes(CTLEN)
+    zeros = bytes(CTLEN)
 
-    data_ = np.frombuffer(data, dtype=np.uint8)
-    txt_ = np.frombuffer(txt, dtype=np.uint8)
-    zeros = np.zeros(CTLEN, dtype=np.uint8)
-
-    enc, tag = ascon.encrypt_80pq(key, nonce, data_, txt_)
+    enc, tag = ascon.encrypt_80pq(key, nonce, data, txt)
 
     # case 0
-    fdata = flip_bit(data)
-    fdata_ = np.frombuffer(fdata, dtype=np.uint8)
-
-    flg, dec = ascon.decrypt_80pq(key, nonce, fdata_, enc, tag)
+    flg, dec = ascon.decrypt_80pq(key, nonce, flip_bit(data), enc, tag)
 
     assert not flg, "Ascon80pq authentication must fail !"
-    assert np.all(zeros == dec), "Unverified plain text must not be released !"
+    assert zeros == dec, "Unverified plain text must not be released !"
 
     # case 1
-    fenc = flip_bit(enc.tobytes())
-    fenc_ = np.frombuffer(fenc, dtype=np.uint8)
-
-    flg, dec = ascon.decrypt_80pq(key, nonce, data_, fenc_, tag)
+    flg, dec = ascon.decrypt_80pq(key, nonce, data, flip_bit(enc), tag)
 
     assert not flg, "Ascon80pq authentication must fail !"
-    assert np.all(zeros == dec), "Unverified plain text must not be released !"
+    assert zeros == dec, "Unverified plain text must not be released !"
 
     # case 2
-    flg, dec = ascon.decrypt_80pq(key, nonce, fdata_, fenc_, tag)
+    flg, dec = ascon.decrypt_80pq(key, nonce, flip_bit(data), flip_bit(enc), tag)
 
     assert not flg, "Ascon80pq authentication must fail !"
-    assert np.all(zeros == dec), "Unverified plain text must not be released !"
+    assert zeros == dec, "Unverified plain text must not be released !"
 
 
 if __name__ == "__main__":
