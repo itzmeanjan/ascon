@@ -11,9 +11,8 @@ namespace bench_ascon {
 template<const size_t ROUNDS>
 void
 permutation(benchmark::State& state)
+  requires(ROUNDS <= ascon_perm::ROUNDS)
 {
-  static_assert(ROUNDS <= 12);
-
   uint64_t st[5];
   ascon_utils::random_data(st, 5);
 
