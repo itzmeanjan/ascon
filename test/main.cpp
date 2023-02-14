@@ -7,17 +7,11 @@ main()
   ascon_test::p_a();
   std::cout << "[test] Ascon permutation `p_a`" << std::endl;
 
-  ascon_test::hash();
-  std::cout << "[test] Ascon-hash" << std::endl;
-
-  ascon_test::hash_a();
-  std::cout << "[test] Ascon-hashA" << std::endl;
-
-  for (size_t data_len = 0; data_len < 32; data_len++) {
-    for (size_t text_len = 0; text_len < 32; text_len++) {
-      ascon_test::ascon_128(data_len, text_len);
-      ascon_test::ascon_128a(data_len, text_len);
-      ascon_test::ascon_80pq(data_len, text_len);
+  for (size_t dlen = 0; dlen < 32; dlen++) {
+    for (size_t ctlen = 0; ctlen < 32; ctlen++) {
+      ascon_test::ascon_128(dlen, ctlen);
+      ascon_test::ascon_128a(dlen, ctlen);
+      ascon_test::ascon_80pq(dlen, ctlen);
     }
   }
 
