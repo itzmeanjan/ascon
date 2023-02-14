@@ -1,6 +1,4 @@
 #include "aead.hpp"
-#include "auth_enc.hpp"
-#include "verf_dec.hpp"
 #include <cassert>
 #include <iostream>
 
