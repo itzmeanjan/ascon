@@ -272,9 +272,16 @@ $ pushd wrapper/python
 $ python3 # consider enabling `venv`
 
 >>> import ascon
+>>> import random
 >>> ascon.hash(b'').hex()               # computing ascon-hash digest
 '7346bc14f036e87ae03d0997913088f5f68411434b3cf8b54fa796a80d251f91'
->>>
+>>> key = random.randbytes(16)
+>>> nonce = random.randbytes(16)
+>>> msg = b'abcd'
+>>> enc, tag = ascon.encrypt_128a(key, nonce, b'', msg)
+>>> verf, dec = ascon.decrypt_128a(key, nonce, b'', enc, tag)
+>>> assert verf
+>>> assert msg == dec
 
 $ popd
 ```

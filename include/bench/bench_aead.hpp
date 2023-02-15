@@ -1,5 +1,6 @@
 #pragma once
 #include "aead.hpp"
+#include "consts.hpp"
 #include <benchmark/benchmark.h>
 #include <cassert>
 
@@ -13,15 +14,15 @@ enc_128(benchmark::State& state)
   const size_t ct_len = static_cast<size_t>(state.range(0));
   const size_t dt_len = static_cast<size_t>(state.range(1));
 
-  uint8_t* key = static_cast<uint8_t*>(std::malloc(16));
-  uint8_t* nonce = static_cast<uint8_t*>(std::malloc(16));
-  uint8_t* data = static_cast<uint8_t*>(std::malloc(dt_len));
-  uint8_t* text = static_cast<uint8_t*>(std::malloc(ct_len));
-  uint8_t* enc = static_cast<uint8_t*>(std::malloc(ct_len));
-  uint8_t* tag = static_cast<uint8_t*>(std::malloc(16));
+  auto key = static_cast<uint8_t*>(std::malloc(ascon::ASCON128_KEY_LEN));
+  auto nonce = static_cast<uint8_t*>(std::malloc(ascon::ASCON128_NONCE_LEN));
+  auto tag = static_cast<uint8_t*>(std::malloc(ascon::ASCON128_TAG_LEN));
+  auto data = static_cast<uint8_t*>(std::malloc(dt_len));
+  auto text = static_cast<uint8_t*>(std::malloc(ct_len));
+  auto enc = static_cast<uint8_t*>(std::malloc(ct_len));
 
-  ascon_utils::random_data(key, 16);
-  ascon_utils::random_data(nonce, 16);
+  ascon_utils::random_data(key, ascon::ASCON128_KEY_LEN);
+  ascon_utils::random_data(nonce, ascon::ASCON128_NONCE_LEN);
   ascon_utils::random_data(data, dt_len);
   ascon_utils::random_data(text, ct_len);
 
@@ -60,16 +61,16 @@ dec_128(benchmark::State& state)
   const size_t ct_len = static_cast<size_t>(state.range(0));
   const size_t dt_len = static_cast<size_t>(state.range(1));
 
-  uint8_t* key = static_cast<uint8_t*>(std::malloc(16));
-  uint8_t* nonce = static_cast<uint8_t*>(std::malloc(16));
-  uint8_t* data = static_cast<uint8_t*>(std::malloc(dt_len));
-  uint8_t* text = static_cast<uint8_t*>(std::malloc(ct_len));
-  uint8_t* enc = static_cast<uint8_t*>(std::malloc(ct_len));
-  uint8_t* dec = static_cast<uint8_t*>(std::malloc(ct_len));
-  uint8_t* tag = static_cast<uint8_t*>(std::malloc(16));
+  auto key = static_cast<uint8_t*>(std::malloc(ascon::ASCON128_KEY_LEN));
+  auto nonce = static_cast<uint8_t*>(std::malloc(ascon::ASCON128_NONCE_LEN));
+  auto tag = static_cast<uint8_t*>(std::malloc(ascon::ASCON128_TAG_LEN));
+  auto data = static_cast<uint8_t*>(std::malloc(dt_len));
+  auto text = static_cast<uint8_t*>(std::malloc(ct_len));
+  auto enc = static_cast<uint8_t*>(std::malloc(ct_len));
+  auto dec = static_cast<uint8_t*>(std::malloc(ct_len));
 
-  ascon_utils::random_data(key, 16);
-  ascon_utils::random_data(nonce, 16);
+  ascon_utils::random_data(key, ascon::ASCON128_KEY_LEN);
+  ascon_utils::random_data(nonce, ascon::ASCON128_NONCE_LEN);
   ascon_utils::random_data(data, dt_len);
   ascon_utils::random_data(text, ct_len);
 
@@ -112,15 +113,15 @@ enc_128a(benchmark::State& state)
   const size_t ct_len = static_cast<size_t>(state.range(0));
   const size_t dt_len = static_cast<size_t>(state.range(1));
 
-  uint8_t* key = static_cast<uint8_t*>(std::malloc(16));
-  uint8_t* nonce = static_cast<uint8_t*>(std::malloc(16));
-  uint8_t* data = static_cast<uint8_t*>(std::malloc(dt_len));
-  uint8_t* text = static_cast<uint8_t*>(std::malloc(ct_len));
-  uint8_t* enc = static_cast<uint8_t*>(std::malloc(ct_len));
-  uint8_t* tag = static_cast<uint8_t*>(std::malloc(16));
+  auto key = static_cast<uint8_t*>(std::malloc(ascon::ASCON128A_KEY_LEN));
+  auto nonce = static_cast<uint8_t*>(std::malloc(ascon::ASCON128A_NONCE_LEN));
+  auto tag = static_cast<uint8_t*>(std::malloc(ascon::ASCON128A_TAG_LEN));
+  auto data = static_cast<uint8_t*>(std::malloc(dt_len));
+  auto text = static_cast<uint8_t*>(std::malloc(ct_len));
+  auto enc = static_cast<uint8_t*>(std::malloc(ct_len));
 
-  ascon_utils::random_data(key, 16);
-  ascon_utils::random_data(nonce, 16);
+  ascon_utils::random_data(key, ascon::ASCON128A_KEY_LEN);
+  ascon_utils::random_data(nonce, ascon::ASCON128A_NONCE_LEN);
   ascon_utils::random_data(data, dt_len);
   ascon_utils::random_data(text, ct_len);
 
@@ -159,16 +160,16 @@ dec_128a(benchmark::State& state)
   const size_t ct_len = static_cast<size_t>(state.range(0));
   const size_t dt_len = static_cast<size_t>(state.range(1));
 
-  uint8_t* key = static_cast<uint8_t*>(std::malloc(16));
-  uint8_t* nonce = static_cast<uint8_t*>(std::malloc(16));
-  uint8_t* data = static_cast<uint8_t*>(std::malloc(dt_len));
-  uint8_t* text = static_cast<uint8_t*>(std::malloc(ct_len));
-  uint8_t* enc = static_cast<uint8_t*>(std::malloc(ct_len));
-  uint8_t* dec = static_cast<uint8_t*>(std::malloc(ct_len));
-  uint8_t* tag = static_cast<uint8_t*>(std::malloc(16));
+  auto key = static_cast<uint8_t*>(std::malloc(ascon::ASCON128A_KEY_LEN));
+  auto nonce = static_cast<uint8_t*>(std::malloc(ascon::ASCON128A_NONCE_LEN));
+  auto tag = static_cast<uint8_t*>(std::malloc(ascon::ASCON128A_TAG_LEN));
+  auto data = static_cast<uint8_t*>(std::malloc(dt_len));
+  auto text = static_cast<uint8_t*>(std::malloc(ct_len));
+  auto enc = static_cast<uint8_t*>(std::malloc(ct_len));
+  auto dec = static_cast<uint8_t*>(std::malloc(ct_len));
 
-  ascon_utils::random_data(key, 16);
-  ascon_utils::random_data(nonce, 16);
+  ascon_utils::random_data(key, ascon::ASCON128A_KEY_LEN);
+  ascon_utils::random_data(nonce, ascon::ASCON128A_NONCE_LEN);
   ascon_utils::random_data(data, dt_len);
   ascon_utils::random_data(text, ct_len);
 
@@ -211,15 +212,15 @@ enc_80pq(benchmark::State& state)
   const size_t ct_len = static_cast<size_t>(state.range(0));
   const size_t dt_len = static_cast<size_t>(state.range(1));
 
-  uint8_t* key = static_cast<uint8_t*>(std::malloc(20));
-  uint8_t* nonce = static_cast<uint8_t*>(std::malloc(16));
-  uint8_t* data = static_cast<uint8_t*>(std::malloc(dt_len));
-  uint8_t* text = static_cast<uint8_t*>(std::malloc(ct_len));
-  uint8_t* enc = static_cast<uint8_t*>(std::malloc(ct_len));
-  uint8_t* tag = static_cast<uint8_t*>(std::malloc(16));
+  auto key = static_cast<uint8_t*>(std::malloc(ascon::ASCON80PQ_KEY_LEN));
+  auto nonce = static_cast<uint8_t*>(std::malloc(ascon::ASCON80PQ_NONCE_LEN));
+  auto tag = static_cast<uint8_t*>(std::malloc(ascon::ASCON80PQ_TAG_LEN));
+  auto data = static_cast<uint8_t*>(std::malloc(dt_len));
+  auto text = static_cast<uint8_t*>(std::malloc(ct_len));
+  auto enc = static_cast<uint8_t*>(std::malloc(ct_len));
 
-  ascon_utils::random_data(key, 20);
-  ascon_utils::random_data(nonce, 16);
+  ascon_utils::random_data(key, ascon::ASCON80PQ_KEY_LEN);
+  ascon_utils::random_data(nonce, ascon::ASCON80PQ_NONCE_LEN);
   ascon_utils::random_data(data, dt_len);
   ascon_utils::random_data(text, ct_len);
 
@@ -258,16 +259,16 @@ dec_80pq(benchmark::State& state)
   const size_t ct_len = static_cast<size_t>(state.range(0));
   const size_t dt_len = static_cast<size_t>(state.range(1));
 
-  uint8_t* key = static_cast<uint8_t*>(std::malloc(20));
-  uint8_t* nonce = static_cast<uint8_t*>(std::malloc(16));
-  uint8_t* data = static_cast<uint8_t*>(std::malloc(dt_len));
-  uint8_t* text = static_cast<uint8_t*>(std::malloc(ct_len));
-  uint8_t* enc = static_cast<uint8_t*>(std::malloc(ct_len));
-  uint8_t* dec = static_cast<uint8_t*>(std::malloc(ct_len));
-  uint8_t* tag = static_cast<uint8_t*>(std::malloc(16));
+  auto key = static_cast<uint8_t*>(std::malloc(ascon::ASCON80PQ_KEY_LEN));
+  auto nonce = static_cast<uint8_t*>(std::malloc(ascon::ASCON80PQ_NONCE_LEN));
+  auto tag = static_cast<uint8_t*>(std::malloc(ascon::ASCON80PQ_TAG_LEN));
+  auto data = static_cast<uint8_t*>(std::malloc(dt_len));
+  auto text = static_cast<uint8_t*>(std::malloc(ct_len));
+  auto enc = static_cast<uint8_t*>(std::malloc(ct_len));
+  auto dec = static_cast<uint8_t*>(std::malloc(ct_len));
 
-  ascon_utils::random_data(key, 20);
-  ascon_utils::random_data(nonce, 16);
+  ascon_utils::random_data(key, ascon::ASCON80PQ_KEY_LEN);
+  ascon_utils::random_data(nonce, ascon::ASCON80PQ_NONCE_LEN);
   ascon_utils::random_data(data, dt_len);
   ascon_utils::random_data(text, ct_len);
 
