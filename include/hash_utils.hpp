@@ -7,26 +7,26 @@ namespace ascon_hash_utils {
 
 // Precomputed initial hash state for `Ascon Hash`; taken from section 2.5.1 of
 // Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-constexpr uint64_t ASCON_HASH_INIT_STATE[5] = { 0xee9398aadb67f03d,
-                                                0x8bb21831c60f1002,
-                                                0xb48a92db98d5da62,
-                                                0x43189921b8f8e3e8,
-                                                0x348fa5c9d525e140 };
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
+constexpr uint64_t ASCON_HASH_INIT_STATE[5]{ 0xee9398aadb67f03d,
+                                             0x8bb21831c60f1002,
+                                             0xb48a92db98d5da62,
+                                             0x43189921b8f8e3e8,
+                                             0x348fa5c9d525e140 };
 
 // Precomputed initial hash state for `Ascon HashA`; taken from section 2.5.1 of
 // Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-constexpr uint64_t ASCON_HASHA_INIT_STATE[5] = { 0x01470194fc6528a6,
-                                                 0x738ec38ac0adffa7,
-                                                 0x2ec8e3296c76384c,
-                                                 0xd6f6a54d7f52377d,
-                                                 0xa13c42a223be8d87 };
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
+constexpr uint64_t ASCON_HASHA_INIT_STATE[5]{ 0x01470194fc6528a6,
+                                              0x738ec38ac0adffa7,
+                                              0x2ec8e3296c76384c,
+                                              0xd6f6a54d7f52377d,
+                                              0xa13c42a223be8d87 };
 
 // Absorb N ( >= 1 ) -many message blocks ( each of length 64 -bit ) into hash
 // state; see message block processing rules in section 2.5.2 of Ascon
 // specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 //
 // For possible values of template parameter `b`, follow table 2 in
 // specification
@@ -47,20 +47,20 @@ absorb(uint64_t* const __restrict state,
   size_t off = 0ul;
 
   while (off < till) {
-    const auto word = ascon_utils::from_be_bytes(msg + off);
+    const auto word = ascon_utils::from_be_bytes<uint64_t>(msg + off);
     state[0] ^= word;
     ascon_perm::permute<b>(state);
 
     off += 8ul;
   }
 
-  const auto word = ascon_utils::pad_data(msg + off, pad_bytes);
+  const auto word = ascon_utils::pad64(msg + off, pad_bytes);
   state[0] ^= word;
 }
 
 // Extract out four 64 -bit blocks from hash state, producing total 256 -bit
 // Ascon digest; see section 2.5.3 of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 //
 // For possible values of template parameter `a`, `b`, follow table 2 in Ascon
 // specification

@@ -1,68 +1,52 @@
-#include "ascon.hpp"
+#include "aead.hpp"
 #include <cassert>
 #include <iostream>
 
-// Compile & execute with
+// Compile with
 //
-// g++ -std=c++20 -O3 -I ./include example/ascon_128.cpp && ./a.out
+// g++ -std=c++20 -Wall -O3 -march=native -I ./include example/ascon_128.cpp
 int
 main()
 {
-  constexpr const size_t text_len = 64;      // bytes
-  constexpr const size_t data_len = 32;      // bytes
-  constexpr const size_t enc_len = text_len; // bytes
-  constexpr const size_t dec_len = enc_len;  // bytes
+  constexpr size_t ctlen = 64; // bytes
+  constexpr size_t dlen = 32;  // bytes
 
   // acquire resources
-  uint8_t* text = static_cast<uint8_t*>(malloc(text_len)); // plain text
-  uint8_t* data = static_cast<uint8_t*>(malloc(data_len)); // associated data
-  uint8_t* enc = static_cast<uint8_t*>(malloc(enc_len));   // ciphered data
-  uint8_t* dec = static_cast<uint8_t*>(malloc(dec_len));   // deciphered data
+  uint8_t* key = static_cast<uint8_t*>(malloc(16));     // secret key
+  uint8_t* nonce = static_cast<uint8_t*>(malloc(16));   // message nonce
+  uint8_t* tag = static_cast<uint8_t*>(malloc(16));     // authentication tag
+  uint8_t* data = static_cast<uint8_t*>(malloc(dlen));  // associated data
+  uint8_t* text = static_cast<uint8_t*>(malloc(ctlen)); // plain text
+  uint8_t* enc = static_cast<uint8_t*>(malloc(ctlen));  // ciphered text
+  uint8_t* dec = static_cast<uint8_t*>(malloc(ctlen));  // deciphered text
 
-  // prepare 128 -bit secret key
-  ascon::secret_key_128_t k{ 1ul, 2ul };
-  // prepare 128 -bit message nonce, don't repeat nonce for same secret key !
-  ascon::nonce_t n{ 3ul, 4ul };
-
-  // prepare associated data, it's never encrypted !
-#if defined __clang__
-#pragma unroll 8
-#endif
-  for (size_t i = 0; i < data_len; i++) {
-    data[i] = static_cast<uint8_t>(i);
-  }
-
-  // prepare plain text, it'll be encrypted !
-#if defined __clang__
-#pragma unroll 8
-#endif
-  for (size_t i = 0; i < text_len; i++) {
-    text[i] = static_cast<uint8_t>(i);
-  }
+  ascon_utils::random_data(key, 16);
+  ascon_utils::random_data(nonce, 16);
+  ascon_utils::random_data(text, ctlen);
+  ascon_utils::random_data(data, dlen);
 
   // using Ascon-128 for running encrypt -> decrypt cycle
   using namespace ascon;
-  const tag_t t = encrypt_128(k, n, data, data_len, text, text_len, enc);
-  const bool f = decrypt_128(k, n, data, data_len, enc, enc_len, dec, t);
 
-  // verified decryption; it must be true !
+  encrypt_128(key, nonce, data, dlen, text, ctlen, enc, tag);
+  bool f = decrypt_128(key, nonce, data, dlen, enc, ctlen, dec, tag);
+
   assert(f);
 
-  const std::string text_ = ascon_utils::to_hex(text, text_len);
-  const std::string enc_ = ascon_utils::to_hex(enc, enc_len);
-  const std::string dec_ = ascon_utils::to_hex(dec, dec_len);
-
-  // redundant check; if `f` is true, `dec` is good to consume !
-  assert(text_ == dec_);
-
-  std::cout << "Ascon-128 AEAD" << std::endl << std::endl;
-  std::cout << "Plain      text :\t" << text_ << std::endl;
-  std::cout << "Cipher     text :\t" << enc_ << std::endl;
-  std::cout << "Deciphered text :\t" << dec_ << std::endl;
+  std::cout << "Ascon-128 AEAD\n\n";
+  std::cout << "Key       :\t" << ascon_utils::to_hex(key, 16) << "\n";
+  std::cout << "Nonce     :\t" << ascon_utils::to_hex(nonce, 16) << "\n";
+  std::cout << "Data      :\t" << ascon_utils::to_hex(data, dlen) << "\n";
+  std::cout << "Text      :\t" << ascon_utils::to_hex(text, ctlen) << "\n";
+  std::cout << "Encrypted :\t" << ascon_utils::to_hex(enc, ctlen) << "\n";
+  std::cout << "Decrypted :\t" << ascon_utils::to_hex(dec, ctlen) << "\n";
 
   // deallocate resources
-  free(text);
+  free(key);
+  free(nonce);
+  free(tag);
   free(data);
+  free(text);
   free(enc);
   free(dec);
 

@@ -10,52 +10,67 @@
 // Utility functions for Ascon Light Weight Cryptography Implementation
 namespace ascon_utils {
 
-// Given a 64 -bit unsigned integer word, this routine swaps byte order and
-// returns byte swapped 64 -bit word.
+// Given a 32/ 64 -bit unsigned integer word, this routine swaps byte order and
+// returns byte swapped 32/ 64 -bit word.
 //
 // Collects inspiration from https://stackoverflow.com/a/36552262
-static inline constexpr uint64_t
-bswap64(const uint64_t a)
+template<typename T>
+static inline constexpr T
+bswap(const T a)
+  requires(std::unsigned_integral<T> && ((sizeof(T) == 4) || (sizeof(T) == 8)))
 {
+  if constexpr (sizeof(T) == 4) {
 #if defined __GNUG__
-  return __builtin_bswap64(a);
+    return __builtin_bswap32(a);
 #else
-  return ((a & 0x00000000000000fful) << 56) |
-         ((a & 0x000000000000ff00ul) << 40) |
-         ((a & 0x0000000000ff0000ul) << 24) |
-         ((a & 0x00000000ff000000ul) << 0x8) |
-         ((a & 0x000000ff00000000ul) >> 0x8) |
-         ((a & 0x0000ff0000000000ul) >> 24) |
-         ((a & 0x00ff000000000000ul) >> 40) |
-         ((a & 0xff00000000000000ul) >> 56);
+    return ((a & 0x000000ffu) << 24) | ((a & 0x0000ff00u) << 8) |
+           ((a & 0x00ff0000u) >> 8) | ((a & 0xff000000u) >> 24);
 #endif
+  } else {
+#if defined __GNUG__
+    return __builtin_bswap64(a);
+#else
+    return ((a & 0x00000000000000fful) << 56) |
+           ((a & 0x000000000000ff00ul) << 40) |
+           ((a & 0x0000000000ff0000ul) << 24) |
+           ((a & 0x00000000ff000000ul) << 0x8) |
+           ((a & 0x000000ff00000000ul) >> 0x8) |
+           ((a & 0x0000ff0000000000ul) >> 24) |
+           ((a & 0x00ff000000000000ul) >> 40) |
+           ((a & 0xff00000000000000ul) >> 56);
+#endif
+  }
 }
 
-// Given big-endian byte array of length 8, this function interprets it as
-// 64 -bit unsigned integer
-inline uint64_t
+// Given big-endian byte array of length 4/ 8, this function interprets it as
+// 32/ 64 -bit unsigned integer
+template<typename T>
+inline T
 from_be_bytes(const uint8_t* const i_bytes)
+  requires(std::unsigned_integral<T> && ((sizeof(T) == 4) || (sizeof(T) == 8)))
 {
-  uint64_t res = 0ul;
-  std::memcpy(&res, i_bytes, 8);
+  T res = 0;
+  std::memcpy(&res, i_bytes, sizeof(T));
 
   if constexpr (std::endian::native == std::endian::little) {
-    return bswap64(res);
+    return bswap(res);
   } else {
     return res;
   }
 }
 
-// Given a 64 -bit unsigned integer, this function interprets it as a big-endian
-// byte array
+// Given a 32/ 64 -bit unsigned integer, this function interprets it as a
+// big-endian byte array of length 4/ 8
+template<typename T>
 inline void
-to_be_bytes(const uint64_t num, uint8_t* const bytes)
+to_be_bytes(const T num, uint8_t* const bytes)
+  requires(std::unsigned_integral<T> && ((sizeof(T) == 4) || (sizeof(T) == 8)))
 {
   if constexpr (std::endian::native == std::endian::little) {
-    const uint64_t res = bswap64(num);
-    std::memcpy(bytes, &res, 8);
+    const auto res = bswap(num);
+    std::memcpy(bytes, &res, sizeof(T));
   } else {
-    std::memcpy(bytes, &num, 8);
+    std::memcpy(bytes, &num, sizeof(T));
   }
 }
 
@@ -79,9 +94,9 @@ random_data(T* const data, const size_t len)
 //
 // See Ascon-{128, Hash, HashA} padding rule in section 2.4.{2,3} & 2.5.2 of
 // Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-inline uint64_t
-pad_data(const uint8_t* const data, const size_t pad_byte_len)
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
+static inline uint64_t
+pad64(const uint8_t* const data, const size_t pad_byte_len)
 {
   const size_t dlen = 8ul - pad_byte_len;
   const size_t pad_bit_len = pad_byte_len << 3;
@@ -91,7 +106,7 @@ pad_data(const uint8_t* const data, const size_t pad_byte_len)
   std::memcpy(&res, data, dlen);
 
   if constexpr (std::endian::native == std::endian::little) {
-    res = bswap64(res);
+    res = bswap(res);
   }
 
   return res | pad_mask;
@@ -101,33 +116,33 @@ pad_data(const uint8_t* const data, const size_t pad_byte_len)
 // divisible by rate ( = 128 ).
 //
 // See Ascon-128a padding rule in section 2.4.{2,3} of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
-inline void
-pad_data(
-  const uint8_t* const __restrict data,
-  const size_t pad_byte_len,
-  uint64_t* const __restrict data_blk // padded block; assert len(data_blk) = 2
-)
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
+static inline std::pair<uint64_t, uint64_t>
+pad128(const uint8_t* const __restrict data, const size_t pad_byte_len)
 {
-  std::memset(data_blk, 0, 16);
-
   const size_t dlen = 16ul - pad_byte_len;
   const size_t fw_len = std::min(dlen, 8ul);
   const size_t sw_len = dlen - fw_len;
 
-  std::memcpy(&data_blk[0], data, fw_len);
-  std::memcpy(&data_blk[1], data + fw_len, sw_len);
+  uint64_t res0 = 0;
+  uint64_t res1 = 0;
+
+  std::memcpy(&res0, data, fw_len);
+  std::memcpy(&res1, data + fw_len, sw_len);
 
   if constexpr (std::endian::native == std::endian::little) {
-    data_blk[0] = bswap64(data_blk[0]);
-    data_blk[1] = bswap64(data_blk[1]);
+    res0 = bswap(res0);
+    res1 = bswap(res1);
   }
 
   const bool flg = pad_byte_len > 8;
   const size_t pad_bit_len = (pad_byte_len - 8 * flg) << 3;
   const size_t pad_mask = 1ul << (pad_bit_len - 1ul);
 
-  data_blk[!flg] |= pad_mask;
+  uint64_t br[]{ res0, res1 };
+  br[!flg] |= pad_mask;
+
+  return { br[0], br[1] };
 }
 
 // Converts byte array into hex string; see https://stackoverflow.com/a/14051107

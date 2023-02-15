@@ -7,106 +7,109 @@ namespace ascon {
 
 // Decrypts cipher text with Ascon-128 verified decryption algorithm; see
 // algorithm 1 of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 //
 // See parameters in table 1 of Ascon specification
 //
 // Note, use deciphered text only when this function returns true !
-inline bool
-decrypt_128(const secret_key_128_t& k,
-            const nonce_t& n,
-            const uint8_t* const __restrict associated_data,
-            const size_t data_len, // bytes; can be >= 0
+static inline bool
+decrypt_128(const uint8_t* const __restrict key,
+            const uint8_t* const __restrict nonce,
+            const uint8_t* const __restrict data,
+            const size_t dlen, // bytes; can be >= 0
             const uint8_t* const __restrict cipher,
-            const size_t cipher_len,        // bytes; can be >= 0
+            const size_t ctlen,             // bytes; can be >= 0
             uint8_t* const __restrict text, // length same as `cipher`
-            const tag_t& t)
+            const uint8_t* const __restrict tag)
 {
   using namespace ascon_cipher;
 
-  uint64_t state[5];
+  uint64_t state[5]{};
+  uint8_t tag_[16];
 
-  initialize<ASCON_128_IV, 12>(state, k, n);
-  process_associated_data<6, 64>(state, associated_data, data_len);
-  process_ciphertext<6, 64>(state, cipher, cipher_len, text);
-  const tag_t t_ = finalize<12, 64>(state, k);
+  initialize<ASCON_128_IV, 128>(state, key, nonce);
+  process_associated_data<6, 64>(state, data, dlen);
+  process_ciphertext<6, 64>(state, cipher, ctlen, text);
+  finalize<12, 64, 128>(state, key, tag_);
 
-  const uint64_t flg0 = t.limbs[0] ^ t_.limbs[0];
-  const uint64_t flg1 = t.limbs[1] ^ t_.limbs[1];
+  bool flg = false;
+  for (size_t i = 0; i < 16; i++) {
+    flg |= static_cast<bool>(tag[i] ^ tag_[i]);
+  }
 
-  const bool flg = static_cast<bool>(flg0 | flg1);
-
-  std::memset(text, 0, flg * cipher_len);
+  std::memset(text, 0, flg * ctlen);
   return !flg;
 }
 
 // Decrypts cipher text with Ascon-128a verified decryption algorithm; see
 // algorithm 1 of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 //
 // See parameters in table 1 of Ascon specification
 //
 // Note, use deciphered text only when this function returns true !
-inline bool
-decrypt_128a(const secret_key_128_t& k,
-             const nonce_t& n,
-             const uint8_t* const __restrict associated_data,
-             const size_t data_len, // bytes; can be >= 0
+static inline bool
+decrypt_128a(const uint8_t* const __restrict key,
+             const uint8_t* const __restrict nonce,
+             const uint8_t* const __restrict data,
+             const size_t dlen, // bytes; can be >= 0
              const uint8_t* const __restrict cipher,
-             const size_t cipher_len,        // bytes; can be >= 0
+             const size_t ctlen,             // bytes; can be >= 0
              uint8_t* const __restrict text, // length same as `cipher`
-             const tag_t& t)
+             const uint8_t* const __restrict tag)
 {
   using namespace ascon_cipher;
 
-  uint64_t state[5];
+  uint64_t state[5]{};
+  uint8_t tag_[16];
 
-  initialize<ASCON_128a_IV, 12>(state, k, n);
-  process_associated_data<8, 128>(state, associated_data, data_len);
-  process_ciphertext<8, 128>(state, cipher, cipher_len, text);
-  const tag_t t_ = finalize<12, 128>(state, k);
+  initialize<ASCON_128a_IV, 128>(state, key, nonce);
+  process_associated_data<8, 128>(state, data, dlen);
+  process_ciphertext<8, 128>(state, cipher, ctlen, text);
+  finalize<12, 128, 128>(state, key, tag_);
 
-  const uint64_t flg0 = t.limbs[0] ^ t_.limbs[0];
-  const uint64_t flg1 = t.limbs[1] ^ t_.limbs[1];
+  bool flg = false;
+  for (size_t i = 0; i < 16; i++) {
+    flg |= static_cast<bool>(tag[i] ^ tag_[i]);
+  }
 
-  const bool flg = static_cast<bool>(flg0 | flg1);
-
-  std::memset(text, 0, flg * cipher_len);
+  std::memset(text, 0, flg * ctlen);
   return !flg;
 }
 
 // Decrypts cipher text with Ascon-80pq verified decryption algorithm; see
 // algorithm 1 of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 //
 // See parameters in last paragraph of section 2.2 in Ascon specification
 //
 // Note, use deciphered text only when this function returns true !
-inline bool
-decrypt_80pq(const secret_key_160_t& k,
-             const nonce_t& n,
-             const uint8_t* const __restrict associated_data,
-             const size_t data_len, // bytes; can be >= 0
+static inline bool
+decrypt_80pq(const uint8_t* const __restrict key,
+             const uint8_t* const __restrict nonce,
+             const uint8_t* const __restrict data,
+             const size_t dlen, // bytes; can be >= 0
              const uint8_t* const __restrict cipher,
-             const size_t cipher_len,        // bytes; can be >= 0
+             const size_t ctlen,             // bytes; can be >= 0
              uint8_t* const __restrict text, // length same as `cipher`
-             const tag_t& t)
+             const uint8_t* const __restrict tag)
 {
   using namespace ascon_cipher;
 
-  uint64_t state[5];
+  uint64_t state[5]{};
+  uint8_t tag_[16];
 
-  initialize<12>(state, k, n);
-  process_associated_data<6, 64>(state, associated_data, data_len);
-  process_ciphertext<6, 64>(state, cipher, cipher_len, text);
-  const tag_t t_ = finalize<12, 64>(state, k);
+  initialize<ASCON_80pq_IV, 160>(state, key, nonce);
+  process_associated_data<6, 64>(state, data, dlen);
+  process_ciphertext<6, 64>(state, cipher, ctlen, text);
+  finalize<12, 64, 160>(state, key, tag_);
 
-  const uint64_t flg0 = t.limbs[0] ^ t_.limbs[0];
-  const uint64_t flg1 = t.limbs[1] ^ t_.limbs[1];
+  bool flg = false;
+  for (size_t i = 0; i < 16; i++) {
+    flg |= static_cast<bool>(tag[i] ^ tag_[i]);
+  }
 
-  const bool flg = static_cast<bool>(flg0 | flg1);
-
-  std::memset(text, 0, flg * cipher_len);
+  std::memset(text, 0, flg * ctlen);
   return !flg;
 }
 

@@ -8,12 +8,12 @@ namespace ascon_test {
 // Testing permutation `p_a` by calculating initial Ascon-{Hash, HashA, XOF,
 // XOFA} state; see precomputed hash states for all these hashing algorithms in
 // section 2.5.1 of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 void
 p_a()
 {
   {
-    uint64_t state[5] = { 0x00400c0000000100ul, 0ul, 0ul, 0ul, 0ul };
+    uint64_t state[5]{ 0x00400c0000000100ul, 0ul, 0ul, 0ul, 0ul };
     ascon_perm::permute<12>(state);
 
     assert(state[0] == ascon_hash_utils::ASCON_HASH_INIT_STATE[0]);
@@ -24,7 +24,7 @@ p_a()
   }
 
   {
-    uint64_t state[5] = { 0x00400c0400000100ul, 0ul, 0ul, 0ul, 0ul };
+    uint64_t state[5]{ 0x00400c0400000100ul, 0ul, 0ul, 0ul, 0ul };
     ascon_perm::permute<12>(state);
 
     assert(state[0] == ascon_hash_utils::ASCON_HASHA_INIT_STATE[0]);
@@ -35,7 +35,7 @@ p_a()
   }
 
   {
-    uint64_t state[5] = { 0x00400c0000000000ul, 0ul, 0ul, 0ul, 0ul };
+    uint64_t state[5]{ 0x00400c0000000000ul, 0ul, 0ul, 0ul, 0ul };
     ascon_perm::permute<12>(state);
 
     assert(state[0] == 0xb57e273b814cd416ul);
@@ -46,7 +46,7 @@ p_a()
   }
 
   {
-    uint64_t state[5] = { 0x00400c0400000000ul, 0ul, 0ul, 0ul, 0ul };
+    uint64_t state[5]{ 0x00400c0400000000ul, 0ul, 0ul, 0ul, 0ul };
     ascon_perm::permute<12>(state);
 
     assert(state[0] == 0x44906568b77b9832ul);
