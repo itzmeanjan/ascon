@@ -8,7 +8,7 @@ namespace ascon {
 
 // Given N -many input message bytes this function computes 32 -bytes digest
 // using `Ascon Hash` algorithm; see section 2.5 of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 static inline void
 hash(const uint8_t* const __restrict msg,
      const size_t msg_len,            // in terms of bytes, can be >= 0
@@ -26,7 +26,7 @@ hash(const uint8_t* const __restrict msg,
 
 // Given N -many input message bytes this function computes 32 -bytes digest
 // using `Ascon HashA` algorithm; see section 2.5 of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 static inline void
 hash_a(const uint8_t* const __restrict msg,
        const size_t msg_len,            // in terms of bytes, can be >= 0

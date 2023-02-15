@@ -10,7 +10,7 @@ namespace ascon_perm {
 constexpr size_t ROUNDS = 12;
 
 // Ascon  permutation round constants; taken from table 4 in Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 constexpr uint64_t RC[ROUNDS]{ 0x00000000000000f0ul, 0x00000000000000e1ul,
                                0x00000000000000d2ul, 0x00000000000000c3ul,
                                0x00000000000000b4ul, 0x00000000000000a5ul,
@@ -19,7 +19,7 @@ constexpr uint64_t RC[ROUNDS]{ 0x00000000000000f0ul, 0x00000000000000e1ul,
                                0x000000000000005aul, 0x000000000000004bul };
 
 // Addition of constants step; see section 2.6.1 of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 static inline constexpr void
 p_c(uint64_t* const state, const size_t r_idx)
 {
@@ -28,7 +28,7 @@ p_c(uint64_t* const state, const size_t r_idx)
 
 // Substitution layer i.e. 5 -bit S-box S(x) applied on Ascon state; taken from
 // figure 5 in Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 static inline constexpr void
 p_s(uint64_t* const state)
 {
@@ -55,7 +55,7 @@ p_s(uint64_t* const state)
 }
 
 // Linear diffusion layer; taken from figure 4.b in Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 static inline constexpr void
 p_l(uint64_t* const state)
 {
@@ -70,7 +70,7 @@ p_l(uint64_t* const state)
 
 // Single round of Ascon permutation; taken from section 2.6 of Ascon
 // specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 static inline constexpr void
 round(uint64_t* const state, const size_t r_idx)
 {
@@ -81,7 +81,7 @@ round(uint64_t* const state, const size_t r_idx)
 
 // Sequentially apply Ascon permutation round for R -many times | R <= 12;
 // taken from section 2.6 of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 template<const size_t R>
 static inline constexpr void
 permute(uint64_t* const state)

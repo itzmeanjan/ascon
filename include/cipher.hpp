@@ -9,17 +9,17 @@ namespace ascon_cipher {
 
 // Ascon-128 initial state value ( only first 64 -bits ); taken from
 // section 2.4.1 of
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 constexpr uint64_t ASCON_128_IV = 0X80400c0600000000ul;
 
 // Ascon-128a initial state value ( only first 64 -bits ); taken from
 // section 2.4.1 of
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 constexpr uint64_t ASCON_128a_IV = 0x80800c0800000000ul;
 
 // Ascon-80pq initial state value ( only first 32 -bits );
 // taken from section 2.4.1 of
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 constexpr uint32_t ASCON_80pq_IV = 0xa0400c06ul;
 
 // = (1 << 64) - 1; maximum number that can be represented using 64 -bits
@@ -27,7 +27,7 @@ constexpr uint64_t MAX_ULONG = 0xfffffffffffffffful;
 
 // Initialize cipher state for Ascon{128, 128a, 80pq} authenticated encryption/
 // decryption; see section 2.4.1 of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 template<const uint64_t IV, const size_t klen>
 static inline void
 initialize(uint64_t* const __restrict state,     // uninitialized hash state
@@ -74,7 +74,7 @@ initialize(uint64_t* const __restrict state,     // uninitialized hash state
 
 // Process `s` -many blocks of associated data, each of with rate ( = {64, 128}
 // ) -bits; see section 2.4.2 of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 template<const size_t b, const size_t rate>
 static inline void
 process_associated_data(uint64_t* const __restrict state,
@@ -142,7 +142,7 @@ process_associated_data(uint64_t* const __restrict state,
 
 // Process plain text in blocks ( same as rate bits wide ) and produce cipher
 // text is equal sized blocks; see section 2.4.3 of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 template<const size_t b, const size_t rate>
 static inline void
 process_plaintext(uint64_t* const __restrict state,
@@ -238,7 +238,7 @@ process_plaintext(uint64_t* const __restrict state,
 // Process cipher text in blocks ( same as rate bits wide ) and keep producing
 // plain text blocks is equal sized blocks; see section 2.4.3 of Ascon
 // specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 template<const size_t b, const size_t rate>
 static inline void
 process_ciphertext(uint64_t* const __restrict state,
@@ -372,7 +372,7 @@ process_ciphertext(uint64_t* const __restrict state,
 
 // Ascon-{128, 128a, 80pq} finalization step, generates 128 -bit tag; taken from
 // section 2.4.4 of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 template<const size_t a, const size_t rate, const size_t klen>
 static inline void
 finalize(uint64_t* const __restrict state,

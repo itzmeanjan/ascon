@@ -8,7 +8,7 @@ namespace ascon_test {
 // Testing permutation `p_a` by calculating initial Ascon-{Hash, HashA, XOF,
 // XOFA} state; see precomputed hash states for all these hashing algorithms in
 // section 2.5.1 of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 void
 p_a()
 {

@@ -94,7 +94,7 @@ random_data(T* const data, const size_t len)
 //
 // See Ascon-{128, Hash, HashA} padding rule in section 2.4.{2,3} & 2.5.2 of
 // Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 static inline uint64_t
 pad64(const uint8_t* const data, const size_t pad_byte_len)
 {
@@ -116,7 +116,7 @@ pad64(const uint8_t* const data, const size_t pad_byte_len)
 // divisible by rate ( = 128 ).
 //
 // See Ascon-128a padding rule in section 2.4.{2,3} of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 static inline std::pair<uint64_t, uint64_t>
 pad128(const uint8_t* const __restrict data, const size_t pad_byte_len)
 {

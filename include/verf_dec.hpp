@@ -7,7 +7,7 @@ namespace ascon {
 
 // Decrypts cipher text with Ascon-128 verified decryption algorithm; see
 // algorithm 1 of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 //
 // See parameters in table 1 of Ascon specification
 //
@@ -43,7 +43,7 @@ decrypt_128(const uint8_t* const __restrict key,
 
 // Decrypts cipher text with Ascon-128a verified decryption algorithm; see
 // algorithm 1 of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 //
 // See parameters in table 1 of Ascon specification
 //
@@ -79,7 +79,7 @@ decrypt_128a(const uint8_t* const __restrict key,
 
 // Decrypts cipher text with Ascon-80pq verified decryption algorithm; see
 // algorithm 1 of Ascon specification
-// https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 //
 // See parameters in last paragraph of section 2.2 in Ascon specification
 //

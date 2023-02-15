@@ -26,7 +26,7 @@ def hash(msg: bytes) -> bytes:
     """
     Computes 256 -bit Ascon Hash of arbitrary length input byte array;
     see section 2.5 of Ascon specification
-    https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+    https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
     """
     digest = create_string_buffer(32)
 
@@ -40,7 +40,7 @@ def hash_a(msg: bytes) -> bytes:
     """
     Computes 256 -bit Ascon HashA of arbitrary length input byte array;
     see section 2.5 of Ascon specification
-    https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+    https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
     """
     digest = create_string_buffer(32)
 
@@ -56,7 +56,7 @@ def encrypt_128(
     """
     Encrypts plain text using Ascon-128 authenticated encryption algorithm, producing
     encrypted text of length same as input plain text and 128 -bit tag; see algorithm 1 in
-    Ascon specification https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+    Ascon specification https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
     """
     cipher = create_string_buffer(len(text))
     tag = create_string_buffer(16)
@@ -88,7 +88,7 @@ def decrypt_128(
     Decrypts ciphered text using Ascon-128 verified decryption algorithm, producing
     plain text of length same as input ciphered text and boolean flag denoting
     status of successful decryption; see algorithm 1 in Ascon specification
-    https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+    https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
     """
     text = create_string_buffer(len(cipher))
 
@@ -120,7 +120,7 @@ def encrypt_128a(
     """
     Encrypts plain text using Ascon-128a authenticated encryption algorithm, producing
     encrypted text of length same as input plain text and 128 -bit tag; see algorithm 1 in
-    Ascon specification https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+    Ascon specification https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
     """
     cipher = create_string_buffer(len(text))
     tag = create_string_buffer(16)
@@ -152,7 +152,7 @@ def decrypt_128a(
     Decrypts ciphered text using Ascon-128a verified decryption algorithm, producing
     plain text of length same as input ciphered text and boolean flag denoting
     status of successful decryption; see algorithm 1 in Ascon specification
-    https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+    https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
     """
     text = create_string_buffer(len(cipher))
 
@@ -184,7 +184,7 @@ def encrypt_80pq(
     """
     Encrypts plain text using Ascon-80pq authenticated encryption algorithm, producing
     encrypted text of length same as input plain text and 128 -bit authentication tag; see algorithm 1 in
-    Ascon specification https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+    Ascon specification https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
     """
     cipher = create_string_buffer(len(text))
     tag = create_string_buffer(16)
@@ -216,7 +216,7 @@ def decrypt_80pq(
     Decrypts ciphered text using Ascon-80pq verified decryption algorithm, producing
     plain text of length same as input ciphered text and boolean flag denoting
     status of successful decryption; see algorithm 1 in Ascon specification
-    https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/finalist-round/updated-spec-doc/ascon-spec-final.pdf
+    https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
     """
     text = create_string_buffer(len(cipher))
 
