@@ -5,9 +5,6 @@
 // Benchmark Ascon Light Weight Cryptography Implementation
 namespace bench_ascon {
 
-// 256 -bit Ascon digest
-constexpr size_t DIG_LEN = 32ul;
-
 // Benchmark Ascon-Hash on target CPU
 void
 hash(benchmark::State& state)
@@ -15,10 +12,9 @@ hash(benchmark::State& state)
   const size_t mlen = static_cast<size_t>(state.range(0));
 
   uint8_t* msg = static_cast<uint8_t*>(std::malloc(mlen));
-  uint8_t* digest = static_cast<uint8_t*>(std::malloc(DIG_LEN));
+  uint8_t* digest = static_cast<uint8_t*>(std::malloc(ascon::DIGEST_LEN));
 
   ascon_utils::random_data(msg, mlen);
-  std::memset(digest, 0, DIG_LEN);
 
   for (auto _ : state) {
     ascon::hash(msg, mlen, digest);
@@ -41,10 +37,9 @@ hash_a(benchmark::State& state)
   const size_t mlen = static_cast<size_t>(state.range(0));
 
   uint8_t* msg = static_cast<uint8_t*>(std::malloc(mlen));
-  uint8_t* digest = static_cast<uint8_t*>(std::malloc(DIG_LEN));
+  uint8_t* digest = static_cast<uint8_t*>(std::malloc(ascon::DIGEST_LEN));
 
   ascon_utils::random_data(msg, mlen);
-  std::memset(digest, 0, DIG_LEN);
 
   for (auto _ : state) {
     ascon::hash_a(msg, mlen, digest);

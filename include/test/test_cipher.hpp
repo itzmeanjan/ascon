@@ -1,8 +1,6 @@
 #pragma once
-#include "auth_enc.hpp"
-#include "verf_dec.hpp"
+#include "aead.hpp"
 #include <cassert>
-#include <string.h>
 
 // Test Ascon Light Weight Cryptography Implementation
 namespace ascon_test {
@@ -14,16 +12,16 @@ ascon_128(const size_t dlen, // bytes; >= 0
           const size_t ctlen // bytes; >= 0
 )
 {
-  auto key = static_cast<uint8_t*>(std::malloc(16));
-  auto nonce = static_cast<uint8_t*>(std::malloc(16));
+  auto key = static_cast<uint8_t*>(std::malloc(ascon::ASCON128_KEY_LEN));
+  auto nonce = static_cast<uint8_t*>(std::malloc(ascon::ASCON128_NONCE_LEN));
+  auto tag = static_cast<uint8_t*>(std::malloc(ascon::ASCON128_TAG_LEN));
   auto data = static_cast<uint8_t*>(std::malloc(dlen));
   auto text = static_cast<uint8_t*>(std::malloc(ctlen));
   auto enc = static_cast<uint8_t*>(std::malloc(ctlen));
   auto dec = static_cast<uint8_t*>(std::malloc(ctlen));
-  auto tag = static_cast<uint8_t*>(std::malloc(16));
 
-  ascon_utils::random_data(key, 16);
-  ascon_utils::random_data(nonce, 16);
+  ascon_utils::random_data(key, ascon::ASCON128_KEY_LEN);
+  ascon_utils::random_data(nonce, ascon::ASCON128_NONCE_LEN);
   ascon_utils::random_data(data, dlen);
   ascon_utils::random_data(text, ctlen);
 
@@ -52,16 +50,16 @@ ascon_128a(const size_t dlen, // bytes; >= 0
            const size_t ctlen // bytes; >= 0
 )
 {
-  auto key = static_cast<uint8_t*>(std::malloc(16));
-  auto nonce = static_cast<uint8_t*>(std::malloc(16));
+  auto key = static_cast<uint8_t*>(std::malloc(ascon::ASCON128A_KEY_LEN));
+  auto nonce = static_cast<uint8_t*>(std::malloc(ascon::ASCON128A_NONCE_LEN));
+  auto tag = static_cast<uint8_t*>(std::malloc(ascon::ASCON128A_TAG_LEN));
   auto data = static_cast<uint8_t*>(std::malloc(dlen));
   auto text = static_cast<uint8_t*>(std::malloc(ctlen));
   auto enc = static_cast<uint8_t*>(std::malloc(ctlen));
   auto dec = static_cast<uint8_t*>(std::malloc(ctlen));
-  auto tag = static_cast<uint8_t*>(std::malloc(16));
 
-  ascon_utils::random_data(key, 16);
-  ascon_utils::random_data(nonce, 16);
+  ascon_utils::random_data(key, ascon::ASCON128A_KEY_LEN);
+  ascon_utils::random_data(nonce, ascon::ASCON128A_NONCE_LEN);
   ascon_utils::random_data(data, dlen);
   ascon_utils::random_data(text, ctlen);
 
@@ -90,16 +88,16 @@ ascon_80pq(const size_t dlen, // bytes; >= 0
            const size_t ctlen // bytes; >= 0
 )
 {
-  auto key = static_cast<uint8_t*>(std::malloc(20));
-  auto nonce = static_cast<uint8_t*>(std::malloc(16));
+  auto key = static_cast<uint8_t*>(std::malloc(ascon::ASCON80PQ_KEY_LEN));
+  auto nonce = static_cast<uint8_t*>(std::malloc(ascon::ASCON80PQ_NONCE_LEN));
+  auto tag = static_cast<uint8_t*>(std::malloc(ascon::ASCON80PQ_TAG_LEN));
   auto data = static_cast<uint8_t*>(std::malloc(dlen));
   auto text = static_cast<uint8_t*>(std::malloc(ctlen));
   auto enc = static_cast<uint8_t*>(std::malloc(ctlen));
   auto dec = static_cast<uint8_t*>(std::malloc(ctlen));
-  auto tag = static_cast<uint8_t*>(std::malloc(16));
 
-  ascon_utils::random_data(key, 20);
-  ascon_utils::random_data(nonce, 16);
+  ascon_utils::random_data(key, ascon::ASCON80PQ_KEY_LEN);
+  ascon_utils::random_data(nonce, ascon::ASCON80PQ_NONCE_LEN);
   ascon_utils::random_data(data, dlen);
   ascon_utils::random_data(text, ctlen);
 

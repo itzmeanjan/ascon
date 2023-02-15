@@ -12,24 +12,21 @@ main()
   constexpr size_t dlen = 32;  // bytes
 
   // acquire resources
-  uint8_t* key = static_cast<uint8_t*>(malloc(20));     // secret key
-  uint8_t* nonce = static_cast<uint8_t*>(malloc(16));   // message nonce
-  uint8_t* tag = static_cast<uint8_t*>(malloc(16));     // authentication tag
+  uint8_t* key = static_cast<uint8_t*>(malloc(ascon::ASCON80PQ_KEY_LEN));
+  uint8_t* nonce = static_cast<uint8_t*>(malloc(ascon::ASCON80PQ_NONCE_LEN));
+  uint8_t* tag = static_cast<uint8_t*>(malloc(ascon::ASCON80PQ_TAG_LEN));
   uint8_t* data = static_cast<uint8_t*>(malloc(dlen));  // associated data
   uint8_t* text = static_cast<uint8_t*>(malloc(ctlen)); // plain text
   uint8_t* enc = static_cast<uint8_t*>(malloc(ctlen));  // ciphered text
   uint8_t* dec = static_cast<uint8_t*>(malloc(ctlen));  // deciphered text
 
-  ascon_utils::random_data(key, 20);
-  ascon_utils::random_data(nonce, 16);
+  ascon_utils::random_data(key, ascon::ASCON80PQ_KEY_LEN);
+  ascon_utils::random_data(nonce, ascon::ASCON80PQ_NONCE_LEN);
   ascon_utils::random_data(text, ctlen);
   ascon_utils::random_data(data, dlen);
 
-  // using Ascon-80pq for running encrypt -> decrypt cycle
-  using namespace ascon;
-
-  encrypt_80pq(key, nonce, data, dlen, text, ctlen, enc, tag);
-  bool f = decrypt_80pq(key, nonce, data, dlen, enc, ctlen, dec, tag);
+  ascon::encrypt_80pq(key, nonce, data, dlen, text, ctlen, enc, tag);
+  bool f = ascon::decrypt_80pq(key, nonce, data, dlen, enc, ctlen, dec, tag);
 
   assert(f);
 

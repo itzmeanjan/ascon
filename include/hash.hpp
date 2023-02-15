@@ -1,4 +1,5 @@
 #pragma once
+#include "consts.hpp"
 #include "hash_utils.hpp"
 #include <cstring>
 

@@ -1,5 +1,6 @@
 #pragma once
 #include "cipher.hpp"
+#include "consts.hpp"
 
 // Ascon Light Weight Cryptography ( i.e. authenticated encryption, verified
 // decryption and hashing ) Implementation
@@ -33,7 +34,7 @@ decrypt_128(const uint8_t* const __restrict key,
   finalize<12, 64, 128>(state, key, tag_);
 
   bool flg = false;
-  for (size_t i = 0; i < 16; i++) {
+  for (size_t i = 0; i < ascon::ASCON128_TAG_LEN; i++) {
     flg |= static_cast<bool>(tag[i] ^ tag_[i]);
   }
 
@@ -69,7 +70,7 @@ decrypt_128a(const uint8_t* const __restrict key,
   finalize<12, 128, 128>(state, key, tag_);
 
   bool flg = false;
-  for (size_t i = 0; i < 16; i++) {
+  for (size_t i = 0; i < ascon::ASCON128_TAG_LEN; i++) {
     flg |= static_cast<bool>(tag[i] ^ tag_[i]);
   }
 
@@ -105,7 +106,7 @@ decrypt_80pq(const uint8_t* const __restrict key,
   finalize<12, 64, 160>(state, key, tag_);
 
   bool flg = false;
-  for (size_t i = 0; i < 16; i++) {
+  for (size_t i = 0; i < ascon::ASCON128_TAG_LEN; i++) {
     flg |= static_cast<bool>(tag[i] ^ tag_[i]);
   }
 
