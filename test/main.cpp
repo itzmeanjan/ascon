@@ -5,7 +5,16 @@ int
 main()
 {
   ascon_test::p_a();
-  std::cout << "[test] Ascon permutation `p_a`" << std::endl;
+  std::cout << "[test] Ascon permutation `p_a`\n";
+
+  ascon_test::test_ascon_hash(64);
+  ascon_test::test_ascon_hash(128);
+  ascon_test::test_ascon_hash(256);
+  ascon_test::test_ascon_hash(512);
+  ascon_test::test_ascon_hash(1024);
+  ascon_test::test_ascon_hash(2048);
+  ascon_test::test_ascon_hash(4096);
+  std::cout << "[test] Ascon-Hash oneshot and incremental hashing API\n";
 
   for (size_t dlen = 0; dlen < 32; dlen++) {
     for (size_t ctlen = 0; ctlen < 32; ctlen++) {
@@ -15,9 +24,9 @@ main()
     }
   }
 
-  std::cout << "[test] Ascon-128 AEAD" << std::endl;
-  std::cout << "[test] Ascon-128a AEAD" << std::endl;
-  std::cout << "[test] Ascon-80pq AEAD" << std::endl;
+  std::cout << "[test] Ascon-128 AEAD\n";
+  std::cout << "[test] Ascon-128a AEAD\n";
+  std::cout << "[test] Ascon-80pq AEAD\n";
 
   return EXIT_SUCCESS;
 }
