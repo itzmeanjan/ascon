@@ -1,9 +1,18 @@
 #pragma once
 #include "hash_utils.hpp"
+#include "permutation.hpp"
+#include "utils.hpp"
+#include <cstring>
 
 // Ascon Light Weight Cryptography ( i.e. AEAD, Hash and Extendable Output
 // Functions ) Implementation
 namespace ascon {
+
+constexpr size_t RATE = 64;
+
+constexpr size_t ROUND_A = 12;
+
+constexpr size_t ROUND_B = 12;
 
 // Ascon Hash Function with support for both oneshot and incremental hashing
 //
@@ -37,6 +46,60 @@ public:
     if (!absorbed) {
       ascon_hash_utils::absorb<12>(state, msg, mlen);
       absorbed = true;
+    }
+  }
+
+  // Given N -bytes input message, this routine consumes those into
+  // Ascon permutation state.
+  //
+  // Note, this routine can be called arbitrary number of times, each time with
+  // arbitrary bytes of input message, until Ascon permutation state is
+  // finalized ( by calling routine with similar name ).
+  //
+  // This function is only enabled, when you decide to use Ascon-Hash in
+  // incremental hashing mode ( compile-time decision ). By default one uses
+  // Ascon-Hash API in oneshot hashing mode.
+  inline void absorb(const uint8_t* const msg, const size_t mlen)
+    requires(incremental)
+  {
+    constexpr size_t rbytes = RATE >> 3; // # -of RATE bytes
+
+    if (!absorbed) {
+      uint8_t blk_bytes[rbytes];
+
+      const size_t blk_cnt = (offset + mlen) / rbytes;
+      size_t moff = 0;
+
+      for (size_t i = 0; i < blk_cnt; i++) {
+        std::memset(blk_bytes, 0, offset);
+        std::memcpy(blk_bytes + offset, msg + moff, rbytes - offset);
+
+        const auto word = ascon_utils::from_be_bytes<uint64_t>(blk_bytes);
+        state[0] ^= word;
+
+        moff += (rbytes - offset);
+        offset += (rbytes - offset);
+
+        ascon_perm::permute<ROUND_B>(state);
+        offset %= rbytes;
+      }
+
+      const size_t rm_bytes = mlen - moff;
+
+      std::memset(blk_bytes, 0, rbytes);
+      std::memcpy(blk_bytes + offset, msg + moff, rm_bytes);
+
+      const auto word = ascon_utils::from_be_bytes<uint64_t>(blk_bytes);
+      state[0] ^= word;
+
+      offset += rm_bytes;
+
+      if (offset == rm_bytes) {
+        ascon_perm::permute<ROUND_B>(state);
+        offset %= rbytes;
+      }
+
+      absorbed_len += mlen;
     }
   }
 
