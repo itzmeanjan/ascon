@@ -1,18 +1,18 @@
 #pragma once
 #include "hash_utils.hpp"
-#include "permutation.hpp"
-#include "utils.hpp"
-#include <cstring>
 
 // Ascon Light Weight Cryptography ( i.e. AEAD, Hash and Extendable Output
 // Functions ) Implementation
 namespace ascon {
 
-constexpr size_t RATE = 64;
+// Bit width of rate portion of Ascon permutation state
+constexpr size_t ASCON_HASH_RATE = 64;
 
-constexpr size_t ROUND_A = 12;
+// How many rounds of Ascon permutation is applied for p^a
+constexpr size_t ASCON_HASH_ROUND_A = 12;
 
-constexpr size_t ROUND_B = 12;
+// How many rounds of Ascon permutation is applied for p^b
+constexpr size_t ASCON_HASH_ROUND_B = 12;
 
 // Ascon Hash Function with support for both oneshot and incremental hashing
 //
@@ -27,7 +27,6 @@ private:
                      0xb48a92db98d5da62ul,
                      0x43189921b8f8e3e8ul,
                      0x348fa5c9d525e140ul };
-  size_t absorbed_len = 0;
   size_t offset = 0;
   alignas(4) bool absorbed = false;
   alignas(4) bool squeezed = false;
@@ -62,7 +61,7 @@ public:
   inline void absorb(const uint8_t* const msg, const size_t mlen)
     requires(incremental)
   {
-    constexpr size_t rbytes = RATE >> 3; // # -of RATE bytes
+    constexpr size_t rbytes = ASCON_HASH_RATE / 8; // # -of RATE bytes
 
     if (!absorbed) {
       uint8_t blk_bytes[rbytes];
@@ -80,7 +79,7 @@ public:
         moff += (rbytes - offset);
         offset += (rbytes - offset);
 
-        ascon_perm::permute<ROUND_B>(state);
+        ascon_perm::permute<ASCON_HASH_ROUND_B>(state);
         offset %= rbytes;
       }
 
@@ -95,11 +94,37 @@ public:
       offset += rm_bytes;
 
       if (offset == rm_bytes) {
-        ascon_perm::permute<ROUND_B>(state);
+        ascon_perm::permute<ASCON_HASH_ROUND_B>(state);
         offset %= rbytes;
       }
+    }
+  }
 
-      absorbed_len += mlen;
+  // After consuming N -many bytes ( by invoking absorb routine arbitrary many
+  // times, each time with arbitrary input bytes ), this routine is invoked when
+  // no more input bytes remaining to be consumed by Ascon permutation state.
+  //
+  // Note, once this routine is called, calling absorb() or finalize() again, on
+  // same Ascon-Hash object, doesn't do anything. After finalization, one would
+  // like to read 32 -bytes of digest by squeezing sponge, which is done by
+  // calling digest() function only once.
+  //
+  // This function is only enabled, when you decide to use Ascon-Hash in
+  // incremental hashing mode ( compile-time decision ). By default one uses
+  // Ascon-Hash API in oneshot hashing mode.
+  inline void finalize()
+    requires(incremental)
+  {
+    constexpr size_t rbytes = ASCON_HASH_RATE / 8; // # -of RATE bytes
+
+    if (!absorbed) {
+      const size_t pad_bytes = rbytes - offset;
+      const size_t pad_bits = pad_bytes * 8;
+      const uint64_t pad_mask = 1ul << (pad_bits - 1);
+
+      state[0] ^= pad_mask;
+
+      absorbed = true;
     }
   }
 
@@ -110,7 +135,10 @@ public:
   inline void digest(uint8_t* const out)
   {
     if (absorbed && !squeezed) {
-      ascon_hash_utils::squeeze<12, 12>(state, out);
+      constexpr auto ra = ASCON_HASH_ROUND_A;
+      constexpr auto rb = ASCON_HASH_ROUND_B;
+      ascon_hash_utils::squeeze<ra, rb>(state, out);
+
       squeezed = true;
     }
   }
