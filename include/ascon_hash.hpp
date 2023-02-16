@@ -43,7 +43,7 @@ public:
     requires(!incremental)
   {
     if (!absorbed) {
-      ascon_hash_utils::absorb<12>(state, msg, mlen);
+      ascon_hash_utils::absorb<ASCON_HASH_ROUND_B>(state, msg, mlen);
       absorbed = true;
     }
   }
@@ -93,7 +93,7 @@ public:
 
       offset += rm_bytes;
 
-      if (offset == rm_bytes) {
+      if (offset == rbytes) {
         ascon_perm::permute<ASCON_HASH_ROUND_B>(state);
         offset %= rbytes;
       }
