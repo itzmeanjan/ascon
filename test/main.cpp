@@ -16,6 +16,15 @@ main()
   ascon_test::test_ascon_hash(4096);
   std::cout << "[test] Ascon-Hash oneshot and incremental hashing API\n";
 
+  ascon_test::test_ascon_hasha(64);
+  ascon_test::test_ascon_hasha(128);
+  ascon_test::test_ascon_hasha(256);
+  ascon_test::test_ascon_hasha(512);
+  ascon_test::test_ascon_hasha(1024);
+  ascon_test::test_ascon_hasha(2048);
+  ascon_test::test_ascon_hasha(4096);
+  std::cout << "[test] Ascon-HashA oneshot and incremental hashing API\n";
+
   for (size_t dlen = 0; dlen < 32; dlen++) {
     for (size_t ctlen = 0; ctlen < 32; ctlen++) {
       ascon_test::ascon_128(dlen, ctlen);
