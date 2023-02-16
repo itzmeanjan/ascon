@@ -51,6 +51,89 @@ public:
     }
   }
 
+  // Given N -bytes input message, this routine consumes those into
+  // Ascon permutation state.
+  //
+  // Note, this routine can be called arbitrary number of times, each time with
+  // arbitrary bytes of input message, until Ascon permutation state is
+  // finalized ( by calling routine with similar name ).
+  //
+  // This function is only enabled, when you decide to use Ascon-XOF in
+  // incremental hashing mode ( compile-time decision ). By default one uses
+  // Ascon-XOF API in oneshot hashing mode.
+  inline void absorb(const uint8_t* const msg, const size_t mlen)
+    requires(incremental)
+  {
+    constexpr size_t rbytes = ASCON_XOF_RATE / 8; // # -of RATE bytes
+
+    if (!absorbed) {
+      uint8_t blk_bytes[rbytes];
+
+      const size_t blk_cnt = (offset + mlen) / rbytes;
+      size_t moff = 0;
+
+      for (size_t i = 0; i < blk_cnt; i++) {
+        std::memset(blk_bytes, 0, offset);
+        std::memcpy(blk_bytes + offset, msg + moff, rbytes - offset);
+
+        const auto word = ascon_utils::from_be_bytes<uint64_t>(blk_bytes);
+        state[0] ^= word;
+
+        moff += (rbytes - offset);
+        offset += (rbytes - offset);
+
+        ascon_perm::permute<ASCON_XOF_ROUND_B>(state);
+        offset %= rbytes;
+      }
+
+      const size_t rm_bytes = mlen - moff;
+
+      std::memset(blk_bytes, 0, rbytes);
+      std::memcpy(blk_bytes + offset, msg + moff, rm_bytes);
+
+      const auto word = ascon_utils::from_be_bytes<uint64_t>(blk_bytes);
+      state[0] ^= word;
+
+      offset += rm_bytes;
+
+      if (offset == rbytes) {
+        ascon_perm::permute<ASCON_XOF_ROUND_B>(state);
+        offset %= rbytes;
+      }
+    }
+  }
+
+  // After consuming N -many bytes ( by invoking absorb routine arbitrary many
+  // times, each time with arbitrary input bytes ), this routine is invoked when
+  // no more input bytes remaining to be consumed by Ascon permutation state.
+  //
+  // Note, once this routine is called, calling absorb() or finalize() again, on
+  // same Ascon-XOF object, doesn't do anything. After finalization, one would
+  // like to read arbitrary many bytes of digest by squeezing sponge, which is
+  // done by calling `read()` function as many times required.
+  //
+  // This function is only enabled, when you decide to use Ascon-XOF in
+  // incremental hashing mode ( compile-time decision ). By default one uses
+  // Ascon-XOF API in oneshot hashing mode.
+  inline void finalize()
+    requires(incremental)
+  {
+    constexpr size_t rbytes = ASCON_XOF_RATE / 8; // # -of RATE bytes
+
+    if (!absorbed) {
+      const size_t pad_bytes = rbytes - offset;
+      const size_t pad_bits = pad_bytes * 8;
+      const uint64_t pad_mask = 1ul << (pad_bits - 1);
+
+      state[0] ^= pad_mask;
+      absorbed = true;
+      offset = 0;
+
+      ascon_perm::permute<ASCON_XOF_ROUND_A>(state);
+      readable = ASCON_XOF_RATE / 8;
+    }
+  }
+
   // Given that N -bytes input message is already absorbed into Ascon
   // permutation state using `hash( ... )`/ `absorb(...)` & `finalize(...)`
   // routine, this routine is used for squeezing M -bytes out of consumable part
