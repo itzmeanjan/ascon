@@ -50,6 +50,20 @@ def hash_a(msg: bytes) -> bytes:
     return digest.raw
 
 
+def xof(msg: bytes, olen: int) -> bytes:
+    """
+    Computes olen -bytes Ascon XOF of arbitrary length input byte array;
+    see section 2.5 of Ascon specification
+    https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
+    """
+    digest = create_string_buffer(olen)
+
+    SO_LIB.xof.argtypes = [c_char_p, c_size_t, c_char_p, c_size_t]
+    SO_LIB.xof(msg, len(msg), digest, olen)
+
+    return digest.raw
+
+
 def encrypt_128(
     key: bytes, nonce: bytes, data: bytes, text: bytes
 ) -> Tuple[bytes, bytes]:
