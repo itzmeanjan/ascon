@@ -46,7 +46,7 @@ public:
     requires(!incremental)
   {
     if (!absorbed) {
-      ascon_hash_utils::absorb<ASCON_HASHA_ROUND_B>(state, msg, mlen);
+      hash_utils::absorb<ASCON_HASHA_ROUND_B>(state, msg, mlen);
       absorbed = true;
     }
   }
@@ -141,7 +141,7 @@ public:
     if (absorbed && !squeezed) {
       constexpr auto ra = ASCON_HASHA_ROUND_A;
       constexpr auto rb = ASCON_HASHA_ROUND_B;
-      ascon_hash_utils::squeeze<ra, rb>(state, out);
+      hash_utils::squeeze<ra, rb>(state, out);
 
       squeezed = true;
     }

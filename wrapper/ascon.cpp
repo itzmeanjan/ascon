@@ -76,14 +76,18 @@ extern "C"
             const size_t msg_len,
             uint8_t* const __restrict digest)
   {
-    ascon::hash(msg, msg_len, digest);
+    ascon::ascon_hash hasher;
+    hasher.hash(msg, msg_len);
+    hasher.digest(digest);
   }
 
   void hash_a(const uint8_t* const __restrict msg,
               const size_t msg_len,
               uint8_t* const __restrict digest)
   {
-    ascon::hash_a(msg, msg_len, digest);
+    ascon::ascon_hasha hasher;
+    hasher.hash(msg, msg_len);
+    hasher.digest(digest);
   }
 
   void encrypt_128(const uint8_t* const __restrict key,

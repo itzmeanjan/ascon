@@ -43,7 +43,7 @@ public:
     requires(!incremental)
   {
     if (!absorbed) {
-      ascon_hash_utils::absorb<ASCON_XOF_ROUND_B>(state, msg, mlen);
+      hash_utils::absorb<ASCON_XOF_ROUND_B>(state, msg, mlen);
       absorbed = true;
 
       ascon_perm::permute<ASCON_XOF_ROUND_A>(state);
