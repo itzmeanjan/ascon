@@ -14,6 +14,9 @@ constexpr size_t ASCON_HASH_ROUND_A = 12;
 // How many rounds of Ascon permutation is applied for p^b
 constexpr size_t ASCON_HASH_ROUND_B = 12;
 
+// Ascon Hash Digest Byte Length
+constexpr size_t ASCON_HASH_DIGEST_LEN = 32;
+
 // Ascon Hash Function with support for both oneshot and incremental hashing
 //
 // See section 2.5 of Ascon specification
