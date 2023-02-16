@@ -411,7 +411,7 @@ finalize(uint64_t* const __restrict state,
 
     state[1] ^= key0;
     state[2] ^= key1;
-    state[3] ^= static_cast<uint64_t>(key2);
+    state[3] ^= static_cast<uint64_t>(key2) << 32;
 
     ascon_perm::permute<a>(state);
 
