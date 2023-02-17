@@ -1,5 +1,5 @@
 #pragma once
-#include "cipher.hpp"
+#include "aead_utils.hpp"
 
 // Ascon Light Weight Cryptography ( i.e. authenticated encryption, verified
 // decryption and hashing ) Implementation
@@ -20,14 +20,12 @@ encrypt_128(const uint8_t* const __restrict key,
             uint8_t* const __restrict cipher, // length same as `text`
             uint8_t* const __restrict tag)
 {
-  using namespace ascon_cipher;
-
   uint64_t state[5]{};
 
-  initialize<ASCON_128_IV, 128>(state, key, nonce);
-  process_associated_data<6, 64>(state, data, dlen);
-  process_plaintext<6, 64>(state, text, ctlen, cipher);
-  finalize<12, 64, 128>(state, key, tag);
+  aead_utils::initialize<aead_utils::ASCON_128_IV, 128>(state, key, nonce);
+  aead_utils::process_associated_data<6, 64>(state, data, dlen);
+  aead_utils::process_plaintext<6, 64>(state, text, ctlen, cipher);
+  aead_utils::finalize<12, 64, 128>(state, key, tag);
 }
 
 // Encrypts plain text with Ascon-128a authenticated encryption algorithm; see
@@ -45,14 +43,12 @@ encrypt_128a(const uint8_t* const __restrict key,
              uint8_t* const __restrict cipher, // length same as `text`
              uint8_t* const __restrict tag)
 {
-  using namespace ascon_cipher;
-
   uint64_t state[5]{};
 
-  initialize<ASCON_128a_IV, 128>(state, key, nonce);
-  process_associated_data<8, 128>(state, data, dlen);
-  process_plaintext<8, 128>(state, text, ctlen, cipher);
-  finalize<12, 128, 128>(state, key, tag);
+  aead_utils::initialize<aead_utils::ASCON_128a_IV, 128>(state, key, nonce);
+  aead_utils::process_associated_data<8, 128>(state, data, dlen);
+  aead_utils::process_plaintext<8, 128>(state, text, ctlen, cipher);
+  aead_utils::finalize<12, 128, 128>(state, key, tag);
 }
 
 // Encrypts plain text with Ascon-80pq authenticated encryption algorithm; see
@@ -70,14 +66,12 @@ encrypt_80pq(const uint8_t* const __restrict key,
              uint8_t* const __restrict cipher, // length same as `text`
              uint8_t* const __restrict tag)
 {
-  using namespace ascon_cipher;
-
   uint64_t state[5]{};
 
-  initialize<ASCON_80pq_IV, 160>(state, key, nonce);
-  process_associated_data<6, 64>(state, data, dlen);
-  process_plaintext<6, 64>(state, text, ctlen, cipher);
-  finalize<12, 64, 160>(state, key, tag);
+  aead_utils::initialize<aead_utils::ASCON_80pq_IV, 160>(state, key, nonce);
+  aead_utils::process_associated_data<6, 64>(state, data, dlen);
+  aead_utils::process_plaintext<6, 64>(state, text, ctlen, cipher);
+  aead_utils::finalize<12, 64, 160>(state, key, tag);
 }
 
 }

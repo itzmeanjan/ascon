@@ -16,22 +16,22 @@ p_a()
     uint64_t state[5]{ 0x00400c0000000100ul, 0ul, 0ul, 0ul, 0ul };
     ascon_perm::permute<12>(state);
 
-    assert(state[0] == ascon_hash_utils::ASCON_HASH_INIT_STATE[0]);
-    assert(state[1] == ascon_hash_utils::ASCON_HASH_INIT_STATE[1]);
-    assert(state[2] == ascon_hash_utils::ASCON_HASH_INIT_STATE[2]);
-    assert(state[3] == ascon_hash_utils::ASCON_HASH_INIT_STATE[3]);
-    assert(state[4] == ascon_hash_utils::ASCON_HASH_INIT_STATE[4]);
+    assert(state[0] == 0xee9398aadb67f03dul);
+    assert(state[1] == 0x8bb21831c60f1002ul);
+    assert(state[2] == 0xb48a92db98d5da62ul);
+    assert(state[3] == 0x43189921b8f8e3e8ul);
+    assert(state[4] == 0x348fa5c9d525e140ul);
   }
 
   {
     uint64_t state[5]{ 0x00400c0400000100ul, 0ul, 0ul, 0ul, 0ul };
     ascon_perm::permute<12>(state);
 
-    assert(state[0] == ascon_hash_utils::ASCON_HASHA_INIT_STATE[0]);
-    assert(state[1] == ascon_hash_utils::ASCON_HASHA_INIT_STATE[1]);
-    assert(state[2] == ascon_hash_utils::ASCON_HASHA_INIT_STATE[2]);
-    assert(state[3] == ascon_hash_utils::ASCON_HASHA_INIT_STATE[3]);
-    assert(state[4] == ascon_hash_utils::ASCON_HASHA_INIT_STATE[4]);
+    assert(state[0] == 0x01470194fc6528a6ul);
+    assert(state[1] == 0x738ec38ac0adffa7ul);
+    assert(state[2] == 0x2ec8e3296c76384cul);
+    assert(state[3] == 0xd6f6a54d7f52377dul);
+    assert(state[4] == 0xa13c42a223be8d87ul);
   }
 
   {
