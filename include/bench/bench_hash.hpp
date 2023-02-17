@@ -10,15 +10,19 @@ void
 hash(benchmark::State& state)
 {
   const size_t mlen = static_cast<size_t>(state.range(0));
+  constexpr size_t dlen = ascon::ASCON_HASH_DIGEST_LEN;
 
-  uint8_t* msg = static_cast<uint8_t*>(std::malloc(mlen));
-  uint8_t* digest = static_cast<uint8_t*>(std::malloc(ascon::DIGEST_LEN));
+  auto msg = static_cast<uint8_t*>(std::malloc(mlen));
+  auto digest = static_cast<uint8_t*>(std::malloc(dlen));
 
   ascon_utils::random_data(msg, mlen);
 
   for (auto _ : state) {
-    ascon::hash(msg, mlen, digest);
+    ascon::ascon_hash hasher;
+    hasher.hash(msg, mlen);
+    hasher.digest(digest);
 
+    benchmark::DoNotOptimize(hasher);
     benchmark::DoNotOptimize(digest);
     benchmark::DoNotOptimize(msg);
     benchmark::ClobberMemory();
@@ -35,15 +39,19 @@ void
 hash_a(benchmark::State& state)
 {
   const size_t mlen = static_cast<size_t>(state.range(0));
+  constexpr size_t dlen = ascon::ASCON_HASH_DIGEST_LEN;
 
-  uint8_t* msg = static_cast<uint8_t*>(std::malloc(mlen));
-  uint8_t* digest = static_cast<uint8_t*>(std::malloc(ascon::DIGEST_LEN));
+  auto msg = static_cast<uint8_t*>(std::malloc(mlen));
+  auto digest = static_cast<uint8_t*>(std::malloc(dlen));
 
   ascon_utils::random_data(msg, mlen);
 
   for (auto _ : state) {
-    ascon::hash_a(msg, mlen, digest);
+    ascon::ascon_hasha hasher;
+    hasher.hash(msg, mlen);
+    hasher.digest(digest);
 
+    benchmark::DoNotOptimize(hasher);
     benchmark::DoNotOptimize(digest);
     benchmark::DoNotOptimize(msg);
     benchmark::ClobberMemory();
