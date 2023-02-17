@@ -6,9 +6,6 @@
 // decryption and hashing ) Implementation
 namespace ascon {
 
-// Ascon Hash{A} Digest Byte Length
-constexpr size_t DIGEST_LEN = 32;
-
 // Ascon-128 AEAD Key Byte Length
 constexpr size_t ASCON128_KEY_LEN = 16;
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "cipher.hpp"
+#include "aead_utils.hpp"
 #include "consts.hpp"
 
 // Ascon Light Weight Cryptography ( i.e. authenticated encryption, verified
@@ -23,15 +23,13 @@ decrypt_128(const uint8_t* const __restrict key,
             uint8_t* const __restrict text, // length same as `cipher`
             const uint8_t* const __restrict tag)
 {
-  using namespace ascon_cipher;
-
   uint64_t state[5]{};
   uint8_t tag_[16];
 
-  initialize<ASCON_128_IV, 128>(state, key, nonce);
-  process_associated_data<6, 64>(state, data, dlen);
-  process_ciphertext<6, 64>(state, cipher, ctlen, text);
-  finalize<12, 64, 128>(state, key, tag_);
+  aead_utils::initialize<aead_utils::ASCON_128_IV, 128>(state, key, nonce);
+  aead_utils::process_associated_data<6, 64>(state, data, dlen);
+  aead_utils::process_ciphertext<6, 64>(state, cipher, ctlen, text);
+  aead_utils::finalize<12, 64, 128>(state, key, tag_);
 
   bool flg = false;
   for (size_t i = 0; i < ascon::ASCON128_TAG_LEN; i++) {
@@ -59,15 +57,13 @@ decrypt_128a(const uint8_t* const __restrict key,
              uint8_t* const __restrict text, // length same as `cipher`
              const uint8_t* const __restrict tag)
 {
-  using namespace ascon_cipher;
-
   uint64_t state[5]{};
   uint8_t tag_[16];
 
-  initialize<ASCON_128a_IV, 128>(state, key, nonce);
-  process_associated_data<8, 128>(state, data, dlen);
-  process_ciphertext<8, 128>(state, cipher, ctlen, text);
-  finalize<12, 128, 128>(state, key, tag_);
+  aead_utils::initialize<aead_utils::ASCON_128a_IV, 128>(state, key, nonce);
+  aead_utils::process_associated_data<8, 128>(state, data, dlen);
+  aead_utils::process_ciphertext<8, 128>(state, cipher, ctlen, text);
+  aead_utils::finalize<12, 128, 128>(state, key, tag_);
 
   bool flg = false;
   for (size_t i = 0; i < ascon::ASCON128_TAG_LEN; i++) {
@@ -95,15 +91,13 @@ decrypt_80pq(const uint8_t* const __restrict key,
              uint8_t* const __restrict text, // length same as `cipher`
              const uint8_t* const __restrict tag)
 {
-  using namespace ascon_cipher;
-
   uint64_t state[5]{};
   uint8_t tag_[16];
 
-  initialize<ASCON_80pq_IV, 160>(state, key, nonce);
-  process_associated_data<6, 64>(state, data, dlen);
-  process_ciphertext<6, 64>(state, cipher, ctlen, text);
-  finalize<12, 64, 160>(state, key, tag_);
+  aead_utils::initialize<aead_utils::ASCON_80pq_IV, 160>(state, key, nonce);
+  aead_utils::process_associated_data<6, 64>(state, data, dlen);
+  aead_utils::process_ciphertext<6, 64>(state, cipher, ctlen, text);
+  aead_utils::finalize<12, 64, 160>(state, key, tag_);
 
   bool flg = false;
   for (size_t i = 0; i < ascon::ASCON128_TAG_LEN; i++) {

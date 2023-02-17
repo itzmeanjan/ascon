@@ -1,11 +1,10 @@
 #pragma once
 #include "permutation.hpp"
 #include "utils.hpp"
-#include <cstring>
 
 // Utility functions for implementing Ascon-{128, 128a, 80pq} authenticated
 // encryption & verified decryption
-namespace ascon_cipher {
+namespace aead_utils {
 
 // Ascon-128 initial state value ( only first 64 -bits ); taken from
 // section 2.4.1 of
