@@ -18,6 +18,11 @@ extern "C"
            uint8_t* const __restrict,
            const size_t);
 
+  void xofa(const uint8_t* const __restrict,
+            const size_t,
+            uint8_t* const __restrict,
+            const size_t);
+
   void encrypt_128(const uint8_t* const __restrict,
                    const uint8_t* const __restrict,
                    const uint8_t* const __restrict,
@@ -101,6 +106,16 @@ extern "C"
            const size_t dig_len)
   {
     ascon::ascon_xof hasher;
+    hasher.hash(msg, msg_len);
+    hasher.read(digest, dig_len);
+  }
+
+  void xofa(const uint8_t* const __restrict msg,
+            const size_t msg_len,
+            uint8_t* const __restrict digest,
+            const size_t dig_len)
+  {
+    ascon::ascon_xofa hasher;
     hasher.hash(msg, msg_len);
     hasher.read(digest, dig_len);
   }

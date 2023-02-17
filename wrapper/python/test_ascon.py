@@ -102,6 +102,38 @@ def test_ascon_xof_kat():
             fd.readline()
 
 
+def test_ascon_xofa_kat():
+    """
+    This test case asserts Ascon XOFA digests computed by my implementation
+    against Known Answer Tests from Ascon NIST LWC submission package.
+    """
+
+    with open("LWC_HASH_KAT_256.txt", "r") as fd:
+        while True:
+            cnt = fd.readline()
+            if not cnt:
+                # no more KATs remaining
+                break
+
+            msg = fd.readline()
+            md = fd.readline()
+
+            cnt = int([i.strip() for i in cnt.split("=")][-1])
+            msg = [i.strip() for i in msg.split("=")][-1]
+            md = [i.strip() for i in md.split("=")][-1]
+
+            msg = bytes.fromhex(msg)
+            md = bytes.fromhex(md)
+
+            digest = ascon.xofa(msg, 32)
+
+            check = md == digest
+            assert check, f"[Ascon XOFA KAT {cnt}] expected {md}, found {digest} !"
+
+            # don't need this line, so discard
+            fd.readline()
+
+
 def test_ascon_128_kat():
     """
     This test case asserts Ascon-128 encrypt/ decrypt implementation
