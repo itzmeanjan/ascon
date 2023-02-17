@@ -34,6 +34,15 @@ main()
   ascon_test::test_ascon_xof(4096, 4096);
   std::cout << "[test] Ascon-XOF oneshot and incremental hashing API\n";
 
+  ascon_test::test_ascon_xofa(64, 64);
+  ascon_test::test_ascon_xofa(128, 128);
+  ascon_test::test_ascon_xofa(256, 256);
+  ascon_test::test_ascon_xofa(512, 512);
+  ascon_test::test_ascon_xofa(1024, 1024);
+  ascon_test::test_ascon_xofa(2048, 2048);
+  ascon_test::test_ascon_xofa(4096, 4096);
+  std::cout << "[test] Ascon-XOFA oneshot and incremental hashing API\n";
+
   for (size_t dlen = 0; dlen < 32; dlen++) {
     for (size_t ctlen = 0; ctlen < 32; ctlen++) {
       ascon_test::ascon_128(dlen, ctlen);
