@@ -1,3 +1,5 @@
+> **Warning** **This implementation is not yet audited. If you consider using it in production, be careful !**
+
 # ascon
 Accelerated Ascon: Light Weight Cryptography
 
