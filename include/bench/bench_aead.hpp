@@ -35,9 +35,7 @@ enc_128(benchmark::State& state)
     DoNotOptimize(key);
     DoNotOptimize(nonce);
     DoNotOptimize(data);
-    DoNotOptimize(dt_len);
     DoNotOptimize(text);
-    DoNotOptimize(ct_len);
     DoNotOptimize(enc);
     DoNotOptimize(tag);
     ClobberMemory();
@@ -86,9 +84,7 @@ dec_128(benchmark::State& state)
     DoNotOptimize(key);
     DoNotOptimize(nonce);
     DoNotOptimize(data);
-    DoNotOptimize(dt_len);
     DoNotOptimize(enc);
-    DoNotOptimize(ct_len);
     DoNotOptimize(dec);
     DoNotOptimize(tag);
     ClobberMemory();
@@ -134,9 +130,7 @@ enc_128a(benchmark::State& state)
     DoNotOptimize(key);
     DoNotOptimize(nonce);
     DoNotOptimize(data);
-    DoNotOptimize(dt_len);
     DoNotOptimize(text);
-    DoNotOptimize(ct_len);
     DoNotOptimize(enc);
     DoNotOptimize(tag);
     ClobberMemory();
@@ -185,9 +179,7 @@ dec_128a(benchmark::State& state)
     DoNotOptimize(key);
     DoNotOptimize(nonce);
     DoNotOptimize(data);
-    DoNotOptimize(dt_len);
     DoNotOptimize(enc);
-    DoNotOptimize(ct_len);
     DoNotOptimize(dec);
     DoNotOptimize(tag);
     ClobberMemory();
@@ -233,9 +225,7 @@ enc_80pq(benchmark::State& state)
     DoNotOptimize(key);
     DoNotOptimize(nonce);
     DoNotOptimize(data);
-    DoNotOptimize(dt_len);
     DoNotOptimize(text);
-    DoNotOptimize(ct_len);
     DoNotOptimize(enc);
     DoNotOptimize(tag);
     ClobberMemory();
@@ -284,9 +274,7 @@ dec_80pq(benchmark::State& state)
     DoNotOptimize(key);
     DoNotOptimize(nonce);
     DoNotOptimize(data);
-    DoNotOptimize(dt_len);
     DoNotOptimize(enc);
-    DoNotOptimize(ct_len);
     DoNotOptimize(dec);
     DoNotOptimize(tag);
     ClobberMemory();

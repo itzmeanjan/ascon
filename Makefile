@@ -2,17 +2,18 @@ CXX = g++
 CXXFLAGS = -std=c++20 -Wall -Wextra -pedantic
 OPTFLAGS = -O3 -march=native -mtune=native
 IFLAGS = -I ./include
+DEPFLAGS = -I ./subtle/include
 
 all: test_ascon test_kat
 
 test/a.out: test/main.cpp include/*.hpp include/test/*.hpp
-	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(IFLAGS) $< -o $@
+	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(IFLAGS) $(DEPFLAGS) $< -o $@
 
 test_ascon: test/a.out
 	./$<
 
 lib:
-	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(IFLAGS) -fPIC --shared wrapper/ascon.cpp -o wrapper/libascon.so
+	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(IFLAGS) $(DEPFLAGS) -fPIC --shared wrapper/ascon.cpp -o wrapper/libascon.so
 
 test_kat:
 	bash test_kat.sh
@@ -26,7 +27,7 @@ format:
 bench/a.out: bench/main.cpp include/*.hpp include/bench/*.hpp
 	# make sure you've google-benchmark globally installed;
 	# see https://github.com/google/benchmark/tree/60b16f1#installation
-	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(IFLAGS) $< -lbenchmark -o $@
+	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(IFLAGS) $(DEPFLAGS) $< -lbenchmark -o $@
 
 benchmark: bench/a.out
 	./$<
