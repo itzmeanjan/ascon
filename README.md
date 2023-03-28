@@ -121,7 +121,7 @@ Following routines are benchmarked
 ### On Intel(R) Core(TM) i5-8279U CPU @ 2.40GHz ( Compiled with Clang )
 
 ```bash
-2023-02-17T14:14:28+04:00
+2023-03-28T12:34:15+04:00
 Running ./bench/a.out
 Run on (8 X 2400 MHz CPU s)
 CPU Caches:
@@ -129,84 +129,84 @@ CPU Caches:
   L1 Instruction 32 KiB
   L2 Unified 256 KiB (x4)
   L3 Unified 6144 KiB
-Load Average: 3.43, 3.53, 2.52
+Load Average: 2.27, 1.98, 2.07
 ----------------------------------------------------------------------------------------
 Benchmark                              Time             CPU   Iterations UserCounters...
 ----------------------------------------------------------------------------------------
-bench_ascon::permutation<1>         4.24 ns         4.23 ns    164508859 bytes_per_second=8.79776G/s
-bench_ascon::permutation<6>         23.6 ns         23.6 ns     29310901 bytes_per_second=1.57837G/s
-bench_ascon::permutation<8>         30.7 ns         30.7 ns     22643829 bytes_per_second=1.21201G/s
-bench_ascon::permutation<12>        46.0 ns         45.9 ns     15194105 bytes_per_second=830.531M/s
-bench_ascon::hash/64                 592 ns          592 ns      1161749 bytes_per_second=154.762M/s
-bench_ascon::hasha/64                409 ns          409 ns      1710074 bytes_per_second=224.071M/s
-bench_ascon::xof/64/32               599 ns          598 ns      1145869 bytes_per_second=153M/s
-bench_ascon::xofa/64/32              416 ns          416 ns      1677961 bytes_per_second=220.229M/s
-bench_ascon::hash/128                959 ns          959 ns       715322 bytes_per_second=159.175M/s
-bench_ascon::hasha/128               682 ns          680 ns      1023317 bytes_per_second=224.547M/s
-bench_ascon::xof/128/64             1178 ns         1177 ns       588933 bytes_per_second=155.507M/s
-bench_ascon::xofa/128/64             806 ns          805 ns       854471 bytes_per_second=227.443M/s
-bench_ascon::hash/256               1727 ns         1725 ns       401204 bytes_per_second=159.184M/s
-bench_ascon::hasha/256              1132 ns         1131 ns       613470 bytes_per_second=242.747M/s
-bench_ascon::xof/256/128            2330 ns         2328 ns       297575 bytes_per_second=157.302M/s
-bench_ascon::xofa/256/128           1560 ns         1558 ns       449762 bytes_per_second=235.006M/s
-bench_ascon::hash/512               3172 ns         3169 ns       221144 bytes_per_second=163.713M/s
-bench_ascon::hasha/512              2132 ns         2130 ns       327224 bytes_per_second=243.513M/s
-bench_ascon::xof/512/256            4550 ns         4547 ns       153840 bytes_per_second=161.085M/s
-bench_ascon::xofa/512/256           3097 ns         3095 ns       226133 bytes_per_second=236.663M/s
-bench_ascon::hash/1024              6071 ns         6064 ns       115697 bytes_per_second=166.082M/s
-bench_ascon::hasha/1024             4044 ns         4041 ns       172820 bytes_per_second=249.185M/s
-bench_ascon::xof/1024/512           8980 ns         8974 ns        76524 bytes_per_second=163.229M/s
-bench_ascon::xofa/1024/512          6077 ns         6073 ns       113226 bytes_per_second=241.208M/s
-bench_ascon::hash/2048             11809 ns        11803 ns        58264 bytes_per_second=168.064M/s
-bench_ascon::hasha/2048             7855 ns         7852 ns        87159 bytes_per_second=252.622M/s
-bench_ascon::xof/2048/1024         17761 ns        17749 ns        39102 bytes_per_second=165.064M/s
-bench_ascon::xofa/2048/1024        12051 ns        12044 ns        57657 bytes_per_second=243.249M/s
-bench_ascon::hash/4096             23340 ns        23329 ns        29886 bytes_per_second=168.75M/s
-bench_ascon::hasha/4096            15501 ns        15492 ns        44621 bytes_per_second=254.111M/s
-bench_ascon::xof/4096/2048         35528 ns        35508 ns        19648 bytes_per_second=165.017M/s
-bench_ascon::xofa/4096/2048        23915 ns        23903 ns        29008 bytes_per_second=245.135M/s
-bench_ascon::enc_128/64/32           407 ns          407 ns      1710647 bytes_per_second=225.16M/s
-bench_ascon::dec_128/64/32           409 ns          409 ns      1701830 bytes_per_second=224.02M/s
-bench_ascon::enc_128/128/32          598 ns          598 ns      1147259 bytes_per_second=255.197M/s
-bench_ascon::dec_128/128/32          602 ns          602 ns      1142652 bytes_per_second=253.529M/s
-bench_ascon::enc_128/256/32          984 ns          984 ns       704835 bytes_per_second=279.199M/s
-bench_ascon::dec_128/256/32          990 ns          989 ns       693021 bytes_per_second=277.722M/s
-bench_ascon::enc_128/512/32         1734 ns         1733 ns       401204 bytes_per_second=299.333M/s
-bench_ascon::dec_128/512/32         1800 ns         1799 ns       386886 bytes_per_second=288.33M/s
-bench_ascon::enc_128/1024/32        3229 ns         3227 ns       216129 bytes_per_second=312.104M/s
-bench_ascon::dec_128/1024/32        3335 ns         3333 ns       209964 bytes_per_second=302.192M/s
-bench_ascon::enc_128/2048/32        6253 ns         6250 ns       107337 bytes_per_second=317.384M/s
-bench_ascon::dec_128/2048/32        6384 ns         6378 ns       107331 bytes_per_second=310.998M/s
-bench_ascon::enc_128/4096/32       12300 ns        12292 ns        55730 bytes_per_second=320.266M/s
-bench_ascon::dec_128/4096/32       12560 ns        12550 ns        54998 bytes_per_second=313.688M/s
-bench_ascon::enc_128a/64/32          325 ns          325 ns      2155352 bytes_per_second=281.75M/s
-bench_ascon::dec_128a/64/32          324 ns          324 ns      2157437 bytes_per_second=283.004M/s
-bench_ascon::enc_128a/128/32         444 ns          444 ns      1573299 bytes_per_second=343.572M/s
-bench_ascon::dec_128a/128/32         443 ns          443 ns      1577500 bytes_per_second=344.62M/s
-bench_ascon::enc_128a/256/32         697 ns          697 ns       975093 bytes_per_second=394.131M/s
-bench_ascon::dec_128a/256/32         695 ns          694 ns       988617 bytes_per_second=395.578M/s
-bench_ascon::enc_128a/512/32        1181 ns         1180 ns       586132 bytes_per_second=439.662M/s
-bench_ascon::dec_128a/512/32        1177 ns         1176 ns       587357 bytes_per_second=441.295M/s
-bench_ascon::enc_128a/1024/32       2144 ns         2142 ns       325146 bytes_per_second=470.116M/s
-bench_ascon::dec_128a/1024/32       2199 ns         2198 ns       318862 bytes_per_second=458.238M/s
-bench_ascon::enc_128a/2048/32       4075 ns         4072 ns       171668 bytes_per_second=487.123M/s
-bench_ascon::dec_128a/2048/32       4122 ns         4120 ns       168813 bytes_per_second=481.477M/s
-bench_ascon::enc_128a/4096/32       7969 ns         7962 ns        86266 bytes_per_second=494.457M/s
-bench_ascon::dec_128a/4096/32       8017 ns         8010 ns        85949 bytes_per_second=491.49M/s
-bench_ascon::enc_80pq/64/32          409 ns          409 ns      1711584 bytes_per_second=223.997M/s
-bench_ascon::dec_80pq/64/32          415 ns          414 ns      1686954 bytes_per_second=220.964M/s
-bench_ascon::enc_80pq/128/32         603 ns          602 ns      1146132 bytes_per_second=253.326M/s
-bench_ascon::dec_80pq/128/32         606 ns          605 ns      1119964 bytes_per_second=252.046M/s
-bench_ascon::enc_80pq/256/32         976 ns          975 ns       707643 bytes_per_second=281.627M/s
-bench_ascon::dec_80pq/256/32        1005 ns         1004 ns       686423 bytes_per_second=273.576M/s
-bench_ascon::enc_80pq/512/32        1732 ns         1730 ns       400469 bytes_per_second=299.861M/s
-bench_ascon::dec_80pq/512/32        1810 ns         1809 ns       383171 bytes_per_second=286.719M/s
-bench_ascon::enc_80pq/1024/32       3222 ns         3221 ns       216382 bytes_per_second=312.664M/s
-bench_ascon::dec_80pq/1024/32       3344 ns         3342 ns       208820 bytes_per_second=301.326M/s
-bench_ascon::enc_80pq/2048/32       6231 ns         6227 ns       108987 bytes_per_second=318.573M/s
-bench_ascon::dec_80pq/2048/32       6419 ns         6416 ns       107273 bytes_per_second=309.17M/s
-bench_ascon::enc_80pq/4096/32      12208 ns        12201 ns        55878 bytes_per_second=322.654M/s
-bench_ascon::dec_80pq/4096/32      12539 ns        12534 ns        54918 bytes_per_second=314.096M/s
+bench_ascon::permutation<1>         4.30 ns         4.28 ns    162816067 bytes_per_second=8.69732G/s
+bench_ascon::permutation<6>         24.2 ns         24.0 ns     28998716 bytes_per_second=1.54978G/s
+bench_ascon::permutation<8>         31.2 ns         31.1 ns     22255570 bytes_per_second=1.19909G/s
+bench_ascon::permutation<12>        46.4 ns         46.3 ns     15173586 bytes_per_second=823.559M/s
+bench_ascon::hash/64                 599 ns          597 ns      1121094 bytes_per_second=153.428M/s
+bench_ascon::hasha/64                415 ns          413 ns      1689136 bytes_per_second=221.804M/s
+bench_ascon::xof/64/32               603 ns          602 ns      1136253 bytes_per_second=151.993M/s
+bench_ascon::xofa/64/32              417 ns          417 ns      1673300 bytes_per_second=219.549M/s
+bench_ascon::hash/128                959 ns          958 ns       721070 bytes_per_second=159.2M/s
+bench_ascon::hasha/128               655 ns          654 ns      1041124 bytes_per_second=233.251M/s
+bench_ascon::xof/128/64             1181 ns         1179 ns       587776 bytes_per_second=155.258M/s
+bench_ascon::xofa/128/64             807 ns          806 ns       833760 bytes_per_second=227.11M/s
+bench_ascon::hash/256               1796 ns         1795 ns       384415 bytes_per_second=153.01M/s
+bench_ascon::hasha/256              1137 ns         1136 ns       611824 bytes_per_second=241.777M/s
+bench_ascon::xof/256/128            2333 ns         2332 ns       297415 bytes_per_second=157.048M/s
+bench_ascon::xofa/256/128           1553 ns         1552 ns       448339 bytes_per_second=236.007M/s
+bench_ascon::hash/512               3171 ns         3169 ns       221247 bytes_per_second=163.713M/s
+bench_ascon::hasha/512              2143 ns         2138 ns       322208 bytes_per_second=242.651M/s
+bench_ascon::xof/512/256            4541 ns         4537 ns       153577 bytes_per_second=161.424M/s
+bench_ascon::xofa/512/256           3098 ns         3095 ns       226184 bytes_per_second=236.658M/s
+bench_ascon::hash/1024              6070 ns         6064 ns       115198 bytes_per_second=166.067M/s
+bench_ascon::hasha/1024             4042 ns         4040 ns       172218 bytes_per_second=249.261M/s
+bench_ascon::xof/1024/512           8960 ns         8952 ns        76358 bytes_per_second=163.635M/s
+bench_ascon::xofa/1024/512          6219 ns         6215 ns       112367 bytes_per_second=235.709M/s
+bench_ascon::hash/2048             11830 ns        11822 ns        58255 bytes_per_second=167.796M/s
+bench_ascon::hasha/2048             7865 ns         7861 ns        86546 bytes_per_second=252.333M/s
+bench_ascon::xof/2048/1024         17853 ns        17847 ns        38644 bytes_per_second=164.154M/s
+bench_ascon::xofa/2048/1024        12064 ns        12056 ns        57411 bytes_per_second=243.009M/s
+bench_ascon::hash/4096             23693 ns        23670 ns        29553 bytes_per_second=166.316M/s
+bench_ascon::hasha/4096            15553 ns        15547 ns        44170 bytes_per_second=253.211M/s
+bench_ascon::xof/4096/2048         35431 ns        35405 ns        19596 bytes_per_second=165.498M/s
+bench_ascon::xofa/4096/2048        23998 ns        23987 ns        28982 bytes_per_second=244.272M/s
+bench_ascon::enc_128/64/32           410 ns          410 ns      1699797 bytes_per_second=223.569M/s
+bench_ascon::dec_128/64/32           409 ns          408 ns      1704361 bytes_per_second=224.222M/s
+bench_ascon::enc_128/128/32          605 ns          605 ns      1137952 bytes_per_second=252.395M/s
+bench_ascon::dec_128/128/32          601 ns          601 ns      1147654 bytes_per_second=254.05M/s
+bench_ascon::enc_128/256/32          977 ns          977 ns       712497 bytes_per_second=281.194M/s
+bench_ascon::dec_128/256/32          982 ns          981 ns       705304 bytes_per_second=279.987M/s
+bench_ascon::enc_128/512/32         1735 ns         1735 ns       394905 bytes_per_second=299.069M/s
+bench_ascon::dec_128/512/32         1799 ns         1798 ns       387008 bytes_per_second=288.618M/s
+bench_ascon::enc_128/1024/32        3253 ns         3251 ns       215981 bytes_per_second=309.802M/s
+bench_ascon::dec_128/1024/32        3329 ns         3326 ns       210531 bytes_per_second=302.792M/s
+bench_ascon::enc_128/2048/32        6254 ns         6250 ns       109932 bytes_per_second=317.388M/s
+bench_ascon::dec_128/2048/32        6423 ns         6418 ns       105571 bytes_per_second=309.078M/s
+bench_ascon::enc_128/4096/32       12283 ns        12278 ns        56270 bytes_per_second=320.629M/s
+bench_ascon::dec_128/4096/32       12517 ns        12511 ns        54703 bytes_per_second=314.673M/s
+bench_ascon::enc_128a/64/32          325 ns          325 ns      2149237 bytes_per_second=281.98M/s
+bench_ascon::dec_128a/64/32          323 ns          322 ns      2174541 bytes_per_second=284.031M/s
+bench_ascon::enc_128a/128/32         445 ns          445 ns      1564026 bytes_per_second=343.007M/s
+bench_ascon::dec_128a/128/32         444 ns          443 ns      1578123 bytes_per_second=344.073M/s
+bench_ascon::enc_128a/256/32         701 ns          700 ns       990169 bytes_per_second=392.444M/s
+bench_ascon::dec_128a/256/32         705 ns          703 ns      1011239 bytes_per_second=390.704M/s
+bench_ascon::enc_128a/512/32        1189 ns         1186 ns       582785 bytes_per_second=437.46M/s
+bench_ascon::dec_128a/512/32        1180 ns         1179 ns       589191 bytes_per_second=440.138M/s
+bench_ascon::enc_128a/1024/32       2173 ns         2170 ns       321641 bytes_per_second=464.032M/s
+bench_ascon::dec_128a/1024/32       2189 ns         2188 ns       315066 bytes_per_second=460.314M/s
+bench_ascon::enc_128a/2048/32       4089 ns         4087 ns       171025 bytes_per_second=485.315M/s
+bench_ascon::dec_128a/2048/32       4112 ns         4110 ns       169190 bytes_per_second=482.639M/s
+bench_ascon::enc_128a/4096/32       7940 ns         7935 ns        85587 bytes_per_second=496.133M/s
+bench_ascon::dec_128a/4096/32       8007 ns         8003 ns        85751 bytes_per_second=491.937M/s
+bench_ascon::enc_80pq/64/32          416 ns          416 ns      1684883 bytes_per_second=220.028M/s
+bench_ascon::dec_80pq/64/32          414 ns          413 ns      1691904 bytes_per_second=221.452M/s
+bench_ascon::enc_80pq/128/32         599 ns          599 ns      1137693 bytes_per_second=254.888M/s
+bench_ascon::dec_80pq/128/32         603 ns          602 ns      1149746 bytes_per_second=253.468M/s
+bench_ascon::enc_80pq/256/32         991 ns          990 ns       702247 bytes_per_second=277.294M/s
+bench_ascon::dec_80pq/256/32         981 ns          980 ns       698429 bytes_per_second=280.24M/s
+bench_ascon::enc_80pq/512/32        1774 ns         1770 ns       397459 bytes_per_second=293.136M/s
+bench_ascon::dec_80pq/512/32        1843 ns         1833 ns       355117 bytes_per_second=283.075M/s
+bench_ascon::enc_80pq/1024/32       3276 ns         3273 ns       213540 bytes_per_second=307.656M/s
+bench_ascon::dec_80pq/1024/32       3310 ns         3309 ns       209649 bytes_per_second=304.391M/s
+bench_ascon::enc_80pq/2048/32       6239 ns         6236 ns       109665 bytes_per_second=318.097M/s
+bench_ascon::dec_80pq/2048/32       6362 ns         6357 ns       108510 bytes_per_second=312.02M/s
+bench_ascon::enc_80pq/4096/32      12230 ns        12222 ns        56617 bytes_per_second=322.102M/s
+bench_ascon::dec_80pq/4096/32      12459 ns        12452 ns        54673 bytes_per_second=316.167M/s
 ```
 
 ## Usage
