@@ -1,4 +1,4 @@
-> **Warning** **This implementation is not yet audited. If you consider using it in production, be careful !**
+> **Warning** **This implementation attempts to provide you with constant-timeness though it is not yet audited. If you consider using it in production, be careful !**
 
 # ascon
 Accelerated Ascon: Light Weight Cryptography
@@ -53,6 +53,13 @@ cmake version 3.22.1
 
 $ python3 --version
 Python 3.10.6
+```
+
+- `subtle` is a ( git submodule -based ) dependency of this project - used for constant-time authentication tag comparison and setting of plain text memory locations to zero bytes. Import `subtle` by issuing
+
+```bash
+# assuming you're already cloned `ascon`
+git submodule update --init
 ```
 
 - You'll also need to install Python dependencies by issuing
@@ -265,7 +272,7 @@ Digest  :	52644d6ba60bd3eca3aa2dabfe69ae397ddcdd0f0abd5151bf1d0e23cb4da41b3ab756
 
 # ---------------
 
-$ g++ -std=c++20 -Wall -O3 -march=native -I ./include example/ascon_128.cpp && ./a.out
+$ g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./subtle/include example/ascon_128.cpp && ./a.out
 Ascon-128 AEAD
 
 Key       :	06a819d82123676245b7b88e864b01ac
@@ -277,7 +284,7 @@ Decrypted :	22bbe3e728cc9355298c614a503471b69c27a193db9331e41ba42791b63d12e8b535
 
 # ----------------
 
-$ g++ -std=c++20 -Wall -O3 -march=native -I ./include example/ascon_128a.cpp && ./a.out
+$ g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./subtle/include example/ascon_128a.cpp && ./a.out
 Ascon-128a AEAD
 
 Key       :	88119fff6f0673cfc8d0269bac8ca328
@@ -289,7 +296,7 @@ Decrypted :	2b2e331614af85f38500a3fbe182ec4c00bd0b5a200b852f582a63249363892043c0
 
 # -----------------
 
-$ g++ -std=c++20 -Wall -O3 -march=native -I ./include example/ascon_80pq.cpp && ./a.out
+$ g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./subtle/include example/ascon_80pq.cpp && ./a.out
 Ascon-80pq AEAD
 
 Key       :	93afc9866d8fafb4d4895a97147da2639e652407
@@ -317,9 +324,10 @@ $ python3 # consider enabling `venv`
 
 >>> import ascon
 >>> import random
->>> ascon.hash(b'').hex()               # computing ascon-hash digest
+>>> # using ascon-hash for computing message digest
+>>> ascon.hash(b'').hex()
 '7346bc14f036e87ae03d0997913088f5f68411434b3cf8b54fa796a80d251f91'
->>>
+>>> # using ascon128 AEAD for authenticated encryption
 >>> key = random.randbytes(16)
 >>> nonce = random.randbytes(16)
 >>> msg = b'abcd'
