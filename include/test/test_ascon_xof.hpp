@@ -1,17 +1,18 @@
 #pragma once
-#include "ascon_hash.hpp"
-#include "ascon_hasha.hpp"
 #include "ascon_xof.hpp"
-#include "ascon_xofa.hpp"
+#include <algorithm>
 #include <cassert>
+#include <fstream>
 
 // Test Ascon Light Weight Cryptography Implementation
 namespace ascon_test {
 
-// Test if both oneshot and incremental hashing API of Ascon-XOFA produces same
+using namespace std::literals;
+
+// Test if both oneshot and incremental hashing API of Ascon-XOF produces same
 // result for same input message.
 inline void
-test_ascon_xofa(const size_t mlen, const size_t dlen)
+test_ascon_xof(const size_t mlen, const size_t dlen)
 {
   auto msg = static_cast<uint8_t*>(std::malloc(mlen));
   auto dig_oneshot = static_cast<uint8_t*>(std::malloc(dlen));
@@ -21,7 +22,7 @@ test_ascon_xofa(const size_t mlen, const size_t dlen)
 
   // oneshot hashing
   {
-    ascon::ascon_xofa hasher;
+    ascon::ascon_xof hasher;
 
     // absorb all message bytes at once
     hasher.hash(msg, mlen);
@@ -31,7 +32,7 @@ test_ascon_xofa(const size_t mlen, const size_t dlen)
 
   // incremental hashing
   {
-    ascon::ascon_xofa<true> hasher;
+    ascon::ascon_xof<true> hasher;
 
     // absorb message bytes in many iterations
     size_t off = 0;
@@ -70,6 +71,52 @@ test_ascon_xofa(const size_t mlen, const size_t dlen)
   std::free(dig_incremental);
 
   assert(!flg);
+}
+
+// Ensure that this Ascon-Xof implementation is conformant to the
+// specification, using known answer tests.
+inline void
+test_ascon_xof_kat()
+{
+  const std::string kat_file = "./kats/ascon_xof.kat";
+  std::fstream file(kat_file);
+
+  while (true) {
+    std::string count0;
+
+    if (!std::getline(file, count0).eof()) {
+      std::string msg0;
+      std::string md0;
+
+      std::getline(file, msg0);
+      std::getline(file, md0);
+
+      auto msg1 = std::string_view(msg0);
+      auto md1 = std::string_view(md0);
+
+      auto msg2 = msg1.substr(msg1.find("="sv) + 2, msg1.size());
+      auto md2 = md1.substr(md1.find("="sv) + 2, md1.size());
+
+      auto msg = ascon_utils::from_hex(msg2);
+      auto md = ascon_utils::from_hex(md2);
+
+      std::vector<uint8_t> digest(md.size());
+
+      ascon::ascon_xof hasher;
+
+      hasher.hash(msg.data(), msg.size());
+      hasher.read(digest.data(), digest.size());
+
+      assert(std::ranges::equal(digest, md));
+
+      std::string empty_line;
+      std::getline(file, empty_line);
+    } else {
+      break;
+    }
+  }
+
+  file.close();
 }
 
 }
