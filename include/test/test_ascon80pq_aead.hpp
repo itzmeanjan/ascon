@@ -13,28 +13,28 @@ namespace ascon_test {
 
 using namespace std::literals;
 
-// Test functional correctness of Ascon-128a authenticated encryption and
-// verified decryption implementation for different input sizes
+// Test functional correctness of Ascon-80pq authenticated encryption and
+// verified decryption implementation
 inline void
-ascon128a_aead(const size_t dlen, // bytes; >= 0
+ascon80pq_aead(const size_t dlen, // bytes; >= 0
                const size_t ctlen // bytes; >= 0
 )
 {
-  auto key = static_cast<uint8_t*>(std::malloc(ascon::ASCON128A_KEY_LEN));
-  auto nonce = static_cast<uint8_t*>(std::malloc(ascon::ASCON128A_NONCE_LEN));
-  auto tag = static_cast<uint8_t*>(std::malloc(ascon::ASCON128A_TAG_LEN));
+  auto key = static_cast<uint8_t*>(std::malloc(ascon::ASCON80PQ_KEY_LEN));
+  auto nonce = static_cast<uint8_t*>(std::malloc(ascon::ASCON80PQ_NONCE_LEN));
+  auto tag = static_cast<uint8_t*>(std::malloc(ascon::ASCON80PQ_TAG_LEN));
   auto data = static_cast<uint8_t*>(std::malloc(dlen));
   auto text = static_cast<uint8_t*>(std::malloc(ctlen));
   auto enc = static_cast<uint8_t*>(std::malloc(ctlen));
   auto dec = static_cast<uint8_t*>(std::malloc(ctlen));
 
-  ascon_utils::random_data(key, ascon::ASCON128A_KEY_LEN);
-  ascon_utils::random_data(nonce, ascon::ASCON128A_NONCE_LEN);
+  ascon_utils::random_data(key, ascon::ASCON80PQ_KEY_LEN);
+  ascon_utils::random_data(nonce, ascon::ASCON80PQ_NONCE_LEN);
   ascon_utils::random_data(data, dlen);
   ascon_utils::random_data(text, ctlen);
 
-  ascon::encrypt_128a(key, nonce, data, dlen, text, ctlen, enc, tag);
-  bool v = ascon::decrypt_128a(key, nonce, data, dlen, enc, ctlen, dec, tag);
+  ascon::encrypt_80pq(key, nonce, data, dlen, text, ctlen, enc, tag);
+  bool v = ascon::decrypt_80pq(key, nonce, data, dlen, enc, ctlen, dec, tag);
 
   // ensures that text has been verifiably decrypted !
   assert(v);
@@ -51,12 +51,12 @@ ascon128a_aead(const size_t dlen, // bytes; >= 0
   std::free(tag);
 }
 
-// Ensure that Ascon-128a AEAD implementation conforms to the specification,
+// Ensure that Ascon-80pq AEAD implementation conforms to the specification,
 // by testing using Known Answer Tests.
 inline void
-ascon128a_aead_kat()
+ascon80pq_aead_kat()
 {
-  const std::string kat_file = "./kats/ascon128a_aead.kat";
+  const std::string kat_file = "./kats/ascon80pq_aead.kat";
   std::fstream file(kat_file);
 
   while (true) {
@@ -94,10 +94,10 @@ ascon128a_aead_kat()
       auto ct = ascon_utils::from_hex(ct2);
 
       std::vector<uint8_t> ctxt(pt.size());
-      std::vector<uint8_t> tag(ascon::ASCON128A_TAG_LEN);
+      std::vector<uint8_t> tag(ascon::ASCON80PQ_TAG_LEN);
       std::vector<uint8_t> ptxt(ctxt.size());
 
-      ascon::encrypt_128a(key.data(),
+      ascon::encrypt_80pq(key.data(),
                           nonce.data(),
                           ad.data(),
                           ad.size(),
@@ -105,7 +105,7 @@ ascon128a_aead_kat()
                           pt.size(),
                           ctxt.data(),
                           tag.data());
-      bool flag = ascon::decrypt_128a(key.data(),
+      bool flag = ascon::decrypt_80pq(key.data(),
                                       nonce.data(),
                                       ad.data(),
                                       ad.size(),

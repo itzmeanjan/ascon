@@ -13,8 +13,8 @@ namespace ascon_test {
 
 using namespace std::literals;
 
-// Test correctness of Ascon-128 authenticated encryption and verified
-// decryption implementation for different input sizes
+// Test functional correctness of Ascon-128 authenticated encryption and
+// verified decryption implementation for different input sizes
 inline void
 ascon128_aead(const size_t dlen, // bytes; >= 0
               const size_t ctlen // bytes; >= 0
