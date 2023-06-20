@@ -10,7 +10,7 @@ main()
   for (size_t dlen = 0; dlen <= 32; dlen++) {
     for (size_t ctlen = 0; ctlen <= 32; ctlen++) {
       ascon_test::ascon128_aead(dlen, ctlen);
-      ascon_test::ascon_128a(dlen, ctlen);
+      ascon_test::ascon128a_aead(dlen, ctlen);
       ascon_test::ascon_80pq(dlen, ctlen);
     }
   }
@@ -21,6 +21,9 @@ main()
 
   ascon_test::ascon128_aead_kat();
   std::cout << "[test] Ascon-128 AEAD KAT tests\n";
+
+  ascon_test::ascon128a_aead_kat();
+  std::cout << "[test] Ascon-128a AEAD KAT tests\n";
 
   ascon_test::test_ascon_hash(64);
   ascon_test::test_ascon_hash(128);
