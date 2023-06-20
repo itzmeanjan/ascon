@@ -15,33 +15,22 @@ main()
     }
   }
 
-  std::cout << "[test] Ascon-128 AEAD property tests\n";
-  std::cout << "[test] Ascon-128a AEAD property tests\n";
-  std::cout << "[test] Ascon-80pq AEAD property tests\n";
-
   ascon_test::ascon128_aead_kat();
-  std::cout << "[test] Ascon-128 AEAD KAT tests\n";
+  std::cout << "[test] Ascon-128 AEAD\n";
 
   ascon_test::ascon128a_aead_kat();
-  std::cout << "[test] Ascon-128a AEAD KAT tests\n";
+  std::cout << "[test] Ascon-128a AEAD\n";
 
   ascon_test::ascon80pq_aead_kat();
-  std::cout << "[test] Ascon-80pq AEAD KAT tests\n";
+  std::cout << "[test] Ascon-80pq AEAD\n";
 
   ascon_test::test_ascon_hash(4096);
-  std::cout << "[test] Ascon-Hash oneshot and incremental hashing API\n";
-
   ascon_test::test_ascon_hash_kat();
-  std::cout << "[test] Ascon-Hash KAT tests\n";
+  std::cout << "[test] Ascon-Hash\n";
 
-  ascon_test::test_ascon_hasha(64);
-  ascon_test::test_ascon_hasha(128);
-  ascon_test::test_ascon_hasha(256);
-  ascon_test::test_ascon_hasha(512);
-  ascon_test::test_ascon_hasha(1024);
-  ascon_test::test_ascon_hasha(2048);
   ascon_test::test_ascon_hasha(4096);
-  std::cout << "[test] Ascon-HashA oneshot and incremental hashing API\n";
+  ascon_test::test_ascon_hasha_kat();
+  std::cout << "[test] Ascon-HashA\n";
 
   ascon_test::test_ascon_xof(64, 64);
   ascon_test::test_ascon_xof(128, 128);
