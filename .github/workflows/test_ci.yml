@@ -1,4 +1,4 @@
-name: Test Ascon Hash, XOF and AEAD on CI
+name: Test Ascon Cipher Suite on CI
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
     - uses: actions/checkout@v3
@@ -19,7 +19,5 @@ jobs:
         sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 9
     - name: Install C++ dependency
       run: git submodule update --init
-    - name: Install Python dependencies
-      run: python3 -m pip install -r wrapper/python/requirements.txt --user
     - name: Execute tests
       run: make
