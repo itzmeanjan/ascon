@@ -36,14 +36,9 @@ main()
   ascon_test::test_ascon_xof_kat();
   std::cout << "[test] Ascon-Xof\n";
 
-  ascon_test::test_ascon_xofa(64, 64);
-  ascon_test::test_ascon_xofa(128, 128);
-  ascon_test::test_ascon_xofa(256, 256);
-  ascon_test::test_ascon_xofa(512, 512);
-  ascon_test::test_ascon_xofa(1024, 1024);
-  ascon_test::test_ascon_xofa(2048, 2048);
   ascon_test::test_ascon_xofa(4096, 4096);
-  std::cout << "[test] Ascon-XOFA oneshot and incremental hashing API\n";
+  ascon_test::test_ascon_xofa_kat();
+  std::cout << "[test] Ascon-XofA\n";
 
   return EXIT_SUCCESS;
 }

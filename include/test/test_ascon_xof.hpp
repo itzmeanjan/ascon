@@ -9,7 +9,7 @@ namespace ascon_test {
 
 using namespace std::literals;
 
-// Test if both oneshot and incremental hashing API of Ascon-XOF produces same
+// Test if both oneshot and incremental hashing API of Ascon-Xof produces same
 // result for same input message.
 inline void
 test_ascon_xof(const size_t mlen, const size_t dlen)
