@@ -15,9 +15,9 @@ main()
     }
   }
 
-  std::cout << "[test] Ascon-128 AEAD\n";
-  std::cout << "[test] Ascon-128a AEAD\n";
-  std::cout << "[test] Ascon-80pq AEAD\n";
+  std::cout << "[test] Ascon-128 AEAD property tests\n";
+  std::cout << "[test] Ascon-128a AEAD property tests\n";
+  std::cout << "[test] Ascon-80pq AEAD property tests\n";
 
   ascon_test::ascon128_aead_kat();
   std::cout << "[test] Ascon-128 AEAD KAT tests\n";
@@ -28,14 +28,11 @@ main()
   ascon_test::ascon80pq_aead_kat();
   std::cout << "[test] Ascon-80pq AEAD KAT tests\n";
 
-  ascon_test::test_ascon_hash(64);
-  ascon_test::test_ascon_hash(128);
-  ascon_test::test_ascon_hash(256);
-  ascon_test::test_ascon_hash(512);
-  ascon_test::test_ascon_hash(1024);
-  ascon_test::test_ascon_hash(2048);
   ascon_test::test_ascon_hash(4096);
   std::cout << "[test] Ascon-Hash oneshot and incremental hashing API\n";
+
+  ascon_test::test_ascon_hash_kat();
+  std::cout << "[test] Ascon-Hash KAT tests\n";
 
   ascon_test::test_ascon_hasha(64);
   ascon_test::test_ascon_hasha(128);
