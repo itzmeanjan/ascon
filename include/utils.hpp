@@ -1,4 +1,5 @@
 #pragma once
+#include "subtle.hpp"
 #include <algorithm>
 #include <bit>
 #include <cassert>
@@ -97,7 +98,7 @@ random_data(T* const data, const size_t len)
 // See Ascon-{128, Hash, HashA} padding rule in section 2.4.{2,3} & 2.5.2 of
 // Ascon specification
 // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
-static inline uint64_t
+inline uint64_t
 pad64(const uint8_t* const data, const size_t pad_byte_len)
 {
   const size_t dlen = 8ul - pad_byte_len;
@@ -119,7 +120,7 @@ pad64(const uint8_t* const data, const size_t pad_byte_len)
 //
 // See Ascon-128a padding rule in section 2.4.{2,3} of Ascon specification
 // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
-static inline std::pair<uint64_t, uint64_t>
+inline std::pair<uint64_t, uint64_t>
 pad128(const uint8_t* const __restrict data, const size_t pad_byte_len)
 {
   const size_t dlen = 16ul - pad_byte_len;
@@ -185,6 +186,39 @@ from_hex(std::string_view hex)
   }
 
   return res;
+}
+
+// Given two byte arrays of equal length, this routine can be used for checking
+// equality of them, in constant-time, returning truth value ( 0xffffffff ), in
+// case they are equal. Otherwise it returns 0x00000000, denoting inequality of
+// content of two byte arrays.
+inline constexpr uint32_t
+ct_eq_byte_array(const uint8_t* const __restrict byte_arr_a,
+                 const uint8_t* const __restrict byte_arr_b,
+                 const size_t len)
+{
+  uint32_t flag = -1u;
+  for (size_t i = 0; i < len; i++) {
+    flag &= subtle::ct_eq<uint8_t, uint32_t>(byte_arr_a[i], byte_arr_b[i]);
+  }
+
+  return flag;
+}
+
+// Given a 32 -bit conditional value ( `cond`, which can take any of
+// {0x00000000, 0xffffffff} ), this routine can be used for setting bytes (
+// pointed to by `byte_arr` ) to some provided value ( `val` ), in
+// constant-time, only if `cond` holds truth value ( = 0xffffffff ). Otherwise,
+// it shouldn't mutate bytes.
+inline constexpr void
+ct_conditional_memset(const uint32_t cond,
+                      uint8_t* const __restrict byte_arr,
+                      const uint8_t val,
+                      const size_t len)
+{
+  for (size_t i = 0; i < len; i++) {
+    byte_arr[i] = subtle::ct_select(cond, val, byte_arr[i]);
+  }
 }
 
 }
