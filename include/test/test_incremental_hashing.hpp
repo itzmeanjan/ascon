@@ -10,7 +10,7 @@ namespace ascon_test {
 
 // Test if both oneshot and incremental hashing API of Ascon-Hash produces same
 // result for same input message.
-void
+inline void
 test_ascon_hash(const size_t mlen)
 {
   uint8_t digest_oneshot[ascon::ASCON_HASH_DIGEST_LEN];
@@ -57,7 +57,7 @@ test_ascon_hash(const size_t mlen)
 
 // Test if both oneshot and incremental hashing API of Ascon-HashA produces same
 // result for same input message.
-void
+inline void
 test_ascon_hasha(const size_t mlen)
 {
   uint8_t digest_oneshot[ascon::ASCON_HASHA_DIGEST_LEN];
@@ -104,7 +104,7 @@ test_ascon_hasha(const size_t mlen)
 
 // Test if both oneshot and incremental hashing API of Ascon-XOF produces same
 // result for same input message.
-void
+inline void
 test_ascon_xof(const size_t mlen, const size_t dlen)
 {
   auto msg = static_cast<uint8_t*>(std::malloc(mlen));
@@ -168,7 +168,7 @@ test_ascon_xof(const size_t mlen, const size_t dlen)
 
 // Test if both oneshot and incremental hashing API of Ascon-XOFA produces same
 // result for same input message.
-void
+inline void
 test_ascon_xofa(const size_t mlen, const size_t dlen)
 {
   auto msg = static_cast<uint8_t*>(std::malloc(mlen));

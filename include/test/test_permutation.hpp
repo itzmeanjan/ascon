@@ -1,5 +1,5 @@
 #pragma once
-#include "hash.hpp"
+#include "permutation.hpp"
 #include <cassert>
 
 // Test Ascon Light Weight Cryptography Implementation
@@ -9,7 +9,7 @@ namespace ascon_test {
 // XOFA} state; see precomputed hash states for all these hashing algorithms in
 // section 2.5.1 of Ascon specification
 // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
-void
+inline void
 p_a()
 {
   {
