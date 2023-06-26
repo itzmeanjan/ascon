@@ -1,24 +1,23 @@
 #pragma once
-#include "hash_utils.hpp"
+#include "permutation.hpp"
+#include "utils.hpp"
 
-// Ascon Light Weight Cryptography ( i.e. AEAD, Hash and Extendable Output
-// Functions ) Implementation
-namespace ascon {
+// Ascon-XofA
+namespace ascon_xofa {
 
 // Bit width of rate portion of Ascon permutation state
-constexpr size_t ASCON_XOFA_RATE = 64;
+constexpr size_t RATE = 64;
 
 // How many rounds of Ascon permutation is applied for p^a
-constexpr size_t ASCON_XOFA_ROUND_A = 12;
+constexpr size_t ROUNDS_A = 12;
 
 // How many rounds of Ascon permutation is applied for p^b
-constexpr size_t ASCON_XOFA_ROUND_B = 8;
+constexpr size_t ROUNDS_B = 8;
 
-// Ascon XOFA Function with support for both oneshot and incremental hashing
+// Ascon-XofA ( extendable output function ), supporting incremental hashing.
 //
 // See section 2.5 of Ascon specification
 // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
-template<const bool incremental = false>
 struct ascon_xofa
 {
 private:
@@ -32,39 +31,18 @@ private:
   alignas(4) bool absorbed = false;
 
 public:
-  // Given N -bytes message, this routine can be invoked for absorbing those
-  // message bytes into Ascon permutation state. This routine can be thought of
-  // single-shot hash API s.t. all input bytes are ready to be consumed at once.
-  // Once they are consumed using this function, arbitrary many digest bytes can
-  // be read using `read` function. One thing to remember when using this
-  // single-shot hashing API is that once absorbed, calling this function again
-  // and again doesn't have any side effect.
-  inline void hash(const uint8_t* const msg, const size_t mlen)
-    requires(!incremental)
-  {
-    if (!absorbed) {
-      hash_utils::absorb<ASCON_XOFA_ROUND_B>(state, msg, mlen);
-      absorbed = true;
+  // Initialization values taken from section 2.5.1 of Ascon spec.
+  constexpr ascon_xofa() = default;
 
-      ascon_perm::permute<ASCON_XOFA_ROUND_A>(state);
-      readable = ASCON_XOFA_RATE / 8;
-    }
-  }
-
-  // Given N -bytes input message, this routine consumes those into
-  // Ascon permutation state.
+  // Given N -bytes input message, this routine consumes those into Ascon
+  // permutation state.
   //
   // Note, this routine can be called arbitrary number of times, each time with
   // arbitrary bytes of input message, until Ascon permutation state is
   // finalized ( by calling routine with similar name ).
-  //
-  // This function is only enabled, when you decide to use Ascon-XOFA in
-  // incremental hashing mode ( compile-time decision ). By default one uses
-  // Ascon-XOFA API in oneshot hashing mode.
   inline void absorb(const uint8_t* const msg, const size_t mlen)
-    requires(incremental)
   {
-    constexpr size_t rbytes = ASCON_XOFA_RATE / 8; // # -of RATE bytes
+    constexpr size_t rbytes = RATE / 8;
 
     if (!absorbed) {
       uint8_t blk_bytes[rbytes];
@@ -82,7 +60,7 @@ public:
         moff += (rbytes - offset);
         offset += (rbytes - offset);
 
-        ascon_perm::permute<ASCON_XOFA_ROUND_B>(state);
+        ascon_perm::permute<ROUNDS_B>(state);
         offset %= rbytes;
       }
 
@@ -97,7 +75,7 @@ public:
       offset += rm_bytes;
 
       if (offset == rbytes) {
-        ascon_perm::permute<ASCON_XOFA_ROUND_B>(state);
+        ascon_perm::permute<ROUNDS_B>(state);
         offset %= rbytes;
       }
     }
@@ -111,14 +89,9 @@ public:
   // same Ascon-XOFA object, doesn't do anything. After finalization, one would
   // like to read arbitrary many bytes of digest by squeezing sponge, which is
   // done by calling `read()` function as many times required.
-  //
-  // This function is only enabled, when you decide to use Ascon-XOFA in
-  // incremental hashing mode ( compile-time decision ). By default one uses
-  // Ascon-XOFA API in oneshot hashing mode.
   inline void finalize()
-    requires(incremental)
   {
-    constexpr size_t rbytes = ASCON_XOFA_RATE / 8; // # -of RATE bytes
+    constexpr size_t rbytes = RATE / 8; // # -of RATE bytes
 
     if (!absorbed) {
       const size_t pad_bytes = rbytes - offset;
@@ -129,8 +102,8 @@ public:
       absorbed = true;
       offset = 0;
 
-      ascon_perm::permute<ASCON_XOFA_ROUND_A>(state);
-      readable = ASCON_XOFA_RATE / 8;
+      ascon_perm::permute<ROUNDS_A>(state);
+      readable = RATE / 8;
     }
   }
 
@@ -150,7 +123,7 @@ public:
       return;
     }
 
-    constexpr size_t rbytes = ASCON_XOFA_RATE / 8;
+    constexpr size_t rbytes = RATE / 8;
 
     size_t ooff = 0;
     while (ooff < olen) {
@@ -169,8 +142,8 @@ public:
       ooff += elen;
 
       if (readable == 0) {
-        ascon_perm::permute<ASCON_XOFA_ROUND_B>(state);
-        readable = ASCON_XOFA_RATE / 8;
+        ascon_perm::permute<ROUNDS_B>(state);
+        readable = RATE / 8;
       }
     }
   }
