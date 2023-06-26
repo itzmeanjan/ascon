@@ -4,19 +4,19 @@
 #include <cstdint>
 
 // Ascon Permutation
-namespace ascon_perm {
+namespace ascon_permutation {
 
 // Maximum number of Ascon permutation rounds
-constexpr size_t ROUNDS = 12;
+constexpr size_t MAX_ROUNDS = 12;
 
 // Ascon  permutation round constants; taken from table 4 in Ascon specification
 // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
-constexpr uint64_t RC[ROUNDS]{ 0x00000000000000f0ul, 0x00000000000000e1ul,
-                               0x00000000000000d2ul, 0x00000000000000c3ul,
-                               0x00000000000000b4ul, 0x00000000000000a5ul,
-                               0x0000000000000096ul, 0x0000000000000087ul,
-                               0x0000000000000078ul, 0x0000000000000069ul,
-                               0x000000000000005aul, 0x000000000000004bul };
+constexpr uint64_t RC[MAX_ROUNDS]{ 0x00000000000000f0ul, 0x00000000000000e1ul,
+                                   0x00000000000000d2ul, 0x00000000000000c3ul,
+                                   0x00000000000000b4ul, 0x00000000000000a5ul,
+                                   0x0000000000000096ul, 0x0000000000000087ul,
+                                   0x0000000000000078ul, 0x0000000000000069ul,
+                                   0x000000000000005aul, 0x000000000000004bul };
 
 // Addition of constants step; see section 2.6.1 of Ascon specification
 // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
@@ -85,11 +85,11 @@ round(uint64_t* const state, const size_t r_idx)
 template<const size_t R>
 inline constexpr void
 permute(uint64_t* const state)
-  requires(R <= ROUNDS)
+  requires(R <= MAX_ROUNDS)
 {
-  constexpr size_t BEG = ROUNDS - R;
+  constexpr size_t BEG = MAX_ROUNDS - R;
 
-  for (size_t i = BEG; i < ROUNDS; i++) {
+  for (size_t i = BEG; i < MAX_ROUNDS; i++) {
     round(state, i);
   }
 }

@@ -30,7 +30,7 @@ initialize(uint64_t* const __restrict state,     // uninitialized hash state
     state[3] = ascon_utils::from_be_bytes<uint64_t>(nonce);
     state[4] = ascon_utils::from_be_bytes<uint64_t>(nonce + 8);
 
-    ascon_perm::permute<rounds_a>(state);
+    ascon_permutation::permute<rounds_a>(state);
 
     state[3] ^= key0;
     state[4] ^= key1;
@@ -46,7 +46,7 @@ initialize(uint64_t* const __restrict state,     // uninitialized hash state
     state[3] = ascon_utils::from_be_bytes<uint64_t>(nonce);
     state[4] = ascon_utils::from_be_bytes<uint64_t>(nonce + 8);
 
-    ascon_perm::permute<12>(state);
+    ascon_permutation::permute<12>(state);
 
     state[2] ^= (key0 >> 32);
     state[3] ^= (key0 << 32) | (key1 >> 32);
@@ -82,7 +82,7 @@ process_associated_data(uint64_t* const __restrict state,
 
         const auto word = ascon_utils::from_be_bytes<uint64_t>(data + off);
         state[0] ^= word;
-        ascon_perm::permute<rounds_b>(state);
+        ascon_permutation::permute<rounds_b>(state);
 
         off += 8ul;
       } else {
@@ -93,7 +93,7 @@ process_associated_data(uint64_t* const __restrict state,
         const auto word1 = ascon_utils::from_be_bytes<uint64_t>(data + off + 8);
         state[0] ^= word0;
         state[1] ^= word1;
-        ascon_perm::permute<rounds_b>(state);
+        ascon_permutation::permute<rounds_b>(state);
 
         off += 16ul;
       }
@@ -106,7 +106,7 @@ process_associated_data(uint64_t* const __restrict state,
 
       const auto word = ascon_utils::pad64(data + off, pad_bytes);
       state[0] ^= word;
-      ascon_perm::permute<rounds_b>(state);
+      ascon_permutation::permute<rounds_b>(state);
     } else {
       // force compile-time branch evaluation
       static_assert(rate == 128, "Rate must be 128 -bits");
@@ -114,7 +114,7 @@ process_associated_data(uint64_t* const __restrict state,
       const auto words = ascon_utils::pad128(data + off, pad_bytes);
       state[0] ^= words.first;
       state[1] ^= words.second;
-      ascon_perm::permute<rounds_b>(state);
+      ascon_permutation::permute<rounds_b>(state);
     }
   }
 
@@ -153,7 +153,7 @@ process_plaintext(uint64_t* const __restrict state,
       state[0] ^= word;
       ascon_utils::to_be_bytes(state[0], cipher + off);
 
-      ascon_perm::permute<rounds_b>(state);
+      ascon_permutation::permute<rounds_b>(state);
 
       off += 8ul;
     } else {
@@ -169,7 +169,7 @@ process_plaintext(uint64_t* const __restrict state,
       ascon_utils::to_be_bytes(state[0], cipher + off);
       ascon_utils::to_be_bytes(state[1], cipher + off + 8ul);
 
-      ascon_perm::permute<rounds_b>(state);
+      ascon_permutation::permute<rounds_b>(state);
 
       off += 16ul;
     }
@@ -248,7 +248,7 @@ process_ciphertext(uint64_t* const __restrict state,
       ascon_utils::to_be_bytes(wordb, text + off);
 
       state[0] = worda;
-      ascon_perm::permute<rounds_b>(state);
+      ascon_permutation::permute<rounds_b>(state);
 
       off += 8ul;
     } else {
@@ -268,7 +268,7 @@ process_ciphertext(uint64_t* const __restrict state,
       state[0] = word0a;
       state[1] = word1a;
 
-      ascon_perm::permute<rounds_b>(state);
+      ascon_permutation::permute<rounds_b>(state);
 
       off += 16ul;
     }
@@ -382,7 +382,7 @@ finalize(uint64_t* const __restrict state,
       state[3] ^= key1;
     }
 
-    ascon_perm::permute<rounds_a>(state);
+    ascon_permutation::permute<rounds_a>(state);
 
     ascon_utils::to_be_bytes(state[3] ^ key0, tag);
     ascon_utils::to_be_bytes(state[4] ^ key1, tag + 8);
@@ -395,7 +395,7 @@ finalize(uint64_t* const __restrict state,
     state[2] ^= key1;
     state[3] ^= static_cast<uint64_t>(key2) << 32;
 
-    ascon_perm::permute<rounds_a>(state);
+    ascon_permutation::permute<rounds_a>(state);
 
     const auto t0 = (key0 << 32) | (key1 >> 32);
     const auto t1 = (key1 << 32) | static_cast<uint64_t>(key2);

@@ -10,7 +10,7 @@
 #include <random>
 #include <sstream>
 
-// Utility functions for Ascon Light Weight Cryptography Implementation
+// Utility functions for Ascon Light Weight Cipher Suite Implementation
 namespace ascon_utils {
 
 // Given a 32/ 64 -bit unsigned integer word, this routine swaps byte order and

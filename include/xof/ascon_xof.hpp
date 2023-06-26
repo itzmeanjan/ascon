@@ -60,7 +60,7 @@ public:
         moff += (rbytes - offset);
         offset += (rbytes - offset);
 
-        ascon_perm::permute<ROUNDS_B>(state);
+        ascon_permutation::permute<ROUNDS_B>(state);
         offset %= rbytes;
       }
 
@@ -75,7 +75,7 @@ public:
       offset += rm_bytes;
 
       if (offset == rbytes) {
-        ascon_perm::permute<ROUNDS_B>(state);
+        ascon_permutation::permute<ROUNDS_B>(state);
         offset %= rbytes;
       }
     }
@@ -102,7 +102,7 @@ public:
       absorbed = true;
       offset = 0;
 
-      ascon_perm::permute<ROUNDS_A>(state);
+      ascon_permutation::permute<ROUNDS_A>(state);
       readable = RATE / 8;
     }
   }
@@ -141,7 +141,7 @@ public:
       ooff += elen;
 
       if (readable == 0) {
-        ascon_perm::permute<ROUNDS_B>(state);
+        ascon_permutation::permute<ROUNDS_B>(state);
         readable = RATE / 8;
       }
     }

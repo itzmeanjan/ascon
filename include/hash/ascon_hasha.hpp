@@ -69,7 +69,7 @@ public:
         moff += (rbytes - offset);
         offset += (rbytes - offset);
 
-        ascon_perm::permute<ROUNDS_B>(state);
+        ascon_permutation::permute<ROUNDS_B>(state);
         offset %= rbytes;
       }
 
@@ -84,7 +84,7 @@ public:
       offset += rm_bytes;
 
       if (offset == rbytes) {
-        ascon_perm::permute<ROUNDS_B>(state);
+        ascon_permutation::permute<ROUNDS_B>(state);
         offset %= rbytes;
       }
     }
@@ -142,7 +142,7 @@ public:
   inline void digest(uint8_t* const out)
   {
     if (absorbed && !squeezed) {
-      ascon_perm::permute<ROUNDS_A>(state);
+      ascon_permutation::permute<ROUNDS_A>(state);
 
 #if defined __clang__
       // Following
@@ -158,7 +158,7 @@ public:
 #endif
       for (size_t i = 0; i < 4; i++) {
         ascon_utils::to_be_bytes(state[0], out + i * 8);
-        ascon_perm::permute<ROUNDS_B>(state);
+        ascon_permutation::permute<ROUNDS_B>(state);
       }
 
       squeezed = true;
