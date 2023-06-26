@@ -6,13 +6,8 @@
 // authenticated encryption & verified decryption
 namespace ascon_aead {
 
-// Ascon-80pq initial state value ( only first 32 -bits );
-// taken from section 2.4.1 of
-// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
-constexpr uint32_t ASCON_80pq_IV = 0xa0400c06ul;
-
 // = (1 << 64) - 1; maximum number that can be represented using 64 -bits
-constexpr uint64_t MAX_ULONG = 0xfffffffffffffffful;
+constexpr uint64_t MAX_ULONG = -1ul;
 
 // Initialize cipher state for Ascon{128, 128a, 80pq} authenticated encryption/
 // decryption; see section 2.4.1 of Ascon specification
