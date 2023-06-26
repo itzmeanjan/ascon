@@ -6,11 +6,6 @@
 // authenticated encryption & verified decryption
 namespace ascon_aead {
 
-// Ascon-128a initial state value ( only first 64 -bits ); taken from
-// section 2.4.1 of
-// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
-constexpr uint64_t ASCON_128a_IV = 0x80800c0800000000ul;
-
 // Ascon-80pq initial state value ( only first 32 -bits );
 // taken from section 2.4.1 of
 // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
