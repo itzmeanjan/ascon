@@ -2,14 +2,9 @@
 #include "permutation.hpp"
 #include "utils.hpp"
 
-// Utility functions for implementing Ascon-{128, 128a, 80pq} authenticated
-// encryption & verified decryption
-namespace aead_utils {
-
-// Ascon-128 initial state value ( only first 64 -bits ); taken from
-// section 2.4.1 of
-// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
-constexpr uint64_t ASCON_128_IV = 0X80400c0600000000ul;
+// Common functions required for implementing Ascon-{128, 128a, 80pq}
+// authenticated encryption & verified decryption
+namespace ascon_aead {
 
 // Ascon-128a initial state value ( only first 64 -bits ); taken from
 // section 2.4.1 of
@@ -27,14 +22,12 @@ constexpr uint64_t MAX_ULONG = 0xfffffffffffffffful;
 // Initialize cipher state for Ascon{128, 128a, 80pq} authenticated encryption/
 // decryption; see section 2.4.1 of Ascon specification
 // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
-template<const uint64_t IV, const size_t klen>
+template<const size_t rounds_a, const uint64_t IV, const size_t klen>
 static inline void
 initialize(uint64_t* const __restrict state,     // uninitialized hash state
            const uint8_t* const __restrict key,  // {128, 160} -bit secret key
            const uint8_t* const __restrict nonce // 128 -bit nonce
-           )
-  requires(((klen == 128) && ((IV == ASCON_128_IV) || (IV == ASCON_128a_IV))) ||
-           ((klen == 160) && (IV == ASCON_80pq_IV)))
+)
 {
   if constexpr (klen == 128) {
     // For Ascon-128{a}
@@ -47,7 +40,7 @@ initialize(uint64_t* const __restrict state,     // uninitialized hash state
     state[3] = ascon_utils::from_be_bytes<uint64_t>(nonce);
     state[4] = ascon_utils::from_be_bytes<uint64_t>(nonce + 8);
 
-    ascon_perm::permute<12>(state);
+    ascon_perm::permute<rounds_a>(state);
 
     state[3] ^= key0;
     state[4] ^= key1;
@@ -74,7 +67,7 @@ initialize(uint64_t* const __restrict state,     // uninitialized hash state
 // Process `s` -many blocks of associated data, each of with rate ( = {64, 128}
 // ) -bits; see section 2.4.2 of Ascon specification
 // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
-template<const size_t b, const size_t rate>
+template<const size_t rounds_b, const size_t rate>
 static inline void
 process_associated_data(uint64_t* const __restrict state,
                         const uint8_t* const __restrict data, // associated data
@@ -99,7 +92,7 @@ process_associated_data(uint64_t* const __restrict state,
 
         const auto word = ascon_utils::from_be_bytes<uint64_t>(data + off);
         state[0] ^= word;
-        ascon_perm::permute<b>(state);
+        ascon_perm::permute<rounds_b>(state);
 
         off += 8ul;
       } else {
@@ -110,7 +103,7 @@ process_associated_data(uint64_t* const __restrict state,
         const auto word1 = ascon_utils::from_be_bytes<uint64_t>(data + off + 8);
         state[0] ^= word0;
         state[1] ^= word1;
-        ascon_perm::permute<b>(state);
+        ascon_perm::permute<rounds_b>(state);
 
         off += 16ul;
       }
@@ -123,7 +116,7 @@ process_associated_data(uint64_t* const __restrict state,
 
       const auto word = ascon_utils::pad64(data + off, pad_bytes);
       state[0] ^= word;
-      ascon_perm::permute<b>(state);
+      ascon_perm::permute<rounds_b>(state);
     } else {
       // force compile-time branch evaluation
       static_assert(rate == 128, "Rate must be 128 -bits");
@@ -131,7 +124,7 @@ process_associated_data(uint64_t* const __restrict state,
       const auto words = ascon_utils::pad128(data + off, pad_bytes);
       state[0] ^= words.first;
       state[1] ^= words.second;
-      ascon_perm::permute<b>(state);
+      ascon_perm::permute<rounds_b>(state);
     }
   }
 
@@ -142,7 +135,7 @@ process_associated_data(uint64_t* const __restrict state,
 // Process plain text in blocks ( same as rate bits wide ) and produce cipher
 // text is equal sized blocks; see section 2.4.3 of Ascon specification
 // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
-template<const size_t b, const size_t rate>
+template<const size_t rounds_b, const size_t rate>
 static inline void
 process_plaintext(uint64_t* const __restrict state,
                   const uint8_t* const __restrict text,
@@ -170,7 +163,7 @@ process_plaintext(uint64_t* const __restrict state,
       state[0] ^= word;
       ascon_utils::to_be_bytes(state[0], cipher + off);
 
-      ascon_perm::permute<b>(state);
+      ascon_perm::permute<rounds_b>(state);
 
       off += 8ul;
     } else {
@@ -186,7 +179,7 @@ process_plaintext(uint64_t* const __restrict state,
       ascon_utils::to_be_bytes(state[0], cipher + off);
       ascon_utils::to_be_bytes(state[1], cipher + off + 8ul);
 
-      ascon_perm::permute<b>(state);
+      ascon_perm::permute<rounds_b>(state);
 
       off += 16ul;
     }
@@ -238,7 +231,7 @@ process_plaintext(uint64_t* const __restrict state,
 // plain text blocks is equal sized blocks; see section 2.4.3 of Ascon
 // specification
 // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
-template<const size_t b, const size_t rate>
+template<const size_t rounds_b, const size_t rate>
 static inline void
 process_ciphertext(uint64_t* const __restrict state,
                    const uint8_t* const __restrict cipher,
@@ -265,7 +258,7 @@ process_ciphertext(uint64_t* const __restrict state,
       ascon_utils::to_be_bytes(wordb, text + off);
 
       state[0] = worda;
-      ascon_perm::permute<b>(state);
+      ascon_perm::permute<rounds_b>(state);
 
       off += 8ul;
     } else {
@@ -285,7 +278,7 @@ process_ciphertext(uint64_t* const __restrict state,
       state[0] = word0a;
       state[1] = word1a;
 
-      ascon_perm::permute<b>(state);
+      ascon_perm::permute<rounds_b>(state);
 
       off += 16ul;
     }
@@ -372,7 +365,7 @@ process_ciphertext(uint64_t* const __restrict state,
 // Ascon-{128, 128a, 80pq} finalization step, generates 128 -bit tag; taken from
 // section 2.4.4 of Ascon specification
 // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
-template<const size_t a, const size_t rate, const size_t klen>
+template<const size_t rounds_a, const size_t rate, const size_t klen>
 static inline void
 finalize(uint64_t* const __restrict state,
          const uint8_t* const __restrict key, // {128, 160} -bit secret key
@@ -399,7 +392,7 @@ finalize(uint64_t* const __restrict state,
       state[3] ^= key1;
     }
 
-    ascon_perm::permute<a>(state);
+    ascon_perm::permute<rounds_a>(state);
 
     ascon_utils::to_be_bytes(state[3] ^ key0, tag);
     ascon_utils::to_be_bytes(state[4] ^ key1, tag + 8);
@@ -412,7 +405,7 @@ finalize(uint64_t* const __restrict state,
     state[2] ^= key1;
     state[3] ^= static_cast<uint64_t>(key2) << 32;
 
-    ascon_perm::permute<a>(state);
+    ascon_perm::permute<rounds_a>(state);
 
     const auto t0 = (key0 << 32) | (key1 >> 32);
     const auto t1 = (key1 << 32) | static_cast<uint64_t>(key2);
