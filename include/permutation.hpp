@@ -20,7 +20,7 @@ constexpr uint64_t RC[ROUNDS]{ 0x00000000000000f0ul, 0x00000000000000e1ul,
 
 // Addition of constants step; see section 2.6.1 of Ascon specification
 // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
-static inline constexpr void
+inline constexpr void
 p_c(uint64_t* const state, const size_t r_idx)
 {
   state[2] ^= RC[r_idx];
@@ -29,7 +29,7 @@ p_c(uint64_t* const state, const size_t r_idx)
 // Substitution layer i.e. 5 -bit S-box S(x) applied on Ascon state; taken from
 // figure 5 in Ascon specification
 // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
-static inline constexpr void
+inline constexpr void
 p_s(uint64_t* const state)
 {
   state[0] ^= state[4];
@@ -56,7 +56,7 @@ p_s(uint64_t* const state)
 
 // Linear diffusion layer; taken from figure 4.b in Ascon specification
 // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
-static inline constexpr void
+inline constexpr void
 p_l(uint64_t* const state)
 {
   using namespace std;
@@ -71,7 +71,7 @@ p_l(uint64_t* const state)
 // Single round of Ascon permutation; taken from section 2.6 of Ascon
 // specification
 // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
-static inline constexpr void
+inline constexpr void
 round(uint64_t* const state, const size_t r_idx)
 {
   p_c(state, r_idx);
@@ -79,11 +79,11 @@ round(uint64_t* const state, const size_t r_idx)
   p_l(state);
 }
 
-// Sequentially apply Ascon permutation round for R -many times | R <= 12;
+// Sequentially apply Ascon permutation for R -many times | R <= 12;
 // taken from section 2.6 of Ascon specification
 // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 template<const size_t R>
-static inline constexpr void
+inline constexpr void
 permute(uint64_t* const state)
   requires(R <= ROUNDS)
 {
