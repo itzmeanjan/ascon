@@ -1,23 +1,23 @@
 #pragma once
-#include "hash_utils.hpp"
+#include "permutation.hpp"
+#include "utils.hpp"
 
-// Ascon Light Weight Cryptography ( i.e. AEAD, Hash and Extendable Output
-// Functions ) Implementation
-namespace ascon {
+// Ascon-Hasha
+namespace ascon_hasha {
 
 // Bit width of rate portion of Ascon permutation state
-constexpr size_t ASCON_HASHA_RATE = 64;
+constexpr size_t RATE = 64;
 
 // How many rounds of Ascon permutation is applied for p^a
-constexpr size_t ASCON_HASHA_ROUND_A = 12;
+constexpr size_t ROUNDS_A = 12;
 
 // How many rounds of Ascon permutation is applied for p^b
-constexpr size_t ASCON_HASHA_ROUND_B = 8;
+constexpr size_t ROUNDS_B = 8;
 
 // Ascon HashA Digest Byte Length
-constexpr size_t ASCON_HASHA_DIGEST_LEN = 32;
+constexpr size_t DIGEST_LEN = 32;
 
-// Ascon HashA Function with support for both oneshot and incremental hashing
+// Ascon-HashA, supporting both oneshot and incremental hashing.
 //
 // See section 2.5 of Ascon specification
 // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
@@ -35,21 +35,8 @@ private:
   alignas(4) bool squeezed = false;
 
 public:
-  // Given N -bytes message, this routine can be invoked for absorbing those
-  // message bytes into Ascon permutation state. This routine can be thought of
-  // single-shot hash API s.t. all input bytes are ready to be consumed at once.
-  // Once they are consumed using this function, 32 -bytes digest can be read
-  // using `digest` routine. One thing to remember when using this single-shot
-  // hashing API is that once absorbed, calling this function again and again
-  // doesn't have any side effect.
-  inline void hash(const uint8_t* const msg, const size_t mlen)
-    requires(!incremental)
-  {
-    if (!absorbed) {
-      hash_utils::absorb<ASCON_HASHA_ROUND_B>(state, msg, mlen);
-      absorbed = true;
-    }
-  }
+  // Initialization values taken from section 2.5.1 of Ascon spec.
+  constexpr ascon_hasha<incremental>() = default;
 
   // Given N -bytes input message, this routine consumes those into
   // Ascon permutation state.
@@ -64,7 +51,7 @@ public:
   inline void absorb(const uint8_t* const msg, const size_t mlen)
     requires(incremental)
   {
-    constexpr size_t rbytes = ASCON_HASHA_RATE / 8; // # -of RATE bytes
+    constexpr size_t rbytes = RATE / 8; // # -of RATE bytes
 
     if (!absorbed) {
       uint8_t blk_bytes[rbytes];
@@ -82,7 +69,7 @@ public:
         moff += (rbytes - offset);
         offset += (rbytes - offset);
 
-        ascon_perm::permute<ASCON_HASHA_ROUND_B>(state);
+        ascon_perm::permute<ROUNDS_B>(state);
         offset %= rbytes;
       }
 
@@ -97,7 +84,7 @@ public:
       offset += rm_bytes;
 
       if (offset == rbytes) {
-        ascon_perm::permute<ASCON_HASHA_ROUND_B>(state);
+        ascon_perm::permute<ROUNDS_B>(state);
         offset %= rbytes;
       }
     }
@@ -118,7 +105,7 @@ public:
   inline void finalize()
     requires(incremental)
   {
-    constexpr size_t rbytes = ASCON_HASHA_RATE / 8; // # -of RATE bytes
+    constexpr size_t rbytes = RATE / 8; // # -of RATE bytes
 
     if (!absorbed) {
       const size_t pad_bytes = rbytes - offset;
@@ -131,6 +118,22 @@ public:
     }
   }
 
+  // Given N -bytes message, this routine can be invoked for absorbing those
+  // message bytes into Ascon permutation state. This routine can be thought of
+  // single-shot hash API s.t. all input bytes are ready to be consumed at once.
+  // Once they are consumed using this function, 32 -bytes digest can be read
+  // using `digest` routine. One thing to remember when using this single-shot
+  // hashing API is that once absorbed, calling this function again and again
+  // doesn't have any side effect.
+  inline void hash(const uint8_t* const msg, const size_t mlen)
+    requires(!incremental)
+  {
+    if (!absorbed) {
+      absorb(msg, mlen);
+      finalize();
+    }
+  }
+
   // Given that N -bytes message is consumed into Ascon permutation state either
   // using single-shot hashing API or incremental hashing API ( compile-time
   // decision ), this routine can be used for squeezing out 32 -bytes message
@@ -139,9 +142,24 @@ public:
   inline void digest(uint8_t* const out)
   {
     if (absorbed && !squeezed) {
-      constexpr auto ra = ASCON_HASHA_ROUND_A;
-      constexpr auto rb = ASCON_HASHA_ROUND_B;
-      hash_utils::squeeze<ra, rb>(state, out);
+      ascon_perm::permute<ROUNDS_A>(state);
+
+#if defined __clang__
+      // Following
+      // https://clang.llvm.org/docs/LanguageExtensions.html#extensions-for-loop-hint-optimizations
+
+#pragma clang loop unroll(enable)
+#pragma clang loop vectorize(enable)
+#elif defined __GNUG__
+      // Following
+      // https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html#Loop-Specific-Pragmas
+
+#pragma GCC unroll 4
+#endif
+      for (size_t i = 0; i < 4; i++) {
+        ascon_utils::to_be_bytes(state[0], out + i * 8);
+        ascon_perm::permute<ROUNDS_B>(state);
+      }
 
       squeezed = true;
     }
