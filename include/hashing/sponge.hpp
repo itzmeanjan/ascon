@@ -22,7 +22,6 @@ absorb(uint64_t* const __restrict state,
        const size_t mlen)
 {
   constexpr size_t rbytes = rate / 8;
-
   uint8_t blk_bytes[rbytes];
 
   const size_t blk_cnt = (*offset + mlen) / rbytes;
@@ -50,6 +49,29 @@ absorb(uint64_t* const __restrict state,
   state[0] ^= word;
 
   *offset += rm_bytes;
+}
+
+// Given arbitrary many message bytes are already absorbed into RATE portion of
+// Ascon permutation state, this routine finalizes sponge state and makes it
+// ready for squeezing.
+//
+// - `rate` portion of sponge will have bitwidth = 64.
+// - `offset` must ∈ [0, `rbytes`).
+//
+// Once Ascon permutation state is finalized, it can't absorb any more message
+// bytes, though you can squeeze output bytes from it.
+template<const size_t rate>
+static inline void
+finalize(uint64_t* const __restrict state, size_t* const __restrict offset)
+{
+  constexpr size_t rbytes = rate / 8;
+
+  const size_t pad_bytes = rbytes - *offset;
+  const size_t pad_bits = pad_bytes * 8;
+  const uint64_t pad_mask = 1ul << (pad_bits - 1);
+
+  state[0] ^= pad_mask;
+  *offset = 0;
 }
 
 }
