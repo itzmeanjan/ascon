@@ -76,4 +76,44 @@ finalize(uint64_t* const __restrict state, size_t* const __restrict offset)
   *offset = 0;
 }
 
+// Given that sponge state is already finalized, this routine can be invoked for
+// squeezing `olen` -bytes out of rate portion of the Ascon permutation state.
+//
+// - `rate` portion of sponge will have bitwidth = 64.
+// - `readable` denotes how many bytes can be squeezed without permutating the
+// sponge state.
+// - When `readable` becomes 0, sponge state needs to be permutated again, after
+// which `rbytes` can again be squeezed from rate portion of the state.
+template<const size_t rounds_b, const size_t rate>
+static inline void
+squeeze(uint64_t* const __restrict state,
+        size_t* const __restrict readable,
+        uint8_t* const __restrict out,
+        const size_t olen)
+{
+  constexpr size_t rbytes = rate / 8;
+
+  size_t ooff = 0;
+  while (ooff < olen) {
+    const size_t elen = std::min(*readable, olen - ooff);
+    const size_t soff = rbytes - *readable;
+
+    uint64_t word = state[0];
+
+    if constexpr (std::endian::native == std::endian::little) {
+      word = ascon_utils::bswap(word);
+    }
+
+    std::memcpy(out + ooff, reinterpret_cast<uint8_t*>(&word) + soff, elen);
+
+    *readable -= elen;
+    ooff += elen;
+
+    if (*readable == 0) {
+      ascon_permutation::permute<rounds_b>(state);
+      *readable = rbytes;
+    }
+  }
+}
+
 }
