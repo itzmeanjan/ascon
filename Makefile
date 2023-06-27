@@ -13,23 +13,23 @@ tests/a.out: tests/main.cpp include/*.hpp include/*/*.hpp
 test: tests/a.out
 	./$<
 
-bench/main.o: bench/main.cpp include/*.hpp include/bench/*.hpp
+benchmarks/main.o: benchmarks/main.cpp include/*.hpp include/*/*.hpp
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
 
-bench/bench.out: bench/main.o
+benchmarks/bench.out: benchmarks/main.o
 	# In case you haven't built google-benchmark with libPFM support.
 	# More @ https://github.com/google/benchmark/blob/b323288cbac5fd1dd35f153e767497a23c337742/docs/perf_counters.md
 	$(CXX) $(OPT_FLAGS) $^ -lbenchmark -o $@
 
-benchmark: bench/bench.out
+benchmark: benchmarks/bench.out
 	./$< --benchmark_counters_tabular=true
 
-bench/perf.out: bench/main.o
+benchmarks/perf.out: benchmarks/main.o
 	# In case you've built google-benchmark with libPFM support.
 	# More @ https://github.com/google/benchmark/blob/b323288cbac5fd1dd35f153e767497a23c337742/docs/perf_counters.md
 	$(CXX) $(OPT_FLAGS) $^ -lbenchmark -lpfm -o $@
 
-perf: bench/perf.out
+perf: benchmarks/perf.out
 	./$< --benchmark_counters_tabular=true --benchmark_perf_counters=CYCLES
 
 clean:
