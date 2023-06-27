@@ -60,7 +60,7 @@ absorb(uint64_t* const __restrict state,
 //
 // Once Ascon permutation state is finalized, it can't absorb any more message
 // bytes, though you can squeeze output bytes from it.
-template<const size_t rate>
+template<const size_t rounds_a, const size_t rate>
 static inline void
 finalize(uint64_t* const __restrict state, size_t* const __restrict offset)
 {
@@ -71,6 +71,8 @@ finalize(uint64_t* const __restrict state, size_t* const __restrict offset)
   const uint64_t pad_mask = 1ul << (pad_bits - 1);
 
   state[0] ^= pad_mask;
+  ascon_permutation::permute<rounds_a>(state);
+
   *offset = 0;
 }
 
