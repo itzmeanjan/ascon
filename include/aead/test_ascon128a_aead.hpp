@@ -1,7 +1,6 @@
 #pragma once
 #include "ascon128a.hpp"
 #include <cassert>
-#include <cstdint>
 #include <fstream>
 
 // Test Ascon Light Weight Cryptography Implementation
