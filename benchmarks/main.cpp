@@ -2,10 +2,10 @@
 #include "aead/bench_ascon128a_aead.hpp"
 #include "aead/bench_ascon80pq_aead.hpp"
 #include "bench_permutation.hpp"
-#include "hash/bench_ascon_hash.hpp"
-#include "hash/bench_ascon_hasha.hpp"
-#include "xof/bench_ascon_xof.hpp"
-#include "xof/bench_ascon_xofa.hpp"
+#include "hashing/bench_ascon_hash.hpp"
+#include "hashing/bench_ascon_hasha.hpp"
+#include "hashing/bench_ascon_xof.hpp"
+#include "hashing/bench_ascon_xofa.hpp"
 
 // register for benchmarking Ascon permutation
 BENCHMARK(bench_ascon::ascon_permutation<1>);

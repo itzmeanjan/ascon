@@ -1,11 +1,11 @@
 #include "aead/test_ascon128_aead.hpp"
 #include "aead/test_ascon128a_aead.hpp"
 #include "aead/test_ascon80pq_aead.hpp"
-#include "hash/test_ascon_hash.hpp"
-#include "hash/test_ascon_hasha.hpp"
+#include "hashing/test_ascon_hash.hpp"
+#include "hashing/test_ascon_hasha.hpp"
+#include "hashing/test_ascon_xof.hpp"
+#include "hashing/test_ascon_xofa.hpp"
 #include "test_permutation.hpp"
-#include "xof/test_ascon_xof.hpp"
-#include "xof/test_ascon_xofa.hpp"
 #include <iostream>
 
 int
