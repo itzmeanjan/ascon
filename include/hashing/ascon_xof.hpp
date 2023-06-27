@@ -1,6 +1,5 @@
 #pragma once
-#include "permutation.hpp"
-#include "utils.hpp"
+#include "sponge.hpp"
 
 // Ascon-Xof
 namespace ascon_xof {
@@ -42,42 +41,8 @@ public:
   // finalized ( by calling routine with similar name ).
   inline void absorb(const uint8_t* const msg, const size_t mlen)
   {
-    constexpr size_t rbytes = RATE / 8;
-
     if (!absorbed) {
-      uint8_t blk_bytes[rbytes];
-
-      const size_t blk_cnt = (offset + mlen) / rbytes;
-      size_t moff = 0;
-
-      for (size_t i = 0; i < blk_cnt; i++) {
-        std::memset(blk_bytes, 0, offset);
-        std::memcpy(blk_bytes + offset, msg + moff, rbytes - offset);
-
-        const auto word = ascon_utils::from_be_bytes<uint64_t>(blk_bytes);
-        state[0] ^= word;
-
-        moff += (rbytes - offset);
-        offset += (rbytes - offset);
-
-        ascon_permutation::permute<ROUNDS_B>(state);
-        offset %= rbytes;
-      }
-
-      const size_t rm_bytes = mlen - moff;
-
-      std::memset(blk_bytes, 0, rbytes);
-      std::memcpy(blk_bytes + offset, msg + moff, rm_bytes);
-
-      const auto word = ascon_utils::from_be_bytes<uint64_t>(blk_bytes);
-      state[0] ^= word;
-
-      offset += rm_bytes;
-
-      if (offset == rbytes) {
-        ascon_permutation::permute<ROUNDS_B>(state);
-        offset %= rbytes;
-      }
+      sponge::absorb<ROUNDS_B, RATE>(state, &offset, msg, mlen);
     }
   }
 
@@ -91,18 +56,10 @@ public:
   // done by calling `read()` function as many times required.
   inline void finalize()
   {
-    constexpr size_t rbytes = RATE / 8;
-
     if (!absorbed) {
-      const size_t pad_bytes = rbytes - offset;
-      const size_t pad_bits = pad_bytes * 8;
-      const uint64_t pad_mask = 1ul << (pad_bits - 1);
+      sponge::finalize<ROUNDS_A, RATE>(state, &offset);
 
-      state[0] ^= pad_mask;
       absorbed = true;
-      offset = 0;
-
-      ascon_permutation::permute<ROUNDS_A>(state);
       readable = RATE / 8;
     }
   }
@@ -122,29 +79,7 @@ public:
       return;
     }
 
-    constexpr size_t rbytes = RATE / 8;
-
-    size_t ooff = 0;
-    while (ooff < olen) {
-      const size_t elen = std::min(readable, olen - ooff);
-      const size_t soff = rbytes - readable;
-
-      uint64_t word = state[0];
-
-      if constexpr (std::endian::native == std::endian::little) {
-        word = ascon_utils::bswap(word);
-      }
-
-      std::memcpy(out + ooff, reinterpret_cast<uint8_t*>(&word) + soff, elen);
-
-      readable -= elen;
-      ooff += elen;
-
-      if (readable == 0) {
-        ascon_permutation::permute<ROUNDS_B>(state);
-        readable = RATE / 8;
-      }
-    }
+    sponge::squeeze<ROUNDS_B, RATE>(state, &readable, out, olen);
   }
 };
 

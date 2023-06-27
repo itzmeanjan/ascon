@@ -1,6 +1,5 @@
 #pragma once
-#include "permutation.hpp"
-#include "utils.hpp"
+#include "sponge.hpp"
 
 // Ascon-Hasha
 namespace ascon_hasha {
@@ -49,42 +48,8 @@ public:
   // Ascon-HashA API in oneshot hashing mode.
   inline void absorb(const uint8_t* const msg, const size_t mlen)
   {
-    constexpr size_t rbytes = RATE / 8; // # -of RATE bytes
-
     if (!absorbed) {
-      uint8_t blk_bytes[rbytes];
-
-      const size_t blk_cnt = (offset + mlen) / rbytes;
-      size_t moff = 0;
-
-      for (size_t i = 0; i < blk_cnt; i++) {
-        std::memset(blk_bytes, 0, offset);
-        std::memcpy(blk_bytes + offset, msg + moff, rbytes - offset);
-
-        const auto word = ascon_utils::from_be_bytes<uint64_t>(blk_bytes);
-        state[0] ^= word;
-
-        moff += (rbytes - offset);
-        offset += (rbytes - offset);
-
-        ascon_permutation::permute<ROUNDS_B>(state);
-        offset %= rbytes;
-      }
-
-      const size_t rm_bytes = mlen - moff;
-
-      std::memset(blk_bytes, 0, rbytes);
-      std::memcpy(blk_bytes + offset, msg + moff, rm_bytes);
-
-      const auto word = ascon_utils::from_be_bytes<uint64_t>(blk_bytes);
-      state[0] ^= word;
-
-      offset += rm_bytes;
-
-      if (offset == rbytes) {
-        ascon_permutation::permute<ROUNDS_B>(state);
-        offset %= rbytes;
-      }
+      sponge::absorb<ROUNDS_B, RATE>(state, &offset, msg, mlen);
     }
   }
 
@@ -102,15 +67,8 @@ public:
   // Ascon-HashA API in oneshot hashing mode.
   inline void finalize()
   {
-    constexpr size_t rbytes = RATE / 8; // # -of RATE bytes
-
     if (!absorbed) {
-      const size_t pad_bytes = rbytes - offset;
-      const size_t pad_bits = pad_bytes * 8;
-      const uint64_t pad_mask = 1ul << (pad_bits - 1);
-
-      state[0] ^= pad_mask;
-
+      sponge::finalize<ROUNDS_A, RATE>(state, &offset);
       absorbed = true;
     }
   }
@@ -123,24 +81,8 @@ public:
   inline void digest(uint8_t* const out)
   {
     if (absorbed && !squeezed) {
-      ascon_permutation::permute<ROUNDS_A>(state);
-
-#if defined __clang__
-      // Following
-      // https://clang.llvm.org/docs/LanguageExtensions.html#extensions-for-loop-hint-optimizations
-
-#pragma clang loop unroll(enable)
-#pragma clang loop vectorize(enable)
-#elif defined __GNUG__
-      // Following
-      // https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html#Loop-Specific-Pragmas
-
-#pragma GCC unroll 4
-#endif
-      for (size_t i = 0; i < 4; i++) {
-        ascon_utils::to_be_bytes(state[0], out + i * 8);
-        ascon_permutation::permute<ROUNDS_B>(state);
-      }
+      size_t readable = RATE / 8;
+      sponge::squeeze<ROUNDS_B, RATE>(state, &readable, out, DIGEST_LEN);
 
       squeezed = true;
     }
