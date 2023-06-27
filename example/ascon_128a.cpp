@@ -1,4 +1,4 @@
-#include "aead.hpp"
+#include "aead/ascon128a.hpp"
 #include <cassert>
 #include <iostream>
 
@@ -13,23 +13,21 @@ main()
   constexpr size_t dlen = 32;  // bytes
 
   // acquire resources
-  uint8_t* key = static_cast<uint8_t*>(malloc(ascon::ASCON128A_KEY_LEN));
-  uint8_t* nonce = static_cast<uint8_t*>(malloc(ascon::ASCON128A_NONCE_LEN));
-  uint8_t* tag = static_cast<uint8_t*>(malloc(ascon::ASCON128A_TAG_LEN));
+  uint8_t* key = static_cast<uint8_t*>(malloc(ascon128a_aead::KEY_LEN));
+  uint8_t* nonce = static_cast<uint8_t*>(malloc(ascon128a_aead::NONCE_LEN));
+  uint8_t* tag = static_cast<uint8_t*>(malloc(ascon128a_aead::TAG_LEN));
   uint8_t* data = static_cast<uint8_t*>(malloc(dlen));  // associated data
   uint8_t* text = static_cast<uint8_t*>(malloc(ctlen)); // plain text
   uint8_t* enc = static_cast<uint8_t*>(malloc(ctlen));  // ciphered text
   uint8_t* dec = static_cast<uint8_t*>(malloc(ctlen));  // deciphered text
 
-  ascon_utils::random_data(key, ascon::ASCON128A_KEY_LEN);
-  ascon_utils::random_data(nonce, ascon::ASCON128A_NONCE_LEN);
+  ascon_utils::random_data(key, ascon128a_aead::KEY_LEN);
+  ascon_utils::random_data(nonce, ascon128a_aead::NONCE_LEN);
   ascon_utils::random_data(text, ctlen);
   ascon_utils::random_data(data, dlen);
 
-  ascon::encrypt_128a(key, nonce, data, dlen, text, ctlen, enc, tag);
-  bool f = ascon::decrypt_128a(key, nonce, data, dlen, enc, ctlen, dec, tag);
-
-  assert(f);
+  ascon128a_aead::encrypt(key, nonce, data, dlen, text, ctlen, enc, tag);
+  assert(ascon128a_aead::decrypt(key, nonce, data, dlen, enc, ctlen, dec, tag));
 
   std::cout << "Ascon-128a AEAD\n\n";
   std::cout << "Key       :\t" << ascon_utils::to_hex(key, 16) << "\n";

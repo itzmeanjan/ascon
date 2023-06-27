@@ -1,9 +1,9 @@
-#include "ascon_xofa.hpp"
+#include "hashing/ascon_xofa.hpp"
 #include <iostream>
 
 // Compile with
 //
-// g++ -std=c++20 -Wall -O3 -march=native -I ./include example/ascon_xofa.cpp
+// g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./subtle/include example/ascon_xofa.cpp
 int
 main()
 {
@@ -16,9 +16,7 @@ main()
 
   ascon_utils::random_data(msg, msg_len);
 
-  // Opting for using incremental hashing API by passing explicit value `true`
-  // to template parameter.
-  ascon::ascon_xofa<true> hasher;
+  ascon_xofa::ascon_xofa hasher;
   hasher.absorb(msg, msg_len);
   hasher.finalize();
 
