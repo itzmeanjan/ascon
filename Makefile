@@ -7,10 +7,10 @@ DEP_IFLAGS = -I ./subtle/include
 
 all: test
 
-test/a.out: test/main.cpp include/*.hpp include/test/*.hpp
+tests/a.out: tests/main.cpp include/*.hpp include/*/*.hpp
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) $< -o $@
 
-test: test/a.out
+test: tests/a.out
 	./$<
 
 bench/main.o: bench/main.cpp include/*.hpp include/bench/*.hpp
