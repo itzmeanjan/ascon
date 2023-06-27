@@ -17,11 +17,10 @@ constexpr size_t ROUNDS_B = 12;
 // Ascon-Hash Digest Byte Length
 constexpr size_t DIGEST_LEN = 32;
 
-// Ascon-Hash, supporting both oneshot and incremental hashing
+// Ascon-Hash, supporting incremental hashing.
 //
 // See section 2.5 of Ascon specification
 // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
-template<const bool incremental = false>
 struct ascon_hash
 {
 private:
@@ -36,7 +35,7 @@ private:
 
 public:
   // Initialization values taken from section 2.5.1 of Ascon spec.
-  constexpr ascon_hash<incremental>() = default;
+  constexpr ascon_hash() = default;
 
   // Given N -bytes input message, this routine consumes those into
   // Ascon permutation state.
@@ -49,7 +48,6 @@ public:
   // incremental hashing mode ( compile-time decision ). By default one uses
   // Ascon-Hash API in oneshot hashing mode.
   inline void absorb(const uint8_t* const msg, const size_t mlen)
-    requires(incremental)
   {
     constexpr size_t rbytes = RATE / 8;
 
@@ -103,7 +101,6 @@ public:
   // incremental hashing mode ( compile-time decision ). By default one uses
   // Ascon-Hash API in oneshot hashing mode.
   inline void finalize()
-    requires(incremental)
   {
     constexpr size_t rbytes = RATE / 8;
 
@@ -115,22 +112,6 @@ public:
       state[0] ^= pad_mask;
 
       absorbed = true;
-    }
-  }
-
-  // Given N -bytes message, this routine can be invoked for absorbing those
-  // message bytes into Ascon permutation state. This routine can be thought of
-  // single-shot hash API s.t. all input bytes are ready to be consumed at once.
-  // Once they are consumed using this function, 32 -bytes digest can be read
-  // using `digest` routine. One thing to remember when using this single-shot
-  // hashing API is that once absorbed, calling this function again and again
-  // doesn't have any effect.
-  inline void hash(const uint8_t* const msg, const size_t mlen)
-    requires(!incremental)
-  {
-    if (!absorbed) {
-      absorb(msg, mlen);
-      finalize();
     }
   }
 

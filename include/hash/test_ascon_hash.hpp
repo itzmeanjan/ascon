@@ -23,13 +23,14 @@ test_ascon_hash(const size_t mlen)
   {
     ascon_hash::ascon_hash hasher;
 
-    hasher.hash(msg.data(), msg.size());
+    hasher.absorb(msg.data(), msg.size());
+    hasher.finalize();
     hasher.digest(digest_oneshot.data());
   }
 
   // incremental hashing
   {
-    ascon_hash::ascon_hash<true> hasher;
+    ascon_hash::ascon_hash hasher;
 
     size_t off = 0;
     while (off < mlen) {
@@ -79,7 +80,8 @@ test_ascon_hash_kat()
       {
         ascon_hash::ascon_hash hasher;
 
-        hasher.hash(msg.data(), msg.size());
+        hasher.absorb(msg.data(), msg.size());
+        hasher.finalize();
         hasher.digest(digest.data());
       }
 
