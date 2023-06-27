@@ -1,9 +1,9 @@
-#include "ascon_hasha.hpp"
+#include "hashing/ascon_hasha.hpp"
 #include <iostream>
 
 // Compile with
 //
-// g++ -std=c++20 -Wall -O3 -march=native -I ./include example/ascon_hasha.cpp
+// g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./subtle/include example/ascon_hasha.cpp
 int
 main()
 {
@@ -11,13 +11,11 @@ main()
 
   // acquire resources
   uint8_t* msg = static_cast<uint8_t*>(malloc(msg_len));
-  uint8_t* out = static_cast<uint8_t*>(malloc(ascon::ASCON_HASHA_DIGEST_LEN));
+  uint8_t* out = static_cast<uint8_t*>(malloc(ascon_hasha::DIGEST_LEN));
 
   ascon_utils::random_data(msg, msg_len);
 
-  // Opting for using incremental hashing API by passing explicit value `true`
-  // to template parameter.
-  ascon::ascon_hasha<true> hasher;
+  ascon_hasha::ascon_hasha hasher;
   hasher.absorb(msg, msg_len);
   hasher.finalize();
   hasher.digest(out);

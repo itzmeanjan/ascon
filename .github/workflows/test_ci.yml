@@ -17,7 +17,7 @@ jobs:
       run: |
         sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 10
         sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 9
-    - name: Install C++ dependency
+    - name: Install dependency
       run: git submodule update --init
     - name: Execute tests
       run: make

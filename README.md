@@ -19,7 +19,7 @@ Ascon-HashA | N -bytes message | 32B digest
 Ascon-XOF | N -bytes message | Arbitrary many bytes digest
 Ascon-XOFA | N -bytes message | Arbitrary many bytes digest
 
-> **Note** Ascon-{Hash, HashA, XOF, XOFA} supports both oneshot and incremental hashing. If all message bytes are not ready to be absorbed into hash state in a single go, one opts for using ( compile-time decision ) incremental hashing API where arbitrary number of absorptions of arbitrary many bytes is allowed before state is finalized and ready to be squeezed.
+> **Note** Ascon-{Hash, HashA, XOF, XOFA} supports incremental hashing. If all message bytes are not ready to be absorbed into hash state in a single go, one can absorb message using incremental hashing API s.t. arbitrary number of absorption calls can be made, each time arbitrary many bytes are consumed, until state is finalized and ready to be squeezed.
 
 > **Note** Read more about AEAD [here](https://en.wikipedia.org/wiki/Authenticated_encryption).
 
@@ -49,7 +49,7 @@ $ make -v
 GNU Make 4.3
 
 $ cmake  --version
-cmake version 3.22.1
+cmake version 3.25.1
 ```
 
 - `subtle` is a ( git submodule -based ) dependency of this project - used for constant-time authentication tag comparison and setting memory locations of plain text to zero bytes, in case of authentication failure. Import `subtle` by issuing
@@ -66,7 +66,7 @@ git submodule update --init
 For ensuring that Ascon cipher suite is implemented correctly and it's conformant with the specification
 
 - Ensure functional correctness of Ascon AEAD, Hash and Xof routines for various combination of inputs.
-- Assess whether this implementation of Ascon is conformant with specification, using **K**nown **A**nswer **T**ests, which can be found in the reference implementation repository i.e. https://github.com/ascon/ascon-c.git.
+- Assess whether this implementation of Ascon cipher suite is conformant with specification, using **K**nown **A**nswer **T**ests, which can be found in the reference implementation repository i.e. https://github.com/ascon/ascon-c.git.
 
 ```bash
 $ make
@@ -93,15 +93,15 @@ make perf # If you have built google-benchmark library with libPFM support.
 Following routines are benchmarked
 
 - Ascon Permutation
+- Ascon-128 ( encrypt/ decrypt )
+- Ascon-128a ( encrypt/ decrypt )
+- Ascon-80pq ( encrypt/ decrypt )
 - Ascon-Hash
 - Ascon-HashA
 - Ascon-XOF
 - Ascon-XOFA
-- Ascon-128 ( encrypt/ decrypt )
-- Ascon-128a ( encrypt/ decrypt )
-- Ascon-80pq ( encrypt/ decrypt )
 
-> **Note** Benchmark recipe expects presence of `google-benchmark` header and library in well known $PATH ( so that it can be found by the compiler ).
+> **Note** Benchmark recipe expects presence of `google-benchmark` header and library in `$PATH` ( so that it can be found by the compiler ).
 
 > **Warning** Ensure that you've disabled CPU frequency scaling, when benchmarking routines, following [this](https://github.com/google/benchmark/blob/main/docs/reducing_variance.md) guide.
 
@@ -110,236 +110,237 @@ Following routines are benchmarked
 ### On 12th Gen Intel(R) Core(TM) i7-1260P ( Compiled with GCC )
 
 ```bash
-2023-06-24T15:28:31+04:00
-Running ./bench/perf.out
-Run on (16 X 4582.69 MHz CPU s)
+2023-06-27T16:17:01+04:00
+Running ./benchmarks/perf.out
+Run on (16 X 4648.05 MHz CPU s)
 CPU Caches:
   L1 Data 48 KiB (x8)
   L1 Instruction 32 KiB (x8)
   L2 Unified 1280 KiB (x8)
   L3 Unified 18432 KiB (x1)
-Load Average: 0.73, 0.62, 0.55
-----------------------------------------------------------------------------------------------------
-Benchmark                              Time             CPU   Iterations     CYCLES bytes_per_second
-----------------------------------------------------------------------------------------------------
-bench_ascon::permutation<1>         3.27 ns         3.27 ns    216282873    15.1918       11.3879G/s
-bench_ascon::permutation<6>         18.3 ns         18.3 ns     38298282    84.8514       2.03537G/s
-bench_ascon::permutation<8>         23.9 ns         23.9 ns     29311203    111.514       1.56162G/s
-bench_ascon::permutation<12>        35.6 ns         35.6 ns     19596055    166.679       1070.86M/s
-bench_ascon::enc_128/64/32           316 ns          316 ns      2216112   1.47803k       289.718M/s
-bench_ascon::enc_128/128/32          468 ns          468 ns      1496108   2.18697k       326.299M/s
-bench_ascon::enc_128/256/32          772 ns          772 ns       906764   3.60551k       355.875M/s
-bench_ascon::enc_128/512/32         1377 ns         1377 ns       508323    6.4423k       376.672M/s
-bench_ascon::enc_128/1024/32        2593 ns         2593 ns       269989   12.1154k       388.386M/s
-bench_ascon::enc_128/2048/32        5025 ns         5025 ns       138899   23.4666k       394.744M/s
-bench_ascon::enc_128/4096/32        9898 ns         9898 ns        70746    46.176k        397.75M/s
-bench_ascon::dec_128/64/32           325 ns          325 ns      2157312   1.51641k       282.002M/s
-bench_ascon::dec_128/128/32          475 ns          475 ns      1473245    2.2207k       321.307M/s
-bench_ascon::dec_128/256/32          777 ns          777 ns       898221   3.63325k       353.656M/s
-bench_ascon::dec_128/512/32         1382 ns         1382 ns       506364   6.46434k       375.515M/s
-bench_ascon::dec_128/1024/32        2585 ns         2585 ns       270222   12.0992k       389.572M/s
-bench_ascon::dec_128/2048/32        5010 ns         5010 ns       139068   23.4428k       395.951M/s
-bench_ascon::dec_128/4096/32        9855 ns         9854 ns        70964    46.094k        399.49M/s
-bench_ascon::enc_128a/64/32          248 ns          248 ns      2815609   1.16182k       368.905M/s
-bench_ascon::enc_128a/128/32         351 ns          351 ns      1996411   1.64083k       434.978M/s
-bench_ascon::enc_128a/256/32         553 ns          553 ns      1263713   2.58933k       496.427M/s
-bench_ascon::enc_128a/512/32         959 ns          959 ns       725202   4.48734k       540.755M/s
-bench_ascon::enc_128a/1024/32       1758 ns         1758 ns       395528   8.21999k       572.881M/s
-bench_ascon::enc_128a/2048/32       3369 ns         3369 ns       209851   15.7356k       588.818M/s
-bench_ascon::enc_128a/4096/32       6546 ns         6546 ns       107732   30.6186k       601.446M/s
-bench_ascon::dec_128a/64/32          251 ns          251 ns      2778725   1.17446k       364.418M/s
-bench_ascon::dec_128a/128/32         348 ns          348 ns      2014132    1.6271k        438.23M/s
-bench_ascon::dec_128a/256/32         542 ns          542 ns      1285437   2.53509k       506.607M/s
-bench_ascon::dec_128a/512/32         935 ns          935 ns       747083   4.36804k       555.094M/s
-bench_ascon::dec_128a/1024/32       1710 ns         1710 ns       408818   8.00301k       588.923M/s
-bench_ascon::dec_128a/2048/32       3271 ns         3271 ns       214385   15.3042k       606.389M/s
-bench_ascon::dec_128a/4096/32       6389 ns         6389 ns       109071   29.8963k       616.146M/s
-bench_ascon::enc_80pq/64/32          318 ns          318 ns      2196836   1.48985k       287.483M/s
-bench_ascon::enc_80pq/128/32         470 ns          470 ns      1488651   2.20148k       324.335M/s
-bench_ascon::enc_80pq/256/32         775 ns          775 ns       902398   3.62507k       354.263M/s
-bench_ascon::enc_80pq/512/32        1383 ns         1383 ns       503204   6.47224k       375.063M/s
-bench_ascon::enc_80pq/1024/32       2601 ns         2601 ns       268971   12.1648k       387.263M/s
-bench_ascon::enc_80pq/2048/32       5018 ns         5018 ns       138531   23.4555k       395.316M/s
-bench_ascon::enc_80pq/4096/32       9925 ns         9925 ns        70474   46.3502k       396.672M/s
-bench_ascon::dec_80pq/64/32          326 ns          326 ns      2141556   1.52486k       280.476M/s
-bench_ascon::dec_80pq/128/32         478 ns          478 ns      1464000   2.23353k       319.366M/s
-bench_ascon::dec_80pq/256/32         781 ns          781 ns       894043   3.64884k       351.866M/s
-bench_ascon::dec_80pq/512/32        1387 ns         1387 ns       503739   6.48338k        373.96M/s
-bench_ascon::dec_80pq/1024/32       2615 ns         2615 ns       267270   12.2104k       385.103M/s
-bench_ascon::dec_80pq/2048/32       5059 ns         5059 ns       137187   23.6542k       392.109M/s
-bench_ascon::dec_80pq/4096/32       9910 ns         9909 ns        70396   46.3017k       397.275M/s
-bench_ascon::hash/64                 464 ns          464 ns      1504763   2.17134k       197.175M/s
-bench_ascon::hash/128                751 ns          751 ns       929275   3.51185k       203.132M/s
-bench_ascon::hash/256               1325 ns         1325 ns       526619   6.19685k       207.228M/s
-bench_ascon::hash/512               2471 ns         2471 ns       283201   11.5544k       209.935M/s
-bench_ascon::hash/1024              4758 ns         4758 ns       147064   22.2676k       211.669M/s
-bench_ascon::hash/2048              9359 ns         9359 ns        74573   43.6979k       211.955M/s
-bench_ascon::hash/4096             18509 ns        18509 ns        37723    86.558k       212.697M/s
-bench_ascon::hasha/64                322 ns          322 ns      2177665   1.50346k       284.539M/s
-bench_ascon::hasha/128               513 ns          513 ns      1359949    2.3979k       297.348M/s
-bench_ascon::hasha/256               892 ns          892 ns       783986   4.17073k        307.77M/s
-bench_ascon::hasha/512              1654 ns         1654 ns       422735   7.73228k       313.694M/s
-bench_ascon::hasha/1024             3179 ns         3179 ns       220128   14.8658k        316.81M/s
-bench_ascon::hasha/2048             6230 ns         6230 ns       112187   29.1374k       318.408M/s
-bench_ascon::hasha/4096            12355 ns        12355 ns        56604   57.7851k       318.646M/s
-bench_ascon::xof/64/32               463 ns          463 ns      1511657   2.16412k       197.946M/s
-bench_ascon::xof/128/32              745 ns          745 ns       938859   3.48356k       204.869M/s
-bench_ascon::xof/256/32             1312 ns         1312 ns       532868   6.14062k       209.292M/s
-bench_ascon::xof/512/32             2441 ns         2441 ns       286592   11.4181k       212.566M/s
-bench_ascon::xof/1024/32            4699 ns         4699 ns       148877   21.9803k       214.318M/s
-bench_ascon::xof/2048/32            9213 ns         9213 ns        75854   43.0798k        215.32M/s
-bench_ascon::xof/4096/32           18222 ns        18221 ns        38393   85.2823k       216.057M/s
-bench_ascon::xof/64/64               614 ns          614 ns      1139353   2.87194k       198.686M/s
-bench_ascon::xof/128/64              898 ns          898 ns       780886   4.19162k       203.974M/s
-bench_ascon::xof/256/64             1459 ns         1459 ns       478649   6.81872k       209.222M/s
-bench_ascon::xof/512/64             2592 ns         2592 ns       269882   12.0999k       211.911M/s
-bench_ascon::xof/1024/64            4845 ns         4845 ns       144351    22.654k       214.156M/s
-bench_ascon::xof/2048/64            9356 ns         9356 ns        74756   43.7712k       215.273M/s
-bench_ascon::xof/4096/64           18427 ns        18427 ns        37991   86.0185k       215.301M/s
-bench_ascon::xofa/64/32              320 ns          320 ns      2180404   1.49817k        285.68M/s
-bench_ascon::xofa/128/32             509 ns          509 ns      1370932   2.38034k        299.72M/s
-bench_ascon::xofa/256/32             886 ns          886 ns       788565   4.14519k       310.032M/s
-bench_ascon::xofa/512/32            1642 ns         1642 ns       426768   7.67627k        315.98M/s
-bench_ascon::xofa/1024/32           3151 ns         3151 ns       221808   14.7434k       319.558M/s
-bench_ascon::xofa/2048/32           6178 ns         6177 ns       113102   28.8912k       321.108M/s
-bench_ascon::xofa/4096/32          12222 ns        12222 ns        56879   57.1956k       322.103M/s
-bench_ascon::xofa/64/64              418 ns          418 ns      1679147   1.95282k       292.006M/s
-bench_ascon::xofa/128/64             608 ns          608 ns      1147804   2.84323k       301.047M/s
-bench_ascon::xofa/256/64             984 ns          984 ns       712112   4.60082k       310.266M/s
-bench_ascon::xofa/512/64            1738 ns         1738 ns       402655   8.13023k       316.083M/s
-bench_ascon::xofa/1024/64           3250 ns         3250 ns       215405   15.1925k       319.294M/s
-bench_ascon::xofa/2048/64           6278 ns         6278 ns       111414   29.3704k       320.833M/s
-bench_ascon::xofa/4096/64          12323 ns        12323 ns        56664   57.6646k       321.935M/s
+Load Average: 0.34, 0.35, 0.36
+***WARNING*** There are 88 benchmarks with threads and 1 performance counters were requested. Beware counters will reflect the combined usage across all threads.
+------------------------------------------------------------------------------------------------------------------
+Benchmark                                            Time             CPU   Iterations     CYCLES bytes_per_second
+------------------------------------------------------------------------------------------------------------------
+bench_ascon::ascon_permutation<1>                 3.25 ns         3.25 ns    217356442    15.1337       11.4799G/s
+bench_ascon::ascon_permutation<6>                 18.2 ns         18.2 ns     38622719    84.8518       2.04789G/s
+bench_ascon::ascon_permutation<8>                 23.8 ns         23.8 ns     29360473    111.448       1.56461G/s
+bench_ascon::ascon_permutation<12>                35.7 ns         35.7 ns     19606043    166.942        1069.9M/s
+bench_ascon::ascon128_aead_encrypt/64/32           316 ns          316 ns      2216228   1.47837k       289.731M/s
+bench_ascon::ascon128_aead_encrypt/128/32          467 ns          467 ns      1497210   2.18697k       326.586M/s
+bench_ascon::ascon128_aead_encrypt/256/32          770 ns          770 ns       907871   3.60448k       356.624M/s
+bench_ascon::ascon128_aead_encrypt/512/32         1376 ns         1375 ns       509110   6.43954k       377.186M/s
+bench_ascon::ascon128_aead_encrypt/1024/32        2622 ns         2622 ns       270176   11.4364k       384.132M/s
+bench_ascon::ascon128_aead_encrypt/2048/32        5028 ns         5027 ns       139437   23.2372k       394.591M/s
+bench_ascon::ascon128_aead_encrypt/4096/32        9871 ns         9870 ns        70732   46.1388k       398.865M/s
+bench_ascon::ascon128_aead_decrypt/64/32           327 ns          327 ns      2143891   1.52516k       280.314M/s
+bench_ascon::ascon128_aead_decrypt/128/32          478 ns          478 ns      1462703   2.23718k       318.925M/s
+bench_ascon::ascon128_aead_decrypt/256/32          785 ns          785 ns       893617   3.66321k       350.052M/s
+bench_ascon::ascon128_aead_decrypt/512/32         1394 ns         1394 ns       500555   6.51334k       372.099M/s
+bench_ascon::ascon128_aead_decrypt/1024/32        2626 ns         2625 ns       267329   12.2695k       383.602M/s
+bench_ascon::ascon128_aead_decrypt/2048/32        5061 ns         5060 ns       138580   23.6673k       392.007M/s
+bench_ascon::ascon128_aead_decrypt/4096/32        9907 ns         9906 ns        70599   46.3411k       397.417M/s
+bench_ascon::ascon128a_aead_encrypt/64/32          249 ns          249 ns      2816022   1.15962k        368.38M/s
+bench_ascon::ascon128a_aead_encrypt/128/32         350 ns          350 ns      2001756   1.63464k       435.983M/s
+bench_ascon::ascon128a_aead_encrypt/256/32         552 ns          552 ns      1260330   2.58244k       497.347M/s
+bench_ascon::ascon128a_aead_encrypt/512/32         962 ns          962 ns       729810   4.49818k       539.223M/s
+bench_ascon::ascon128a_aead_encrypt/1024/32       1766 ns         1766 ns       394211    8.2499k       570.377M/s
+bench_ascon::ascon128a_aead_encrypt/2048/32       3386 ns         3385 ns       207578   15.7872k       585.925M/s
+bench_ascon::ascon128a_aead_encrypt/4096/32       6608 ns         6608 ns       105215   30.7853k       595.779M/s
+bench_ascon::ascon128a_aead_decrypt/64/32          254 ns          254 ns      2750936   1.18346k       360.612M/s
+bench_ascon::ascon128a_aead_decrypt/128/32         349 ns          349 ns      1997819   1.63242k       436.732M/s
+bench_ascon::ascon128a_aead_decrypt/256/32         544 ns          544 ns      1287449   2.54025k       505.333M/s
+bench_ascon::ascon128a_aead_decrypt/512/32         939 ns          939 ns       740201   4.38589k       552.448M/s
+bench_ascon::ascon128a_aead_decrypt/1024/32       1728 ns         1728 ns       405333   8.07267k       582.837M/s
+bench_ascon::ascon128a_aead_decrypt/2048/32       3317 ns         3316 ns       210326   15.5169k       598.126M/s
+bench_ascon::ascon128a_aead_decrypt/4096/32       6523 ns         6523 ns       107829   30.4962k       603.538M/s
+bench_ascon::ascon80pq_aead_encrypt/64/32          317 ns          317 ns      2202744    1.4831k        288.51M/s
+bench_ascon::ascon80pq_aead_encrypt/128/32         468 ns          468 ns      1491297   2.18743k       326.193M/s
+bench_ascon::ascon80pq_aead_encrypt/256/32         770 ns          770 ns       907756   3.59979k       356.843M/s
+bench_ascon::ascon80pq_aead_encrypt/512/32        1372 ns         1372 ns       510000   6.41734k       378.251M/s
+bench_ascon::ascon80pq_aead_encrypt/1024/32       2580 ns         2579 ns       271447   12.0745k       390.442M/s
+bench_ascon::ascon80pq_aead_encrypt/2048/32       4991 ns         4991 ns       140308    23.358k       397.455M/s
+bench_ascon::ascon80pq_aead_encrypt/4096/32       9809 ns         9808 ns        71488   45.9049k        401.38M/s
+bench_ascon::ascon80pq_aead_decrypt/64/32          326 ns          326 ns      2143625   1.52571k       280.741M/s
+bench_ascon::ascon80pq_aead_decrypt/128/32         479 ns          479 ns      1463141    2.2298k       318.788M/s
+bench_ascon::ascon80pq_aead_decrypt/256/32         778 ns          778 ns       895228   3.63869k       353.021M/s
+bench_ascon::ascon80pq_aead_decrypt/512/32        1381 ns         1380 ns       506888   6.45679k       375.826M/s
+bench_ascon::ascon80pq_aead_decrypt/1024/32       2592 ns         2592 ns       270000   12.1019k       388.567M/s
+bench_ascon::ascon80pq_aead_decrypt/2048/32       4998 ns         4998 ns       139790   23.3821k       396.879M/s
+bench_ascon::ascon80pq_aead_decrypt/4096/32       9835 ns         9835 ns        71173   45.9562k       400.297M/s
+bench_ascon::ascon_hash/64                         463 ns          463 ns      1513581   2.16595k        197.66M/s
+bench_ascon::ascon_hash/128                        748 ns          747 ns       928940   3.49506k       204.135M/s
+bench_ascon::ascon_hash/256                       1317 ns         1317 ns       529511   6.15863k         208.5M/s
+bench_ascon::ascon_hash/512                       2454 ns         2454 ns       284860   11.4752k       211.441M/s
+bench_ascon::ascon_hash/1024                      4734 ns         4733 ns       147775   22.1252k       212.769M/s
+bench_ascon::ascon_hash/2048                      9280 ns         9280 ns        75276   43.4266k       213.765M/s
+bench_ascon::ascon_hash/4096                     18394 ns        18393 ns        38062   85.9787k        214.04M/s
+bench_ascon::ascon_hasha/64                        323 ns          323 ns      2164981    1.5067k       283.386M/s
+bench_ascon::ascon_hasha/128                       513 ns          513 ns      1356028   2.39712k       297.392M/s
+bench_ascon::ascon_hasha/256                       894 ns          894 ns       777701   4.17931k       307.174M/s
+bench_ascon::ascon_hasha/512                      1655 ns         1655 ns       423023   7.73548k       313.546M/s
+bench_ascon::ascon_hasha/1024                     3176 ns         3175 ns       219918   14.8487k       317.148M/s
+bench_ascon::ascon_hasha/2048                     6222 ns         6222 ns       111964   29.0831k       318.815M/s
+bench_ascon::ascon_hasha/4096                    12324 ns        12323 ns        56776   57.5715k       319.466M/s
+bench_ascon::ascon_xof/64/32                       464 ns          464 ns      1512371   2.16436k       197.482M/s
+bench_ascon::ascon_xof/128/32                      747 ns          747 ns       934031   3.49332k       204.194M/s
+bench_ascon::ascon_xof/256/32                     1316 ns         1316 ns       531989   6.15727k       208.725M/s
+bench_ascon::ascon_xof/512/32                     2456 ns         2455 ns       285576   11.4767k       211.282M/s
+bench_ascon::ascon_xof/1024/32                    4729 ns         4729 ns       148193   22.1177k       212.962M/s
+bench_ascon::ascon_xof/2048/32                    9287 ns         9287 ns        75429    43.415k       213.599M/s
+bench_ascon::ascon_xof/4096/32                   18391 ns        18390 ns        38021   85.9706k       214.073M/s
+bench_ascon::ascon_xof/64/64                       610 ns          610 ns      1145247   2.84639k       200.232M/s
+bench_ascon::ascon_xof/128/64                      896 ns          896 ns       780647   4.17842k       204.358M/s
+bench_ascon::ascon_xof/256/64                     1464 ns         1464 ns       478384   6.83459k       208.422M/s
+bench_ascon::ascon_xof/512/64                     2604 ns         2604 ns       268887   12.1533k       210.966M/s
+bench_ascon::ascon_xof/1024/64                    4878 ns         4878 ns       143495   22.7865k       212.703M/s
+bench_ascon::ascon_xof/2048/64                    9451 ns         9450 ns        74338   44.1069k       213.142M/s
+bench_ascon::ascon_xof/4096/64                   18540 ns        18538 ns        37769   86.6548k       214.004M/s
+bench_ascon::ascon_xofa/64/32                      324 ns          324 ns      2161685   1.51414k       282.632M/s
+bench_ascon::ascon_xofa/128/32                     517 ns          517 ns      1348132   2.41373k       295.253M/s
+bench_ascon::ascon_xofa/256/32                     904 ns          904 ns       772967   4.22035k       303.962M/s
+bench_ascon::ascon_xofa/512/32                    1674 ns         1674 ns       417165   7.81669k       309.909M/s
+bench_ascon::ascon_xofa/1024/32                   3212 ns         3212 ns       217864   15.0145k       313.516M/s
+bench_ascon::ascon_xofa/2048/32                   6299 ns         6299 ns       110189   29.4071k       314.931M/s
+bench_ascon::ascon_xofa/4096/32                  12459 ns        12459 ns        55942   58.2211k        315.99M/s
+bench_ascon::ascon_xofa/64/64                      423 ns          423 ns      1657885    1.9709k       288.774M/s
+bench_ascon::ascon_xofa/128/64                     615 ns          615 ns      1136182   2.87321k       297.628M/s
+bench_ascon::ascon_xofa/256/64                     999 ns          999 ns       700624    4.6703k       305.499M/s
+bench_ascon::ascon_xofa/512/64                    1770 ns         1770 ns       394741   8.27081k        310.29M/s
+bench_ascon::ascon_xofa/1024/64                   3311 ns         3311 ns       211374   15.4632k       313.419M/s
+bench_ascon::ascon_xofa/2048/64                   6395 ns         6395 ns       109290   29.8602k       314.966M/s
+bench_ascon::ascon_xofa/4096/64                  12551 ns        12550 ns        55433   58.6727k       316.115M/s
 ```
 
 ### On 12th Gen Intel(R) Core(TM) i7-1260P ( Compiled with Clang )
 
 ```bash
-2023-06-24T15:36:54+04:00
-Running ./bench/perf.out
-Run on (16 X 4170.68 MHz CPU s)
+2023-06-27T16:21:55+04:00
+Running ./benchmarks/perf.out
+Run on (16 X 2245.82 MHz CPU s)
 CPU Caches:
   L1 Data 48 KiB (x8)
   L1 Instruction 32 KiB (x8)
   L2 Unified 1280 KiB (x8)
   L3 Unified 18432 KiB (x1)
-Load Average: 0.54, 0.53, 0.54
-----------------------------------------------------------------------------------------------------
-Benchmark                              Time             CPU   Iterations     CYCLES bytes_per_second
-----------------------------------------------------------------------------------------------------
-bench_ascon::permutation<1>         2.93 ns         2.93 ns    238284605    13.7065       12.7093G/s
-bench_ascon::permutation<6>         16.9 ns         16.9 ns     41383766    79.1271       2.20204G/s
-bench_ascon::permutation<8>         23.3 ns         23.3 ns     30071118    108.962       1.59757G/s
-bench_ascon::permutation<12>        34.7 ns         34.7 ns     20185265    162.339        1098.9M/s
-bench_ascon::enc_128/64/32           303 ns          303 ns      2323939   1.41341k       302.358M/s
-bench_ascon::enc_128/128/32          442 ns          442 ns      1584304   2.06739k       345.064M/s
-bench_ascon::enc_128/256/32          718 ns          718 ns       981037   3.35274k       382.636M/s
-bench_ascon::enc_128/512/32         1272 ns         1272 ns       551058   5.94321k       407.744M/s
-bench_ascon::enc_128/1024/32        2381 ns         2380 ns       294267   11.1296k       423.076M/s
-bench_ascon::enc_128/2048/32        4595 ns         4594 ns       152291   21.4827k       431.767M/s
-bench_ascon::enc_128/4096/32        9048 ns         9047 ns        77396   42.2695k       435.144M/s
-bench_ascon::dec_128/64/32           302 ns          302 ns      2334946   1.40934k       303.383M/s
-bench_ascon::dec_128/128/32          438 ns          438 ns      1601737   2.04394k       348.493M/s
-bench_ascon::dec_128/256/32          708 ns          708 ns       987077   3.31031k       387.844M/s
-bench_ascon::dec_128/512/32         1253 ns         1253 ns       559373   5.84658k       414.146M/s
-bench_ascon::dec_128/1024/32        2341 ns         2341 ns       297992   10.9496k       430.249M/s
-bench_ascon::dec_128/2048/32        4517 ns         4516 ns       155146   21.1278k       439.236M/s
-bench_ascon::dec_128/4096/32        8907 ns         8907 ns        77385    41.667k       442.011M/s
-bench_ascon::enc_128a/64/32          239 ns          239 ns      2917445   1.11964k       382.474M/s
-bench_ascon::enc_128a/128/32         333 ns          333 ns      2098137   1.56086k        457.61M/s
-bench_ascon::enc_128a/256/32         521 ns          521 ns      1341729   2.44006k        526.97M/s
-bench_ascon::enc_128a/512/32         904 ns          904 ns       769848   4.22987k       573.866M/s
-bench_ascon::enc_128a/1024/32       1657 ns         1657 ns       422273   7.74901k       607.949M/s
-bench_ascon::enc_128a/2048/32       3162 ns         3161 ns       221716   14.7894k       627.456M/s
-bench_ascon::enc_128a/4096/32       6176 ns         6175 ns       113195   28.8838k       637.482M/s
-bench_ascon::dec_128a/64/32          242 ns          242 ns      2882859   1.13307k       377.789M/s
-bench_ascon::dec_128a/128/32         336 ns          336 ns      2082020   1.57372k       453.489M/s
-bench_ascon::dec_128a/256/32         525 ns          525 ns      1329397   2.45743k       522.786M/s
-bench_ascon::dec_128a/512/32         910 ns          910 ns       765284   4.25546k       570.133M/s
-bench_ascon::dec_128a/1024/32       1665 ns         1665 ns       419920   7.79499k       604.783M/s
-bench_ascon::dec_128a/2048/32       3180 ns         3180 ns       220116   14.8722k       623.799M/s
-bench_ascon::dec_128a/4096/32       6212 ns         6212 ns       112174   29.0644k       633.762M/s
-bench_ascon::enc_80pq/64/32          304 ns          304 ns      2311668   1.42107k        301.14M/s
-bench_ascon::enc_80pq/128/32         441 ns          441 ns      1587063   2.06162k       345.879M/s
-bench_ascon::enc_80pq/256/32         720 ns          719 ns       965128   3.36029k       381.751M/s
-bench_ascon::enc_80pq/512/32        1276 ns         1276 ns       549019   5.96375k       406.711M/s
-bench_ascon::enc_80pq/1024/32       2392 ns         2392 ns       292984   11.1842k       421.082M/s
-bench_ascon::enc_80pq/2048/32       4620 ns         4620 ns       151493   21.5929k       429.379M/s
-bench_ascon::enc_80pq/4096/32       9089 ns         9088 ns        77107   42.4734k       433.183M/s
-bench_ascon::dec_80pq/64/32          302 ns          302 ns      2327642   1.41122k       303.301M/s
-bench_ascon::dec_80pq/128/32         436 ns          436 ns      1606016   2.03963k       349.777M/s
-bench_ascon::dec_80pq/256/32         707 ns          707 ns       989515   3.30613k       388.573M/s
-bench_ascon::dec_80pq/512/32        1248 ns         1248 ns       559431   5.83602k       415.639M/s
-bench_ascon::dec_80pq/1024/32       2339 ns         2339 ns       299165    10.927k       430.554M/s
-bench_ascon::dec_80pq/2048/32       4507 ns         4507 ns       155232   21.0722k        440.17M/s
-bench_ascon::dec_80pq/4096/32       8890 ns         8890 ns        78695    41.562k       442.851M/s
-bench_ascon::hash/64                 451 ns          451 ns      1554773   2.10395k       203.069M/s
-bench_ascon::hash/128                728 ns          728 ns       957517   3.39978k       209.549M/s
-bench_ascon::hash/256               1284 ns         1284 ns       544697   5.99943k       213.909M/s
-bench_ascon::hash/512               2396 ns         2396 ns       292622   11.1808k       216.549M/s
-bench_ascon::hash/1024              4609 ns         4609 ns       151591   21.5495k       218.514M/s
-bench_ascon::hash/2048              9053 ns         9052 ns        77097    42.289k       219.145M/s
-bench_ascon::hash/4096             17925 ns        17924 ns        39051   83.7464k       219.639M/s
-bench_ascon::hasha/64                312 ns          312 ns      2236344    1.4593k       293.298M/s
-bench_ascon::hasha/128               498 ns          498 ns      1405096   2.32553k       306.663M/s
-bench_ascon::hasha/256               867 ns          867 ns       809889   4.04626k       316.708M/s
-bench_ascon::hasha/512              1604 ns         1604 ns       436803   7.49185k        323.46M/s
-bench_ascon::hasha/1024             3077 ns         3076 ns       227238   14.3821k       327.355M/s
-bench_ascon::hasha/2048             6035 ns         6035 ns       116243    28.201k       328.705M/s
-bench_ascon::hasha/4096            11979 ns        11978 ns        58427   56.0192k       328.672M/s
-bench_ascon::xof/64/32               454 ns          454 ns      1542768   2.11836k       201.838M/s
-bench_ascon::xof/128/32              730 ns          730 ns       954015   3.41492k       208.992M/s
-bench_ascon::xof/256/32             1285 ns         1285 ns       543401   6.01038k       213.705M/s
-bench_ascon::xof/512/32             2393 ns         2393 ns       293059   11.1906k       216.819M/s
-bench_ascon::xof/1024/32            4613 ns         4613 ns       151796   21.5532k       218.314M/s
-bench_ascon::xof/2048/32            9047 ns         9046 ns        77464   42.3124k        219.28M/s
-bench_ascon::xof/4096/32           17924 ns        17922 ns        39106   83.7854k       219.663M/s
-bench_ascon::xof/64/64               594 ns          594 ns      1167297   2.78056k       205.373M/s
-bench_ascon::xof/128/64              871 ns          871 ns       800651   4.07565k       210.224M/s
-bench_ascon::xof/256/64             1427 ns         1427 ns       490400   6.66929k       213.807M/s
-bench_ascon::xof/512/64             2536 ns         2535 ns       276543   11.8481k       216.651M/s
-bench_ascon::xof/1024/64            4754 ns         4754 ns       146834   22.2202k       218.269M/s
-bench_ascon::xof/2048/64            9184 ns         9184 ns        76082   42.9656k       219.322M/s
-bench_ascon::xof/4096/64           18060 ns        18059 ns        38712   84.4333k       219.682M/s
-bench_ascon::xofa/64/32              316 ns          316 ns      2215940    1.4776k       289.852M/s
-bench_ascon::xofa/128/32             501 ns          501 ns      1394484   2.34385k       304.404M/s
-bench_ascon::xofa/256/32             873 ns          873 ns       803567   4.07916k       314.677M/s
-bench_ascon::xofa/512/32            1612 ns         1612 ns       433589    7.5407k         321.8M/s
-bench_ascon::xofa/1024/32           3093 ns         3093 ns       226307   14.4656k       325.599M/s
-bench_ascon::xofa/2048/32           6057 ns         6057 ns       114654   28.3228k       327.505M/s
-bench_ascon::xofa/4096/32          11990 ns        11990 ns        58445   56.0628k       328.349M/s
-bench_ascon::xofa/64/64              410 ns          410 ns      1703838   1.92249k       297.438M/s
-bench_ascon::xofa/128/64             597 ns          597 ns      1170934   2.79441k       306.555M/s
-bench_ascon::xofa/256/64             967 ns          967 ns       724519   4.52362k       315.592M/s
-bench_ascon::xofa/512/64            1707 ns         1707 ns       409783   7.98668k       321.735M/s
-bench_ascon::xofa/1024/64           3189 ns         3189 ns       219629   14.9089k       325.419M/s
-bench_ascon::xofa/2048/64           6139 ns         6138 ns       113619   28.7625k       328.123M/s
-bench_ascon::xofa/4096/64          12075 ns        12074 ns        57898   56.4991k       328.581M/s
+Load Average: 0.66, 0.47, 0.41
+***WARNING*** There are 88 benchmarks with threads and 1 performance counters were requested. Beware counters will reflect the combined usage across all threads.
+------------------------------------------------------------------------------------------------------------------
+Benchmark                                            Time             CPU   Iterations     CYCLES bytes_per_second
+------------------------------------------------------------------------------------------------------------------
+bench_ascon::ascon_permutation<1>                 2.85 ns         2.85 ns    244990790    13.3366         13.06G/s
+bench_ascon::ascon_permutation<6>                 16.9 ns         16.9 ns     41322872    79.1811       2.19983G/s
+bench_ascon::ascon_permutation<8>                 23.0 ns         23.0 ns     30319363    107.774        1.6171G/s
+bench_ascon::ascon_permutation<12>                34.6 ns         34.6 ns     20232446    161.925       1102.76M/s
+bench_ascon::ascon128_aead_encrypt/64/32           306 ns          306 ns      2273587   1.43085k       299.156M/s
+bench_ascon::ascon128_aead_encrypt/128/32          451 ns          451 ns      1557326   2.10728k       338.056M/s
+bench_ascon::ascon128_aead_encrypt/256/32          736 ns          737 ns       949219   3.43973k       372.919M/s
+bench_ascon::ascon128_aead_encrypt/512/32         1315 ns         1315 ns       532702   6.13833k       394.441M/s
+bench_ascon::ascon128_aead_encrypt/1024/32        2467 ns         2468 ns       284489   11.5192k       408.129M/s
+bench_ascon::ascon128_aead_encrypt/2048/32        4755 ns         4755 ns       146705   22.2155k       417.192M/s
+bench_ascon::ascon128_aead_encrypt/4096/32        9359 ns         9360 ns        74575   43.6971k       420.594M/s
+bench_ascon::ascon128_aead_decrypt/64/32           306 ns          306 ns      2290939   1.43069k       299.053M/s
+bench_ascon::ascon128_aead_decrypt/128/32          445 ns          445 ns      1573792   2.08103k       342.859M/s
+bench_ascon::ascon128_aead_decrypt/256/32          726 ns          726 ns       961374   3.38906k       378.515M/s
+bench_ascon::ascon128_aead_decrypt/512/32         1286 ns         1286 ns       542109    6.0034k       403.457M/s
+bench_ascon::ascon128_aead_decrypt/1024/32        2414 ns         2414 ns       290310   11.2751k       417.186M/s
+bench_ascon::ascon128_aead_decrypt/2048/32        4673 ns         4672 ns       150479   21.3644k       424.553M/s
+bench_ascon::ascon128_aead_decrypt/4096/32        9128 ns         9128 ns        76265   42.7151k       431.274M/s
+bench_ascon::ascon128a_aead_encrypt/64/32          239 ns          239 ns      2924991   1.11981k       382.462M/s
+bench_ascon::ascon128a_aead_encrypt/128/32         334 ns          334 ns      2098343   1.55955k       457.204M/s
+bench_ascon::ascon128a_aead_encrypt/256/32         522 ns          522 ns      1341704    2.4399k       525.879M/s
+bench_ascon::ascon128a_aead_encrypt/512/32         904 ns          904 ns       772685   4.23326k       573.604M/s
+bench_ascon::ascon128a_aead_encrypt/1024/32       1657 ns         1658 ns       422477   7.75307k       607.585M/s
+bench_ascon::ascon128a_aead_encrypt/2048/32       3162 ns         3162 ns       221499   14.7989k       627.243M/s
+bench_ascon::ascon128a_aead_encrypt/4096/32       6171 ns         6171 ns       113406   28.8992k       637.934M/s
+bench_ascon::ascon128a_aead_decrypt/64/32          245 ns          245 ns      2849100   1.14786k        372.97M/s
+bench_ascon::ascon128a_aead_decrypt/128/32         339 ns          339 ns      2060097   1.58547k       450.546M/s
+bench_ascon::ascon128a_aead_decrypt/256/32         527 ns          527 ns      1324100   2.46835k       520.855M/s
+bench_ascon::ascon128a_aead_decrypt/512/32         909 ns          909 ns       768949   4.25393k       570.483M/s
+bench_ascon::ascon128a_aead_decrypt/1024/32       1666 ns         1666 ns       419857    7.8004k       604.471M/s
+bench_ascon::ascon128a_aead_decrypt/2048/32       3176 ns         3176 ns       220151    14.843k       624.575M/s
+bench_ascon::ascon128a_aead_decrypt/4096/32       6199 ns         6200 ns       112900   28.9921k       634.978M/s
+bench_ascon::ascon80pq_aead_encrypt/64/32          304 ns          304 ns      2290175   1.42331k       300.766M/s
+bench_ascon::ascon80pq_aead_encrypt/128/32         447 ns          447 ns      1565051    2.0894k       341.254M/s
+bench_ascon::ascon80pq_aead_encrypt/256/32         730 ns          730 ns       958743   3.40978k       376.289M/s
+bench_ascon::ascon80pq_aead_encrypt/512/32        1301 ns         1301 ns       538401   6.07477k       398.737M/s
+bench_ascon::ascon80pq_aead_encrypt/1024/32       2447 ns         2447 ns       284581   11.4423k       411.552M/s
+bench_ascon::ascon80pq_aead_encrypt/2048/32       4746 ns         4747 ns       147998   22.1791k       417.903M/s
+bench_ascon::ascon80pq_aead_encrypt/4096/32       9313 ns         9315 ns        76019   43.4936k       422.649M/s
+bench_ascon::ascon80pq_aead_decrypt/64/32          313 ns          313 ns      2239038   1.46236k       292.327M/s
+bench_ascon::ascon80pq_aead_decrypt/128/32         456 ns          456 ns      1531863   2.13294k       334.559M/s
+bench_ascon::ascon80pq_aead_decrypt/256/32         743 ns          743 ns       943827   3.47591k       369.726M/s
+bench_ascon::ascon80pq_aead_decrypt/512/32        1325 ns         1325 ns       536604   6.19588k       391.574M/s
+bench_ascon::ascon80pq_aead_decrypt/1024/32       2483 ns         2483 ns       280529   11.6094k        405.53M/s
+bench_ascon::ascon80pq_aead_decrypt/2048/32       4775 ns         4775 ns       145833   22.3327k       415.384M/s
+bench_ascon::ascon80pq_aead_decrypt/4096/32       9401 ns         9402 ns        73609   43.9758k       418.729M/s
+bench_ascon::ascon_hash/64                         453 ns          453 ns      1549296   2.11449k       202.294M/s
+bench_ascon::ascon_hash/128                        731 ns          731 ns       955114   3.41192k       208.796M/s
+bench_ascon::ascon_hash/256                       1287 ns         1287 ns       539416   6.01986k       213.353M/s
+bench_ascon::ascon_hash/512                       2398 ns         2399 ns       291506   11.2141k       216.292M/s
+bench_ascon::ascon_hash/1024                      4615 ns         4616 ns       151437   21.5982k       218.178M/s
+bench_ascon::ascon_hash/2048                      9064 ns         9065 ns        77106   42.3839k       218.825M/s
+bench_ascon::ascon_hash/4096                     17959 ns        17960 ns        38993   83.9274k       219.192M/s
+bench_ascon::ascon_hasha/64                        314 ns          314 ns      2222685   1.46872k       291.624M/s
+bench_ascon::ascon_hasha/128                       501 ns          501 ns      1397556   2.33726k       304.797M/s
+bench_ascon::ascon_hasha/256                       875 ns          875 ns       799022   4.08336k       313.864M/s
+bench_ascon::ascon_hasha/512                      1617 ns         1617 ns       433060   7.55773k       320.822M/s
+bench_ascon::ascon_hasha/1024                     3103 ns         3103 ns       225149   14.5063k       324.519M/s
+bench_ascon::ascon_hasha/2048                     6083 ns         6084 ns       114619   28.4058k       326.052M/s
+bench_ascon::ascon_hasha/4096                    12022 ns        12023 ns        58184   56.2151k       327.425M/s
+bench_ascon::ascon_xof/64/32                       452 ns          452 ns      1549037   2.11425k       202.651M/s
+bench_ascon::ascon_xof/128/32                      729 ns          729 ns       958174    3.4124k       209.183M/s
+bench_ascon::ascon_xof/256/32                     1286 ns         1286 ns       544263   6.01959k       213.539M/s
+bench_ascon::ascon_xof/512/32                     2397 ns         2397 ns       292385   11.2107k       216.394M/s
+bench_ascon::ascon_xof/1024/32                    4619 ns         4620 ns       151437   21.5977k       218.003M/s
+bench_ascon::ascon_xof/2048/32                    9063 ns         9063 ns        77080   42.3984k       218.866M/s
+bench_ascon::ascon_xof/4096/32                   17929 ns        17930 ns        39017    83.954k       219.558M/s
+bench_ascon::ascon_xof/64/64                       592 ns          592 ns      1180453   2.77043k       206.174M/s
+bench_ascon::ascon_xof/128/64                      870 ns          870 ns       799808   4.06852k       210.362M/s
+bench_ascon::ascon_xof/256/64                     1429 ns         1429 ns       489868   6.67675k       213.534M/s
+bench_ascon::ascon_xof/512/64                     2537 ns         2537 ns       275785   11.8677k       216.532M/s
+bench_ascon::ascon_xof/1024/64                    4756 ns         4757 ns       147043   22.2548k       218.128M/s
+bench_ascon::ascon_xof/2048/64                    9204 ns         9205 ns        76102   43.0578k       218.816M/s
+bench_ascon::ascon_xof/4096/64                   18111 ns        18112 ns        38625   84.6073k       219.041M/s
+bench_ascon::ascon_xofa/64/32                      314 ns          314 ns      2227304   1.46943k       291.515M/s
+bench_ascon::ascon_xofa/128/32                     499 ns          499 ns      1402199   2.33656k       305.613M/s
+bench_ascon::ascon_xofa/256/32                     874 ns          874 ns       801403   4.08964k       314.182M/s
+bench_ascon::ascon_xofa/512/32                    1618 ns         1618 ns       432832   7.56198k       320.633M/s
+bench_ascon::ascon_xofa/1024/32                   3105 ns         3105 ns       225490   14.5047k       324.318M/s
+bench_ascon::ascon_xofa/2048/32                   6074 ns         6075 ns       114743    28.399k       326.551M/s
+bench_ascon::ascon_xofa/4096/32                  12023 ns        12024 ns        58308   56.2018k       327.406M/s
+bench_ascon::ascon_xofa/64/64                      409 ns          409 ns      1712690   1.91221k       298.423M/s
+bench_ascon::ascon_xofa/128/64                     595 ns          595 ns      1170546    2.7805k       307.933M/s
+bench_ascon::ascon_xofa/256/64                     969 ns          969 ns       721369   4.52811k       314.843M/s
+bench_ascon::ascon_xofa/512/64                    1714 ns         1714 ns       408769   7.99947k       320.452M/s
+bench_ascon::ascon_xofa/1024/64                   3202 ns         3202 ns       218803   14.9406k       324.055M/s
+bench_ascon::ascon_xofa/2048/64                   6182 ns         6182 ns       112360   28.8298k       325.818M/s
+bench_ascon::ascon_xofa/4096/64                  12131 ns        12132 ns        57698   56.6581k       327.002M/s
 ```
 
 ## Usage
 
-`ascon` is a header-only C++ library, which is pretty easy to get started with. Just include the header file
+`ascon` is a zero-dependency, header-only C++ library, which is pretty easy to get started with.
 
-- For AEAD : `include/aead.hpp`
-- For Hashing : `include/hash.hpp` 
+- Include proper header file(s) ( living in `include` directory ) in your header/ source file.
+- Use functions/ constants living under proper namespace of interest.
+- When compiling, let your compiler know where it can find header files i.e. inside `include` and `subtle/include`, by using `-I` flag.
 
-and use functions/ structs/ constants living inside `ascon::` namespace. Finally when compiling the program, let your compiler know where it can find the header files using `-I` flag.
+Scheme | Header | Namespace | Example
+:-- | :-: | :-: | --:
+Ascon-128 AEAD | `include/aead/ascon128.hpp` | `ascon128_aead` | [example/ascon128_aead.cpp](./example/ascon128_aead.cpp)
+Ascon-128a AEAD | `include/aead/ascon128a.hpp` | `ascon128a_aead`  | [example/ascon128a_aead.cpp](./example/ascon128a_aead.cpp)
+Ascon-80pq AEAD | `include/aead/ascon80pq.hpp` | `ascon80pq_aead`  | [example/ascon80pq_aead.cpp](./example/ascon80pq_aead.cpp)
+Ascon Hash | `include/hashing/ascon_hash.hpp` | `ascon_hash` | [example/ascon_hash.cpp](./example/ascon_hash.cpp)
+Ascon HashA | `include/hashing/ascon_hasha.hpp` | `ascon_hasha` | [example/ascon_hasha.cpp](./example/ascon_hasha.cpp)
+Ascon XOF | `include/hashing/ascon_xof.hpp` | `ascon_xof` | [example/ascon_xof.cpp](./example/ascon_xof.cpp)
+Ascon XOFA | `include/hashing/ascon_xofa.hpp` | `ascon_xofa` | [example/ascon_xofa.cpp](./example/ascon_xofa.cpp)
 
 I maintain some examples demonstrating usage of Ascon AEAD, Hash and XOF API.
 
-Scheme | Header | Example
-:-- | :-: | --:
-Ascon-128 AEAD | `include/aead.hpp` | [example/ascon_128.cpp](./example/ascon_128.cpp)
-Ascon-128a AEAD | `include/aead.hpp` | [example/ascon_128a.cpp](./example/ascon_128a.cpp)
-Ascon-80pq AEAD | `include/aead.hpp` | [example/ascon_80pq.cpp](./example/ascon_80pq.cpp)
-Ascon Hash | `include/ascon_hash.hpp` | [example/ascon_hash.cpp](./example/ascon_hash.cpp)
-Ascon HashA | `include/ascon_hasha.hpp` | [example/ascon_hasha.cpp](./example/ascon_hasha.cpp)
-Ascon XOF | `include/ascon_xof.hpp` | [example/ascon_xof.cpp](./example/ascon_xof.cpp)
-Ascon XOFA | `include/ascon_xofa.hpp` | [example/ascon_xofa.cpp](./example/ascon_xofa.cpp)
-
 ```bash
-$ g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./subtle/include example/ascon_128.cpp && ./a.out
+$ g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./subtle/include example/ascon128_aead.cpp && ./a.out
 Ascon-128 AEAD
 
 Key       :	06a819d82123676245b7b88e864b01ac
@@ -351,7 +352,7 @@ Decrypted :	22bbe3e728cc9355298c614a503471b69c27a193db9331e41ba42791b63d12e8b535
 
 # ----------------
 
-$ g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./subtle/include example/ascon_128a.cpp && ./a.out
+$ g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./subtle/include example/ascon128a_aead.cpp && ./a.out
 Ascon-128a AEAD
 
 Key       :	88119fff6f0673cfc8d0269bac8ca328
@@ -363,7 +364,7 @@ Decrypted :	2b2e331614af85f38500a3fbe182ec4c00bd0b5a200b852f582a63249363892043c0
 
 # -----------------
 
-$ g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./subtle/include example/ascon_80pq.cpp && ./a.out
+$ g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./subtle/include example/ascon80pq_aead.cpp && ./a.out
 Ascon-80pq AEAD
 
 Key       :	93afc9866d8fafb4d4895a97147da2639e652407
@@ -375,7 +376,7 @@ Decrypted :	6d27382a7c6184fe52ea354574bfc8da49cbd7cb830183820d3e47368489428d89c4
 
 # -----------------
 
-$ g++ -std=c++20 -Wall -O3 -march=native -I ./include example/ascon_hash.cpp && ./a.out
+$ g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./subtle/include example/ascon_hash.cpp && ./a.out
 Ascon Hash
 
 Message :	a2309f40cae3efc99941641caf1c2cddf6fcd52a031ff199dfe5f185bb5142e91539b0d6777ad7fe8c2300d42015b623517f31b5db0a94d7e3c8cb521f03aabb
@@ -383,7 +384,7 @@ Digest  :	b467a2107aa34754a8679dfbac795660a5a2be927f2b0216a8fad50202d17249
 
 # --------------
 
-$ g++ -std=c++20 -Wall -O3 -march=native -I ./include example/ascon_hasha.cpp && ./a.out
+$ g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./subtle/include example/ascon_hasha.cpp && ./a.out
 Ascon HashA
 
 Message :	b11a401ec0ad387fdc890962e86158432ba31e50b8810e3360b4c6143a73f6f82364f6bd895938b7f0babdab065c17c7e0e7196c4a15eb345eb174f4f1da2de5
@@ -391,7 +392,7 @@ Digest  :	aa7463f3284c6b5d84aaf0c56a18ae79a2fbaf0e095111a0e65824e24892e419
 
 # --------------
 
-$ g++ -std=c++20 -Wall -O3 -march=native -I ./include example/ascon_xof.cpp && ./a.out
+$ g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./subtle/include example/ascon_xof.cpp && ./a.out
 Ascon XOF
 
 Message :	5265ce4d5d0b3a0d89c757e4b14049a4da449be528e9bb7606363717c16bf1f751ff64c4214aebe385ed4629b7eb14ff1a3f0ca6754ce6e54210efd33d117d41
@@ -399,7 +400,7 @@ Digest  :	65e2631e1478b8cec2fcbc8efbd954aefc4b20649d48818f06e95d355e4bda2b4d830f
 
 # --------------
 
-$ g++ -std=c++20 -Wall -O3 -march=native -I ./include example/ascon_xofa.cpp && ./a.out
+$ g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./subtle/include example/ascon_xofa.cpp && ./a.out
 Ascon XOFA
 
 Message :	6970b5465e902633d16179a2c6f68cb8ad52e853bda99cf72b9bb33bbb23d0df6b22b67e7e4dbe53e04abaa63d69ee84b0e8e87a3cdd94c9da105622ffa50755
