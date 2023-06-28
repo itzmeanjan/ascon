@@ -1,6 +1,8 @@
 #pragma once
 #include "permutation.hpp"
 #include "utils.hpp"
+#include <cstdint>
+#include <cstring>
 
 // Common functions required for implementing Ascon-{128, 128a, 80pq}
 // authenticated encryption & verified decryption
@@ -141,9 +143,9 @@ process_plaintext(uint64_t* const __restrict state,
   const size_t blk_cnt = (ctlen + 1 + (rbytes - 1)) / rbytes;
 
   uint8_t chunk[rbytes];
+  size_t off = 0;
 
   // Process full message blocks, expect the last one, which is padded.
-  size_t off = 0;
   for (size_t i = 0; i < blk_cnt - 1; i++) {
     ascon_utils::get_ith_msg_blk<rbytes>(text, ctlen, i, chunk);
 
@@ -216,125 +218,86 @@ process_ciphertext(uint64_t* const __restrict state,
                    )
   requires((rate == 64) || (rate == 128))
 {
-  const size_t ctbits = ctlen << 3;
-  const size_t rm_bits = ctbits & (rate - 1ul);
-  const size_t rm_bytes = rm_bits >> 3;
+  constexpr size_t rbytes = rate / 8;
+  const size_t blk_cnt = (ctlen + 1 + (rbytes - 1)) / rbytes;
 
-  const size_t till = ctlen - rm_bytes;
-  size_t off = 0ul;
+  uint8_t chunk[rbytes];
+  size_t off = 0;
 
-  // first decrypt all bytes which can be packed into rate bits wide full words
-  while (off < till) {
+  // Process full message blocks, expect the last one, which is padded.
+  for (size_t i = 0; i < blk_cnt - 1; i++) {
+    ascon_utils::get_ith_msg_blk<rbytes>(cipher, ctlen, i, chunk);
+
     if constexpr (rate == 64) {
-      // force compile-time branch evaluation
-      static_assert(rate == 64, "Rate must be 64 -bits");
+      const uint64_t cword = ascon_utils::from_be_bytes<uint64_t>(chunk);
+      const uint64_t tword = state[0] ^ cword;
+      state[0] = cword;
 
-      const auto worda = ascon_utils::from_be_bytes<uint64_t>(cipher + off);
-      const auto wordb = state[0] ^ worda;
-      ascon_utils::to_be_bytes(wordb, text + off);
-
-      state[0] = worda;
-      ascon_permutation::permute<rounds_b>(state);
-
-      off += 8ul;
+      ascon_utils::to_be_bytes(tword, text + off);
     } else {
       // force compile-time branch evaluation
       static_assert(rate == 128, "Rate must be 128 -bits");
 
-      const auto word0a = ascon_utils::from_be_bytes<uint64_t>(cipher + off);
-      const auto word1a =
-        ascon_utils::from_be_bytes<uint64_t>(cipher + off + 8);
+      const uint64_t cword0 = ascon_utils::from_be_bytes<uint64_t>(chunk);
+      const uint64_t cword1 = ascon_utils::from_be_bytes<uint64_t>(chunk + 8);
 
-      const auto word0b = state[0] ^ word0a;
-      const auto word1b = state[1] ^ word1a;
+      const uint64_t tword0 = state[0] ^ cword0;
+      const uint64_t tword1 = state[1] ^ cword1;
 
-      ascon_utils::to_be_bytes(word0b, text + off);
-      ascon_utils::to_be_bytes(word1b, text + off + 8ul);
+      state[0] = cword0;
+      state[1] = cword1;
 
-      state[0] = word0a;
-      state[1] = word1a;
-
-      ascon_permutation::permute<rounds_b>(state);
-
-      off += 16ul;
+      ascon_utils::to_be_bytes(tword0, text + off);
+      ascon_utils::to_be_bytes(tword1, text + off + 8);
     }
+
+    ascon_permutation::permute<rounds_b>(state);
+    off += rbytes;
   }
 
-  // then decrypt remaining bytes which can't be packed into a full word i.e.
-  // padding was required during encryption
+  // Process last message block, which is padded.
+  // `read` must be < `rbytes`.
+
+  const size_t i = blk_cnt - 1;
+  size_t read = ascon_utils::get_ith_msg_blk<rbytes>(cipher, ctlen, i, chunk);
+  std::memset(chunk + read, 0x00, rbytes - read);
+
   if constexpr (rate == 64) {
-    // force compile-time branch evaluation
-    static_assert(rate == 64, "Rate must be 64 -bits");
+    const uint64_t cword = ascon_utils::from_be_bytes<uint64_t>(chunk);
+    const uint64_t tword = state[0] ^ cword;
 
-    uint64_t worda = 0ul;
-    std::memcpy(&worda, cipher + off, rm_bytes);
+    ascon_utils::to_be_bytes(tword, chunk);
+    std::memcpy(text + off, chunk, read);
 
-    if constexpr (std::endian::native == std::endian::little) {
-      worda = ascon_utils::bswap(worda);
-    }
+    // Padding with 10* rule.
+    std::memset(chunk + read, 0x00, rbytes - read);
+    std::memset(chunk + read, 0x80, std::min(rbytes - read, 1ul));
 
-    const auto wordb = state[0] ^ worda;
-
-    if constexpr (std::endian::native == std::endian::little) {
-      const auto swapped = ascon_utils::bswap(wordb);
-      std::memcpy(text + off, &swapped, rm_bytes);
-    } else {
-      std::memcpy(text + off, &wordb, rm_bytes);
-    }
-
-    const bool flg = rm_bytes > 0;
-    const uint64_t mask = flg * (MAX_ULONG << ((8ul - rm_bytes) * 8));
-    const uint64_t selected = wordb & mask;
-    const uint64_t padding0 = 1ul << (((8ul - rm_bytes) * 8) - 1ul);
-
-    state[0] ^= selected | padding0;
+    const uint64_t pword = ascon_utils::from_be_bytes<uint64_t>(chunk);
+    state[0] ^= pword;
   } else {
     // force compile-time branch evaluation
     static_assert(rate == 128, "Rate must be 128 -bits");
 
-    const size_t fbytes = std::min(rm_bytes, 8ul);
-    const size_t lbytes = std::min(rm_bytes - fbytes, 8ul);
+    const uint64_t cword0 = ascon_utils::from_be_bytes<uint64_t>(chunk);
+    const uint64_t cword1 = ascon_utils::from_be_bytes<uint64_t>(chunk + 8);
 
-    uint64_t word0a = 0ul;
-    uint64_t word1a = 0ul;
+    const uint64_t tword0 = state[0] ^ cword0;
+    const uint64_t tword1 = state[1] ^ cword1;
 
-    std::memcpy(&word0a, cipher + off, fbytes);
-    std::memcpy(&word1a, cipher + off + fbytes, lbytes);
+    ascon_utils::to_be_bytes(tword0, chunk);
+    ascon_utils::to_be_bytes(tword1, chunk + 8);
+    std::memcpy(text + off, chunk, read);
 
-    if constexpr (std::endian::native == std::endian::little) {
-      word0a = ascon_utils::bswap(word0a);
-      word1a = ascon_utils::bswap(word1a);
-    }
+    // Padding with 10* rule.
+    std::memset(chunk + read, 0x00, rbytes - read);
+    std::memset(chunk + read, 0x80, std::min(rbytes - read, 1ul));
 
-    const auto word0b = state[0] ^ word0a;
-    const auto word1b = state[1] ^ word1a;
+    const uint64_t pword0 = ascon_utils::from_be_bytes<uint64_t>(chunk);
+    const uint64_t pword1 = ascon_utils::from_be_bytes<uint64_t>(chunk + 8);
 
-    if constexpr (std::endian::native == std::endian::little) {
-      const auto swapped0 = ascon_utils::bswap(word0b);
-      const auto swapped1 = ascon_utils::bswap(word1b);
-
-      std::memcpy(text + off, &swapped0, fbytes);
-      std::memcpy(text + off + fbytes, &swapped1, lbytes);
-    } else {
-      std::memcpy(text + off, &word0b, fbytes);
-      std::memcpy(text + off + fbytes, &word1b, lbytes);
-    }
-
-    const bool flg0 = fbytes > 0;
-    const uint64_t mask0 = flg0 * (MAX_ULONG << ((8ul - fbytes) * 8));
-    const uint64_t selected0 = word0b & mask0;
-    const bool flg1 = fbytes != 8ul;
-    const uint64_t padding0 = flg1 * (1ul << (((8ul - fbytes) * 8) - 1ul));
-
-    state[0] ^= selected0 | padding0;
-
-    const bool flg2 = lbytes > 0;
-    const uint64_t mask1 = flg2 * (MAX_ULONG << ((8ul - lbytes) * 8));
-    const uint64_t selected1 = word1b & mask1;
-    const bool flg3 = fbytes < 8ul;
-    const uint64_t padding1 = 1ul << (((8ul - lbytes) * 8) - 1ul);
-
-    state[1] ^= !flg3 * (selected1 | padding1);
+    state[0] ^= pword0;
+    state[1] ^= pword1;
   }
 }
 
@@ -373,6 +336,8 @@ finalize(uint64_t* const __restrict state,
     ascon_utils::to_be_bytes(state[3] ^ key0, tag);
     ascon_utils::to_be_bytes(state[4] ^ key1, tag + 8);
   } else {
+    static_assert(klen == 160, "Bit length of secret key must be 160.");
+
     const auto key0 = ascon_utils::from_be_bytes<uint64_t>(key);
     const auto key1 = ascon_utils::from_be_bytes<uint64_t>(key + 8);
     const auto key2 = ascon_utils::from_be_bytes<uint32_t>(key + 16);
