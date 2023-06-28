@@ -3,7 +3,8 @@
 
 // Compile with
 //
-// g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./subtle/include example/ascon_hash.cpp
+// g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./subtle/include
+// example/ascon_hash.cpp
 int
 main()
 {
