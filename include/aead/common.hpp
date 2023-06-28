@@ -36,6 +36,8 @@ initialize(uint64_t* const __restrict state,     // uninitialized hash state
     state[4] ^= key1;
   } else {
     // For Ascon-80pq
+    static_assert(klen == 160, "Bit length of secret key must be 160.");
+
     const auto key0 = ascon_utils::from_be_bytes<uint64_t>(key);
     const auto key1 = ascon_utils::from_be_bytes<uint64_t>(key + 8);
     const auto key2 = ascon_utils::from_be_bytes<uint32_t>(key + 16);
