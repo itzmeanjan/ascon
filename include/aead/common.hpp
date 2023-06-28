@@ -145,16 +145,16 @@ process_plaintext(uint64_t* const __restrict state,
 
   // Process full message blocks, expect the last one, which is padded.
   for (size_t i = 0; i < blk_cnt - 1; i++) {
-    ascon_utils::get_ith_msg_blk<rbytes>(text, ctlen, i, chunk);
-
     if constexpr (rate == 64) {
-      const uint64_t word = ascon_utils::from_be_bytes<uint64_t>(chunk);
+      const uint64_t word = ascon_utils::from_be_bytes<uint64_t>(text + off);
 
       state[0] ^= word;
       ascon_utils::to_be_bytes(state[0], cipher + off);
     } else {
       // force compile-time branch evaluation
       static_assert(rate == 128, "Rate must be 128 -bits");
+
+      ascon_utils::get_ith_msg_blk<rbytes>(text, ctlen, i, chunk);
 
       const uint64_t word0 = ascon_utils::from_be_bytes<uint64_t>(chunk);
       const uint64_t word1 = ascon_utils::from_be_bytes<uint64_t>(chunk + 8);
@@ -224,17 +224,17 @@ process_ciphertext(uint64_t* const __restrict state,
 
   // Process full message blocks, expect the last one, which is padded.
   for (size_t i = 0; i < blk_cnt - 1; i++) {
-    ascon_utils::get_ith_msg_blk<rbytes>(cipher, ctlen, i, chunk);
-
     if constexpr (rate == 64) {
-      const uint64_t cword = ascon_utils::from_be_bytes<uint64_t>(chunk);
+      const uint64_t cword = ascon_utils::from_be_bytes<uint64_t>(cipher + off);
       const uint64_t tword = state[0] ^ cword;
-      state[0] = cword;
 
       ascon_utils::to_be_bytes(tword, text + off);
+      state[0] = cword;
     } else {
       // force compile-time branch evaluation
       static_assert(rate == 128, "Rate must be 128 -bits");
+
+      ascon_utils::get_ith_msg_blk<rbytes>(cipher, ctlen, i, chunk);
 
       const uint64_t cword0 = ascon_utils::from_be_bytes<uint64_t>(chunk);
       const uint64_t cword1 = ascon_utils::from_be_bytes<uint64_t>(chunk + 8);
@@ -242,11 +242,11 @@ process_ciphertext(uint64_t* const __restrict state,
       const uint64_t tword0 = state[0] ^ cword0;
       const uint64_t tword1 = state[1] ^ cword1;
 
-      state[0] = cword0;
-      state[1] = cword1;
-
       ascon_utils::to_be_bytes(tword0, text + off);
       ascon_utils::to_be_bytes(tword1, text + off + 8);
+
+      state[0] = cword0;
+      state[1] = cword1;
     }
 
     ascon_permutation::permute<rounds_b>(state);
