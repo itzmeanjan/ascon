@@ -77,21 +77,6 @@ to_be_bytes(const T num, uint8_t* const bytes)
   }
 }
 
-// Generate `len` -many random sampled data of type T | T = unsigned integer
-template<typename T>
-inline void
-random_data(T* const data, const size_t len)
-  requires(std::is_unsigned_v<T>)
-{
-  std::random_device rd;
-  std::mt19937_64 gen(rd());
-  std::uniform_int_distribution<T> dis;
-
-  for (size_t i = 0; i < len; i++) {
-    data[i] = dis(gen);
-  }
-}
-
 // Given a N (>=0) -bytes message, this routine can be used for extracting at
 // max `msg_blk_len` -bytes chunk, which is (zero based indexing) indexed by i
 // s.t. i ∈ [0, (mlen + msg_blk_len - 1)/ msg_blk_len). Note, it's possible that
@@ -117,62 +102,6 @@ get_ith_msg_blk(
 
   std::memcpy(msg_blk, msg + off, readable);
   return readable;
-}
-
-// Pad data when rate = 64, such that padded data (bit-) length is evenly
-// divisible by rate ( = 64 ).
-//
-// See Ascon-{128, Hash, HashA} padding rule in section 2.4.{2,3} & 2.5.2 of
-// Ascon specification
-// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
-inline uint64_t
-pad64(const uint8_t* const data, const size_t pad_byte_len)
-{
-  const size_t dlen = 8ul - pad_byte_len;
-  const size_t pad_bit_len = pad_byte_len << 3;
-  const size_t pad_mask = 1ul << (pad_bit_len - 1ul);
-
-  uint64_t res = 0ul;
-  std::memcpy(&res, data, dlen);
-
-  if constexpr (std::endian::native == std::endian::little) {
-    res = bswap(res);
-  }
-
-  return res | pad_mask;
-}
-
-// Pad data, when rate = 128, such that padded data (bit-) length is evenly
-// divisible by rate ( = 128 ).
-//
-// See Ascon-128a padding rule in section 2.4.{2,3} of Ascon specification
-// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
-inline std::pair<uint64_t, uint64_t>
-pad128(const uint8_t* const __restrict data, const size_t pad_byte_len)
-{
-  const size_t dlen = 16ul - pad_byte_len;
-  const size_t fw_len = std::min(dlen, 8ul);
-  const size_t sw_len = dlen - fw_len;
-
-  uint64_t res0 = 0;
-  uint64_t res1 = 0;
-
-  std::memcpy(&res0, data, fw_len);
-  std::memcpy(&res1, data + fw_len, sw_len);
-
-  if constexpr (std::endian::native == std::endian::little) {
-    res0 = bswap(res0);
-    res1 = bswap(res1);
-  }
-
-  const bool flg = pad_byte_len > 8;
-  const size_t pad_bit_len = (pad_byte_len - 8 * flg) << 3;
-  const size_t pad_mask = 1ul << (pad_bit_len - 1ul);
-
-  uint64_t br[]{ res0, res1 };
-  br[!flg] |= pad_mask;
-
-  return { br[0], br[1] };
 }
 
 // Converts byte array into hex string; see https://stackoverflow.com/a/14051107
@@ -245,6 +174,23 @@ ct_conditional_memset(const uint32_t cond,
 {
   for (size_t i = 0; i < len; i++) {
     byte_arr[i] = subtle::ct_select(cond, val, byte_arr[i]);
+  }
+}
+
+// Generate `len` -many random sampled data of type T | T = unsigned integer.
+//
+// **Not cryptographically secure !**
+template<typename T>
+inline void
+random_data(T* const data, const size_t len)
+  requires(std::is_unsigned_v<T>)
+{
+  std::random_device rd;
+  std::mt19937_64 gen(rd());
+  std::uniform_int_distribution<T> dis;
+
+  for (size_t i = 0; i < len; i++) {
+    data[i] = dis(gen);
   }
 }
 
