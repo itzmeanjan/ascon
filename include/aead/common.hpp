@@ -66,56 +66,57 @@ process_associated_data(uint64_t* const __restrict state,
   requires((rate == 64) || (rate == 128))
 {
   if (dlen > 0) {
-    const size_t dbits = dlen << 3;
-    const size_t rm_bits = dbits & (rate - 1ul);
-    const size_t zero_pad_bits = rate - 1ul - rm_bits;
-    const size_t pad_bytes = (1ul + zero_pad_bits) >> 3;
+    constexpr size_t rbytes = rate / 8;
+    const size_t blk_cnt = (dlen + 1 + (rbytes - 1)) / rbytes;
 
-    const size_t till = dlen - (rm_bits >> 3);
-    size_t off = 0;
+    uint8_t chunk[rbytes];
 
-    // first mix all bytes which can form full words ( rate bits wide )
-    while (off < till) {
+    // Process full message blocks, expect the last one, which is padded.
+    for (size_t i = 0; i < blk_cnt - 1; i++) {
+      ascon_utils::get_ith_msg_blk<rbytes>(data, dlen, i, chunk);
+
       if constexpr (rate == 64) {
-        // force compile-time branch evaluation
-        static_assert(rate == 64, "Rate must be 64 -bits");
-
-        const auto word = ascon_utils::from_be_bytes<uint64_t>(data + off);
+        const auto word = ascon_utils::from_be_bytes<uint64_t>(chunk);
         state[0] ^= word;
-        ascon_permutation::permute<rounds_b>(state);
-
-        off += 8ul;
       } else {
         // force compile-time branch evaluation
         static_assert(rate == 128, "Rate must be 128 -bits");
 
-        const auto word0 = ascon_utils::from_be_bytes<uint64_t>(data + off);
-        const auto word1 = ascon_utils::from_be_bytes<uint64_t>(data + off + 8);
+        const auto word0 = ascon_utils::from_be_bytes<uint64_t>(chunk);
+        const auto word1 = ascon_utils::from_be_bytes<uint64_t>(chunk + 8);
+
         state[0] ^= word0;
         state[1] ^= word1;
-        ascon_permutation::permute<rounds_b>(state);
-
-        off += 16ul;
       }
+
+      ascon_permutation::permute<rounds_b>(state);
     }
 
-    // finally do padding and then mixing of padded word ( rate bits wide )
-    if constexpr (rate == 64) {
-      // force compile-time branch evaluation
-      static_assert(rate == 64, "Rate must be 64 -bits");
+    // Process last message block, which is padded.
+    // `read` must be < `rbytes`.
 
-      const auto word = ascon_utils::pad64(data + off, pad_bytes);
+    const size_t i = blk_cnt - 1;
+    size_t read = ascon_utils::get_ith_msg_blk<rbytes>(data, dlen, i, chunk);
+
+    // Padding with 10* rule.
+    std::memset(chunk + read, 0x00, rbytes - read);
+    std::memset(chunk + read, 0x80, std::min(rbytes - read, 1ul));
+
+    if constexpr (rate == 64) {
+      const auto word = ascon_utils::from_be_bytes<uint64_t>(chunk);
       state[0] ^= word;
-      ascon_permutation::permute<rounds_b>(state);
     } else {
       // force compile-time branch evaluation
       static_assert(rate == 128, "Rate must be 128 -bits");
 
-      const auto words = ascon_utils::pad128(data + off, pad_bytes);
-      state[0] ^= words.first;
-      state[1] ^= words.second;
-      ascon_permutation::permute<rounds_b>(state);
+      const auto word0 = ascon_utils::from_be_bytes<uint64_t>(chunk);
+      const auto word1 = ascon_utils::from_be_bytes<uint64_t>(chunk + 8);
+
+      state[0] ^= word0;
+      state[1] ^= word1;
     }
+
+    ascon_permutation::permute<rounds_b>(state);
   }
 
   // final 1 -bit domain seperator constant mixing is mandatory
