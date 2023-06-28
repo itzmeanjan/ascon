@@ -97,10 +97,13 @@ random_data(T* const data, const size_t len)
 // s.t. i ∈ [0, (mlen + msg_blk_len - 1)/ msg_blk_len). Note, it's possible that
 // very last chunk of message may not have `msg_blk_len` -bytes to fill up the
 // full chunk. This function returns how many bytes were actually read for this
-// chunk, which must ∈ [0, msg_blk_len].
+// chunk, which must ∈ [0, msg_blk_len]. And it doesn't touch remaining bytes of
+// chunk, if they can't be filled up. It's caller's responsibility to take
+// proper care of them, before using the message chunk, as it may be some
+// garbage bytes from previous iteration.
 template<const size_t msg_blk_len>
 inline size_t
-get_ith_message_block(
+get_ith_msg_blk(
   const uint8_t* const __restrict msg, // chunk(s) to be read from this message
   const size_t mlen,                   // byte length of message
   const size_t i,                      // index of message chunk, to be read
@@ -113,7 +116,6 @@ get_ith_message_block(
   const size_t readable = std::min(msg_blk_len, mlen - off);
 
   std::memcpy(msg_blk, msg + off, readable);
-  std::memset(msg_blk + readable, 0, msg_blk_len - readable);
   return readable;
 }
 
