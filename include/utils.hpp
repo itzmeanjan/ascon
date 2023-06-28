@@ -92,6 +92,31 @@ random_data(T* const data, const size_t len)
   }
 }
 
+// Given a N (>=0) -bytes message, this routine can be used for extracting at
+// max `msg_blk_len` -bytes chunk, which is (zero based indexing) indexed by i
+// s.t. i ∈ [0, (mlen + msg_blk_len - 1)/ msg_blk_len). Note, it's possible that
+// very last chunk of message may not have `msg_blk_len` -bytes to fill up the
+// full chunk. This function returns how many bytes were actually read for this
+// chunk, which must ∈ [0, msg_blk_len].
+template<const size_t msg_blk_len>
+inline size_t
+get_ith_message_block(
+  const uint8_t* const __restrict msg, // chunk(s) to be read from this message
+  const size_t mlen,                   // byte length of message
+  const size_t i,                      // index of message chunk, to be read
+  uint8_t* const __restrict msg_blk    // msg_blk_len -bytes chunk
+)
+{
+  // This routine makes an assumption that function caller invokes it with such
+  // `i` value that off <= mlen.
+  const size_t off = i * msg_blk_len;
+  const size_t readable = std::min(msg_blk_len, mlen - off);
+
+  std::memcpy(msg_blk, msg + off, readable);
+  std::memset(msg_blk + readable, 0, msg_blk_len - readable);
+  return readable;
+}
+
 // Pad data when rate = 64, such that padded data (bit-) length is evenly
 // divisible by rate ( = 64 ).
 //
