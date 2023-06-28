@@ -1,8 +1,6 @@
 #pragma once
 #include "permutation.hpp"
 #include "utils.hpp"
-#include <cstdint>
-#include <cstring>
 
 // Common functions required for implementing Ascon-{128, 128a, 80pq}
 // authenticated encryption & verified decryption
@@ -318,9 +316,6 @@ finalize(uint64_t* const __restrict state,
     const auto key1 = ascon_utils::from_be_bytes<uint64_t>(key + 8);
 
     if constexpr (rate == 64) {
-      // force compile-time branch evaluation
-      static_assert(rate == 64, "Rate must be 64 -bits");
-
       state[1] ^= key0;
       state[2] ^= key1;
     } else {
