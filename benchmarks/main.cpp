@@ -1,6 +1,7 @@
 #include "aead/bench_ascon128_aead.hpp"
 #include "aead/bench_ascon128a_aead.hpp"
 #include "aead/bench_ascon80pq_aead.hpp"
+#include "auth/bench_ascon_prf.hpp"
 #include "bench_permutation.hpp"
 #include "hashing/bench_ascon_hash.hpp"
 #include "hashing/bench_ascon_hasha.hpp"
@@ -61,6 +62,13 @@ BENCHMARK(bench_ascon::ascon_xofa)
   ->ArgsProduct({
     benchmark::CreateRange(1 << 6, 1 << 12, 2), // input, to be absorbed
     { 32, 64 }                                  // output, to be squeezed
+  });
+
+// register for benchmarking Ascon-PRF
+BENCHMARK(bench_ascon::ascon_prf)
+  ->ArgsProduct({
+    benchmark::CreateRange(1 << 6, 1 << 12, 2), // input, to be absorbed
+    { 16, 32, 64 }                              // output, to be squeezed
   });
 
 // drive benchmark execution
