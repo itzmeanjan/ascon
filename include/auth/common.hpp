@@ -18,8 +18,10 @@ template<const size_t rounds_a,     // a -rounds permutation p^a | a <= 12
          const uint32_t max_out_len // max. output length, in bits
          >
 static inline void
-initialize(uint64_t* const __restrict state,
-           const uint8_t* const __restrict key)
+initialize(
+  uint64_t* const __restrict state,   // 40 -bytes Ascon permutation state
+  const uint8_t* const __restrict key // 16 -bytes key
+  )
   requires((klen == 128) && (rounds_a == ascon_permutation::MAX_ROUNDS))
 {
   // Compile-time compute initialization value
@@ -38,6 +40,67 @@ initialize(uint64_t* const __restrict state,
   state[4] = 0;
 
   ascon_permutation::permute<rounds_a>(state);
+}
+
+// Absorbs arbitrary many message bytes into RATE portion of Ascon permutation
+// state s.t. `offset` many bytes can already be absorbed into it. `offset` can
+// have value from [0, rbytes).
+//
+// One can invoke absorb routine arbitrary many times for absorbing arbitrary
+// many message bytes, until the state is finalized.
+template<const size_t rounds_a, // a -rounds permutation p^a | a <= 12
+         const size_t rate      // in bits
+         >
+static inline void
+absorb(uint64_t* const __restrict state,    // 40 -bytes Ascon permutation state
+       size_t* const __restrict offset,     // ∈ [0, rbytes)
+       const uint8_t* const __restrict msg, // Message to be absorbed
+       const size_t mlen                    // Byte length of message, >= 0
+       )
+  requires((rounds_a == ascon_permutation::MAX_ROUNDS) && (rate == 256))
+{
+  constexpr size_t rbytes = rate / 8;
+  const size_t blk_cnt = (*offset + mlen) / rbytes;
+
+  uint8_t chunk[rbytes];
+  size_t moff = 0;
+
+  for (size_t i = 0; i < blk_cnt; i++) {
+    std::memset(chunk, 0, *offset);
+    std::memcpy(chunk + *offset, msg + moff, rbytes - *offset);
+
+    const auto word0 = ascon_utils::from_be_bytes<uint64_t>(chunk);
+    const auto word1 = ascon_utils::from_be_bytes<uint64_t>(chunk + 8);
+    const auto word2 = ascon_utils::from_be_bytes<uint64_t>(chunk + 16);
+    const auto word3 = ascon_utils::from_be_bytes<uint64_t>(chunk + 24);
+
+    state[0] ^= word0;
+    state[1] ^= word1;
+    state[2] ^= word2;
+    state[3] ^= word3;
+
+    moff += (rbytes - *offset);
+
+    ascon_permutation::permute<rounds_a>(state);
+    *offset = 0;
+  }
+
+  const size_t rm_bytes = mlen - moff;
+
+  std::memset(chunk, 0, rbytes);
+  std::memcpy(chunk + *offset, msg + moff, rm_bytes);
+
+  const auto word0 = ascon_utils::from_be_bytes<uint64_t>(chunk);
+  const auto word1 = ascon_utils::from_be_bytes<uint64_t>(chunk + 8);
+  const auto word2 = ascon_utils::from_be_bytes<uint64_t>(chunk + 16);
+  const auto word3 = ascon_utils::from_be_bytes<uint64_t>(chunk + 24);
+
+  state[0] ^= word0;
+  state[1] ^= word1;
+  state[2] ^= word2;
+  state[3] ^= word3;
+
+  *offset += rm_bytes;
 }
 
 }
