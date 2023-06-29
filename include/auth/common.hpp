@@ -17,7 +17,7 @@ template<const size_t rounds_a,     // a -rounds permutation p^a | a <= 12
          const size_t klen,         // key length, in bits
          const uint32_t max_out_len // max. output length, in bits
          >
-static inline void
+static inline constexpr void
 initialize(
   uint64_t* const __restrict state,   // 40 -bytes Ascon permutation state
   const uint8_t* const __restrict key // 16 -bytes key
@@ -161,8 +161,6 @@ squeeze(uint64_t* const __restrict state,  // 40 -bytes Ascon permutation state
 
     ascon_utils::to_be_bytes(state[0], chunk);
     ascon_utils::to_be_bytes(state[1], chunk + 8);
-    ascon_utils::to_be_bytes(state[2], chunk + 16);
-    ascon_utils::to_be_bytes(state[3], chunk + 24);
 
     std::memcpy(out + ooff, chunk + soff, elen);
 
