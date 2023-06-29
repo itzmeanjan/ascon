@@ -1,7 +1,6 @@
 #pragma once
 #include "permutation.hpp"
 #include "utils.hpp"
-#include <cstdint>
 
 // Common functions used for implementing Ascon based authentication schemes
 // such as PRF and MAC.
@@ -134,6 +133,47 @@ finalize(uint64_t* const __restrict state, // 40 -bytes Ascon permutation state
   ascon_permutation::permute<rounds_a>(state);
 
   *offset = 0;
+}
+
+// Given that message bytes are already absorbed into Ascon permutation state,
+// which is also finalized, this routine can be used for squeezing arbitrary
+// many mesasge bytes ( i.e. authentication tag ), from RATE portion of Ascon
+// permutation. This is an implementation, following section 2.4.3 of spec.
+// https://eprint.iacr.org/2021/1574.pdf.
+template<const size_t rounds_a, // a -rounds permutation p^a | a <= 12
+         const size_t rate      // in bits
+         >
+static inline void
+squeeze(uint64_t* const __restrict state,  // 40 -bytes Ascon permutation state
+        size_t* const __restrict readable, // ∈ [0, rbytes)
+        uint8_t* const __restrict out,     // Squeezed output bytes
+        const size_t olen                  // Requested output byte length, >=0
+        )
+  requires((rounds_a == ascon_permutation::MAX_ROUNDS) && (rate == 128))
+{
+  constexpr size_t rbytes = rate / 8;
+  uint8_t chunk[rbytes];
+
+  size_t ooff = 0;
+  while (ooff < olen) {
+    const size_t elen = std::min(*readable, olen - ooff);
+    const size_t soff = rbytes - *readable;
+
+    ascon_utils::to_be_bytes(state[0], chunk);
+    ascon_utils::to_be_bytes(state[1], chunk + 8);
+    ascon_utils::to_be_bytes(state[2], chunk + 16);
+    ascon_utils::to_be_bytes(state[3], chunk + 24);
+
+    std::memcpy(out + ooff, chunk + soff, elen);
+
+    *readable -= elen;
+    ooff += elen;
+
+    if (*readable == 0) {
+      ascon_permutation::permute<rounds_a>(state);
+      *readable = rbytes;
+    }
+  }
 }
 
 }
