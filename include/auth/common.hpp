@@ -1,6 +1,7 @@
 #pragma once
 #include "permutation.hpp"
 #include "utils.hpp"
+#include <cstdint>
 
 // Common functions used for implementing Ascon based authentication schemes
 // such as PRF and MAC.
@@ -44,7 +45,8 @@ initialize(
 
 // Absorbs arbitrary many message bytes into RATE portion of Ascon permutation
 // state s.t. `offset` many bytes can already be absorbed into it. `offset` can
-// have value from [0, rbytes).
+// have value from [0, rbytes). This routine is an implementation following
+// section 2.4.2 of spec. https://eprint.iacr.org/2021/1574.pdf.
 //
 // One can invoke absorb routine arbitrary many times for absorbing arbitrary
 // many message bytes, until the state is finalized.
@@ -101,6 +103,37 @@ absorb(uint64_t* const __restrict state,    // 40 -bytes Ascon permutation state
   state[3] ^= word3;
 
   *offset += rm_bytes;
+}
+
+// Given that arbitrary many message bytes are already absorbed into RATE
+// portion of Ascon permutation state, this function can be used for finalizing
+// it so that it becomes ready for squeezing. This is an implementation,
+// following section 2.4.2 and (last message block absorption step of) algorithm
+// 1 of spec. https://eprint.iacr.org/2021/1574.pdf.
+template<const size_t rounds_a, // a -rounds permutation p^a | a <= 12
+         const size_t rate      // in bits
+         >
+static inline void
+finalize(uint64_t* const __restrict state, // 40 -bytes Ascon permutation state
+         size_t* const __restrict offset   // ∈ [0, rbytes)
+         )
+  requires((rounds_a == ascon_permutation::MAX_ROUNDS) && (rate == 256))
+{
+  constexpr size_t rbytes = rate / 8;
+  uint8_t chunk[rbytes];
+
+  std::memset(chunk, 0x00, rbytes);
+  std::memset(chunk + *offset, 0x80, 1);
+
+  state[0] ^= ascon_utils::from_be_bytes<uint64_t>(chunk);
+  state[1] ^= ascon_utils::from_be_bytes<uint64_t>(chunk + 8);
+  state[2] ^= ascon_utils::from_be_bytes<uint64_t>(chunk + 16);
+  state[3] ^= ascon_utils::from_be_bytes<uint64_t>(chunk + 24);
+  state[4] ^= 1;
+
+  ascon_permutation::permute<rounds_a>(state);
+
+  *offset = 0;
 }
 
 }
