@@ -1,6 +1,7 @@
 #include "aead/test_ascon128_aead.hpp"
 #include "aead/test_ascon128a_aead.hpp"
 #include "aead/test_ascon80pq_aead.hpp"
+#include "auth/test_ascon_prf.hpp"
 #include "hashing/test_ascon_hash.hpp"
 #include "hashing/test_ascon_hasha.hpp"
 #include "hashing/test_ascon_xof.hpp"
@@ -46,6 +47,9 @@ main()
   ascon_test::test_ascon_xofa(4096, 4096);
   ascon_test::test_ascon_xofa_kat();
   std::cout << "[test] Ascon-XofA\n";
+
+  ascon_test::test_ascon_prf_kat();
+  std::cout << "[test] Ascon-PRF\n";
 
   return EXIT_SUCCESS;
 }
