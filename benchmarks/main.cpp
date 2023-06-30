@@ -81,10 +81,12 @@ BENCHMARK(bench_ascon::ascon_mac_verify)
   ->Range(1 << 6, 1 << 12) // input, to be authenticated
   ;
 BENCHMARK(bench_ascon::ascon_prfs_authenticate)
-  ->DenseRange(1, ascon_prfs::MAX_MSG_LEN, 1) // input, to be authenticated
+  ->RangeMultiplier(2)
+  ->Range(1, ascon_prfs::MAX_TAG_LEN) // input, to be authenticated
   ;
 BENCHMARK(bench_ascon::ascon_prfs_verify)
-  ->DenseRange(1, ascon_prfs::MAX_MSG_LEN, 1) // input, to be authenticated
+  ->RangeMultiplier(2)
+  ->Range(1, ascon_prfs::MAX_TAG_LEN) // input, to be authenticated
   ;
 
 // drive benchmark execution
