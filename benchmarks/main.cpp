@@ -1,6 +1,9 @@
 #include "aead/bench_ascon128_aead.hpp"
 #include "aead/bench_ascon128a_aead.hpp"
 #include "aead/bench_ascon80pq_aead.hpp"
+#include "auth/bench_ascon_mac.hpp"
+#include "auth/bench_ascon_prf.hpp"
+#include "auth/bench_ascon_prfs.hpp"
 #include "bench_permutation.hpp"
 #include "hashing/bench_ascon_hash.hpp"
 #include "hashing/bench_ascon_hasha.hpp"
@@ -62,6 +65,29 @@ BENCHMARK(bench_ascon::ascon_xofa)
     benchmark::CreateRange(1 << 6, 1 << 12, 2), // input, to be absorbed
     { 32, 64 }                                  // output, to be squeezed
   });
+
+// register for benchmarking Ascon-{PRF, MAC, PRFShort}.
+BENCHMARK(bench_ascon::ascon_prf)
+  ->ArgsProduct({
+    benchmark::CreateRange(1 << 6, 1 << 12, 2), // input, to be absorbed
+    { 16, 32, 64 }                              // output, to be squeezed
+  });
+BENCHMARK(bench_ascon::ascon_mac_authenticate)
+  ->RangeMultiplier(2)
+  ->Range(1 << 6, 1 << 12) // input, to be authenticated
+  ;
+BENCHMARK(bench_ascon::ascon_mac_verify)
+  ->RangeMultiplier(2)
+  ->Range(1 << 6, 1 << 12) // input, to be authenticated
+  ;
+BENCHMARK(bench_ascon::ascon_prfs_authenticate)
+  ->RangeMultiplier(2)
+  ->Range(1, ascon_prfs::MAX_TAG_LEN) // input, to be authenticated
+  ;
+BENCHMARK(bench_ascon::ascon_prfs_verify)
+  ->RangeMultiplier(2)
+  ->Range(1, ascon_prfs::MAX_TAG_LEN) // input, to be authenticated
+  ;
 
 // drive benchmark execution
 BENCHMARK_MAIN();
