@@ -3,6 +3,7 @@
 #include "aead/test_ascon80pq_aead.hpp"
 #include "auth/test_ascon_mac.hpp"
 #include "auth/test_ascon_prf.hpp"
+#include "auth/test_ascon_prfs.hpp"
 #include "hashing/test_ascon_hash.hpp"
 #include "hashing/test_ascon_hasha.hpp"
 #include "hashing/test_ascon_xof.hpp"
@@ -54,6 +55,9 @@ main()
 
   ascon_test::test_ascon_mac_kat();
   std::cout << "[test] Ascon-MAC\n";
+
+  ascon_test::test_ascon_prfs_kat();
+  std::cout << "[test] Ascon-PRFShort\n";
 
   return EXIT_SUCCESS;
 }
