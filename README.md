@@ -7,25 +7,30 @@ Accelerated Ascon Cipher Suite: Light Weight Cryptography
 
 `ascon` cipher suite is selected by NIST as winner of **L**ight **W**eight **C**ryptography standardization effort and it's being standardized right now. Find more details @ https://www.nist.gov/news-events/news/2023/02/nist-selects-lightweight-cryptography-algorithms-protect-small-devices.
 
-Following functionalities, from Ascon light weight cryptography suite, are implemented in this zero-dependency, header-only C++ library
+Following functionalities, from Ascon light weight cryptography suite, are implemented in this zero-dependency, header-only C++ library.
 
-Scheme | Input | Output
+Scheme | What does it do ? | Comments
 :-- | :-: | --:
-Ascon-128 AEAD | 16B key, 16B nonce, N -bytes associated data and M -bytes plain text | 16B authentication tag and M -bytes cipher text
-Ascon-128A AEAD | 16B key, 16B nonce, N -bytes associated data and M -bytes plain text | 16B authentication tag and M -bytes cipher text
-Ascon-80pq AEAD | 20B key, 16B nonce, N -bytes associated data and M -bytes plain text | 16B authentication tag and M -bytes cipher text
-Ascon-Hash | N -bytes message | 32B digest
-Ascon-HashA | N -bytes message | 32B digest
-Ascon-XOF | N -bytes message | Arbitrary many bytes digest
-Ascon-XOFA | N -bytes message | Arbitrary many bytes digest
+Ascon-128 AEAD | Given 16B key, 16B nonce, N -bytes associated data and M -bytes plain text, encryption routine can be used for computing 16B authentication tag and M -bytes cipher text. While decryption algorithm can be used for decrypting cipher text, producing equal length plain text, given key, nonce, associated data ( if any ) and authentication tag. It only releases plain text if tag can be verified, in constant-time. | Primary AEAD candidate.
+Ascon-128A AEAD | Same as above. | Secondary AEAD candidate, though executes faster due to higher RATE.
+Ascon-80pq AEAD | Same as above, only difference is that it uses 20 -bytes secret key. | Post-quantum AEAD candidate, because it has key length of 160 -bits.
+Ascon-Hash | Given N -bytes input message, hasher can be used for producing 32 -bytes digest. | Primary hash function candidate.
+Ascon-HashA | Same as above. | Secondary hash function candidate, faster because it has smaller number of permutation rounds.
+Ascon-XOF | Given N -bytes input message, hasher can be used for squeezing arbitrart many digest bytes. | Primary extendable output function candidate.
+Ascon-XOFA | Same as above. | Secondary extendable output function candidate, faster because it has smaller number of permutation rounds.
+Ascon-PRF | Given 16 -bytes key and N -bytes input message, this routine can be used for squeezing arbitrary many tag bytes. | Pseudo-random function for arbitrary length messages, proposed in https://ia.cr/2021/1574.
+Ascon-MAC | Given 16 -bytes key and N -bytes input message, this routine can be used for computing 16 -bytes tag, during authentication phase. While during verification, received tag can be verified by locally computing 16 -bytes tag and comparing it constant-time. | Messaege authentication code function proposed in https://ia.cr/2021/1574.
+Ascon-PRFShort | Given 16 -bytes key and <= 16 -bytes input message, to be authenticated, this routine can be used for computing a <= 16 -bytes authentication tag. This PRF scheme can be used for building a message authentication code algorithm for short input messages. | Pseudo-random function for short input messages, proposed in https://ia.cr/2021/1574.
 
-> **Note** Ascon-{Hash, HashA, XOF, XOFA} supports incremental hashing. If all message bytes are not ready to be absorbed into hash state in a single go, one can absorb message using incremental hashing API s.t. arbitrary number of absorption calls can be made, each time arbitrary many bytes are consumed, until state is finalized and ready to be squeezed.
+> **Note** Ascon-{Hash, HashA, Xof, XofA} supports incremental message absorption. If all message bytes are not ready to be absorbed into hash state in a single go, one can absorb messages as they become available. One may invoke absorb routine as many times necessary, until state is finalized and ready to be squeezed.
 
 > **Note** Read more about AEAD [here](https://en.wikipedia.org/wiki/Authenticated_encryption).
 
 > **Warning** Associated data is never encrypted. AEAD scheme provides secrecy only for plain text but authenticity and integrity for both associated data and cipher text.
 
-> **Note** I've followed Ascon [specification](https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf) while working on this implementation. I suggest you also go through the specification to better understand Ascon.
+> **Note** Ascon based psuedo-random function and message authentication code scheme i.e. Ascon-PRF and Ascon-MAC respectively, support incremental message absorption/ authentication and squeezing.
+
+> **Note** I've followed Ascon [specification](https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf) and another follow-up [paper](https://eprint.iacr.org/2021/1574.pdf), describing Ascon based authentication schemes, while working on this library implementation. I suggest you also go through the specification to better understand Ascon.
 
 ## Prerequisites
 
@@ -79,6 +84,9 @@ $ make
 [test] Ascon-HashA
 [test] Ascon-Xof
 [test] Ascon-XofA
+[test] Ascon-PRF
+[test] Ascon-MAC
+[test] Ascon-PRFShort
 ```
 
 ## Benchmarking
@@ -87,7 +95,7 @@ For benchmarking routines of Ascon lightweight cipher suite, using `google-bench
 
 ```bash
 make benchmark # If you haven't built google-benchmark library with libPFM support.
-make perf # If you have built google-benchmark library with libPFM support.
+make perf      # If you have built google-benchmark library with libPFM support.
 ```
 
 Following routines are benchmarked
@@ -100,6 +108,9 @@ Following routines are benchmarked
 - Ascon-HashA
 - Ascon-XOF
 - Ascon-XOFA
+- Ascon-PRF
+- Ascon-MAC ( authenticate/ verify )
+- Ascon-PRFShort ( authenticate/ verify )
 
 > **Note** Benchmark recipe expects presence of `google-benchmark` header and library in `$PATH` ( so that it can be found by the compiler ).
 
@@ -424,13 +435,22 @@ Ascon-128a AEAD | `include/aead/ascon128a.hpp` | `ascon128a_aead`  | [example/as
 Ascon-80pq AEAD | `include/aead/ascon80pq.hpp` | `ascon80pq_aead`  | [example/ascon80pq_aead.cpp](./example/ascon80pq_aead.cpp)
 Ascon Hash | `include/hashing/ascon_hash.hpp` | `ascon_hash` | [example/ascon_hash.cpp](./example/ascon_hash.cpp)
 Ascon HashA | `include/hashing/ascon_hasha.hpp` | `ascon_hasha` | [example/ascon_hasha.cpp](./example/ascon_hasha.cpp)
-Ascon XOF | `include/hashing/ascon_xof.hpp` | `ascon_xof` | [example/ascon_xof.cpp](./example/ascon_xof.cpp)
-Ascon XOFA | `include/hashing/ascon_xofa.hpp` | `ascon_xofa` | [example/ascon_xofa.cpp](./example/ascon_xofa.cpp)
+Ascon Xof | `include/hashing/ascon_xof.hpp` | `ascon_xof` | [example/ascon_xof.cpp](./example/ascon_xof.cpp)
+Ascon XofA | `include/hashing/ascon_xofa.hpp` | `ascon_xofa` | [example/ascon_xofa.cpp](./example/ascon_xofa.cpp)
+Ascon-PRF | `include/auth/ascon_prf.hpp` | `ascon_prf` | [example/ascon_prf.cpp](./example/ascon_prf.cpp)
+Ascon-MAC | `include/auth/ascon_mac.hpp` | `ascon_mac` | [example/ascon_mac.cpp](./example/ascon_mac.cpp)
+Ascon-MAC | `include/auth/ascon_prfs.hpp` | `ascon_prfs` | [example/ascon_prfs.cpp](./example/ascon_prfs.cpp)
 
-I maintain some examples demonstrating usage of Ascon AEAD, Hash and XOF API.
+> **Note** Don't forget to also include path ( `-I ./subtle/include` ) to dependency library `subtle`, when compiling translation units, which are using Ascon cipher suite primitives.
+
+I maintain some examples demonstrating usage of Ascon AEAD, Hash, Xof, PRF and MAC API.
 
 ```bash
-$ g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./subtle/include example/ascon128_aead.cpp && ./a.out
+# Assuming you've already cloned this ascon library and enabled git submodule.
+$ ASCON_HEADERS=./include
+$ SUBTLE_HEADERS=./subtle/include
+
+$ g++ -std=c++20 -Wall -O3 -march=native -I $ASCON_HEADERS -I $SUBTLE_HEADERS example/ascon128_aead.cpp && ./a.out
 Ascon-128 AEAD
 
 Key       :	06a819d82123676245b7b88e864b01ac
@@ -442,7 +462,7 @@ Decrypted :	22bbe3e728cc9355298c614a503471b69c27a193db9331e41ba42791b63d12e8b535
 
 # ----------------
 
-$ g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./subtle/include example/ascon128a_aead.cpp && ./a.out
+$ g++ -std=c++20 -Wall -O3 -march=native -I $ASCON_HEADERS -I $SUBTLE_HEADERS example/ascon128a_aead.cpp && ./a.out
 Ascon-128a AEAD
 
 Key       :	88119fff6f0673cfc8d0269bac8ca328
@@ -454,7 +474,7 @@ Decrypted :	2b2e331614af85f38500a3fbe182ec4c00bd0b5a200b852f582a63249363892043c0
 
 # -----------------
 
-$ g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./subtle/include example/ascon80pq_aead.cpp && ./a.out
+$ g++ -std=c++20 -Wall -O3 -march=native -I $ASCON_HEADERS -I $SUBTLE_HEADERS example/ascon80pq_aead.cpp && ./a.out
 Ascon-80pq AEAD
 
 Key       :	93afc9866d8fafb4d4895a97147da2639e652407
@@ -466,7 +486,7 @@ Decrypted :	6d27382a7c6184fe52ea354574bfc8da49cbd7cb830183820d3e47368489428d89c4
 
 # -----------------
 
-$ g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./subtle/include example/ascon_hash.cpp && ./a.out
+$ g++ -std=c++20 -Wall -O3 -march=native -I $ASCON_HEADERS -I $SUBTLE_HEADERS example/ascon_hash.cpp && ./a.out
 Ascon Hash
 
 Message :	a2309f40cae3efc99941641caf1c2cddf6fcd52a031ff199dfe5f185bb5142e91539b0d6777ad7fe8c2300d42015b623517f31b5db0a94d7e3c8cb521f03aabb
@@ -474,7 +494,7 @@ Digest  :	b467a2107aa34754a8679dfbac795660a5a2be927f2b0216a8fad50202d17249
 
 # --------------
 
-$ g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./subtle/include example/ascon_hasha.cpp && ./a.out
+$ g++ -std=c++20 -Wall -O3 -march=native -I $ASCON_HEADERS -I $SUBTLE_HEADERS example/ascon_hasha.cpp && ./a.out
 Ascon HashA
 
 Message :	b11a401ec0ad387fdc890962e86158432ba31e50b8810e3360b4c6143a73f6f82364f6bd895938b7f0babdab065c17c7e0e7196c4a15eb345eb174f4f1da2de5
@@ -482,7 +502,7 @@ Digest  :	aa7463f3284c6b5d84aaf0c56a18ae79a2fbaf0e095111a0e65824e24892e419
 
 # --------------
 
-$ g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./subtle/include example/ascon_xof.cpp && ./a.out
+$ g++ -std=c++20 -Wall -O3 -march=native -I $ASCON_HEADERS -I $SUBTLE_HEADERS example/ascon_xof.cpp && ./a.out
 Ascon XOF
 
 Message :	5265ce4d5d0b3a0d89c757e4b14049a4da449be528e9bb7606363717c16bf1f751ff64c4214aebe385ed4629b7eb14ff1a3f0ca6754ce6e54210efd33d117d41
@@ -490,9 +510,37 @@ Digest  :	65e2631e1478b8cec2fcbc8efbd954aefc4b20649d48818f06e95d355e4bda2b4d830f
 
 # --------------
 
-$ g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./subtle/include example/ascon_xofa.cpp && ./a.out
+$ g++ -std=c++20 -Wall -O3 -march=native -I $ASCON_HEADERS -I $SUBTLE_HEADERS example/ascon_xofa.cpp && ./a.out
 Ascon XOFA
 
 Message :	6970b5465e902633d16179a2c6f68cb8ad52e853bda99cf72b9bb33bbb23d0df6b22b67e7e4dbe53e04abaa63d69ee84b0e8e87a3cdd94c9da105622ffa50755
 Digest  :	52644d6ba60bd3eca3aa2dabfe69ae397ddcdd0f0abd5151bf1d0e23cb4da41b3ab75634e26bae4b19f78e95fbdd54961b35cb5c7ef3ec7639816f0833ffaea7
+
+# --------------
+
+$ g++ -std=c++20 -Wall -O3 -march=native -I $ASCON_HEADERS -I $SUBTLE_HEADERS example/ascon_prf.cpp && ./a.out
+Ascon-PRF
+
+Key     :	518d6223f8895a8ad637e6c3fce66084
+Message :	6a3fedca32ad7587663de617074eddbe64c084c658dbbb419dca2b4db5200af252a316cdcd042fdc31f11ba84a9925484d5f978e43172f3cf627a3b19e5f12f6
+Tag     :	46e7936bf2468ead291854196bbaf4e00fc676a06fe33bd6326f31ac968e4aff73e8c3eb6cbc09884c226daceda36a26f0f601a93268ebcc384cc1d24baa6d5d
+
+# --------------
+
+$ g++ -std=c++20 -Wall -O3 -march=native -I $ASCON_HEADERS -I $SUBTLE_HEADERS example/ascon_mac.cpp && ./a.out
+Ascon-MAC
+
+Key          :	53dffb5673f089f77f363fadcee2c69f
+Message      :	13da8497fe16a3e4a61a937530f30ca072f470ec2a68449336264b272af354796037b8312479233f9d189bcc6e2a178b1dd5f91fc0094b59811541ac45b33b0a
+Sender Tag   :	7fb21a028858927b54e148c6b25e68e2
+Receiver Tag :	7fb21a028858927b54e148c6b25e68e2
+
+# --------------
+
+$ g++ -std=c++20 -Wall -O3 -march=native -I $ASCON_HEADERS -I $SUBTLE_HEADERS example/ascon_prfs.cpp && ./a.out
+Ascon-PRFShort
+
+Key     :	f4c9dc526a8b03c3467abdc890575afc
+Message :	f6ea9d6f4322de5c
+Tag     :	3947e5220bf37c8ca807f2a1330134ad
 ```
