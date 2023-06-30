@@ -36,6 +36,9 @@ constexpr uint64_t IV =
 // Short-input pseudo-random function, which can be used for computing a <=16
 // -bytes authentication tag, for an input message of length at max 16 -bytes,
 // given a 16 -bytes secret key.
+//
+// This routine is an implementation of algorithm 3 of spec.
+// https://eprint.iacr.org/2021/1574.pdf.
 inline void
 prf_short(const uint8_t* const __restrict key, // 16 -bytes secret key
           const uint8_t* const __restrict msg, // Input message
@@ -65,6 +68,38 @@ prf_short(const uint8_t* const __restrict key, // 16 -bytes secret key
   for (size_t i = off; i < MAX_TAG_LEN; i++) {
     tag[i - off] = rate[i] ^ key[i];
   }
+}
+
+// Authenticates at max 16 -bytes input message, by absorbing it into RATE
+// portion of Ascon permutation state, while computing a 16 -bytes
+// authentication tag, when a 16 -bytes secret key is provided as input.
+inline void
+prfs_authenticate(
+  const uint8_t* const __restrict key, // 16 -bytes key
+  const uint8_t* const __restrict msg, // Input message, to be authenticated
+  const size_t mlen,                   // Byte length of input, must be <= 16
+  uint8_t* const __restrict tag        // 16 -bytes tag, to be computed
+)
+{
+  prf_short(key, msg, mlen, tag, MAX_TAG_LEN);
+}
+
+// Verifies 16 -bytes authentication tag, for a message of byte length at max
+// 16, by (constant-time) comparing received tag with (function) locally
+// computed tag, given 16 -bytes secret key. Returns boolean truth value,
+// denoting successful tag comparison, while false value is returned, otherwise.
+inline bool
+prfs_verify(
+  const uint8_t* const __restrict key, // 16 -bytes key
+  const uint8_t* const __restrict msg, // Input message, to be authenticated
+  const size_t mlen,                   // Byte length of input, must be <= 16
+  const uint8_t* const __restrict tag  // 16 -bytes tag, to be verified
+)
+{
+  uint8_t computed_tag[MAX_TAG_LEN];
+  prf_short(key, msg, mlen, computed_tag, MAX_TAG_LEN);
+
+  return ascon_utils::ct_eq_byte_array(tag, computed_tag, MAX_TAG_LEN);
 }
 
 }
