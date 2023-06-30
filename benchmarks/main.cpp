@@ -3,6 +3,7 @@
 #include "aead/bench_ascon80pq_aead.hpp"
 #include "auth/bench_ascon_mac.hpp"
 #include "auth/bench_ascon_prf.hpp"
+#include "auth/bench_ascon_prfs.hpp"
 #include "bench_permutation.hpp"
 #include "hashing/bench_ascon_hash.hpp"
 #include "hashing/bench_ascon_hasha.hpp"
@@ -65,7 +66,7 @@ BENCHMARK(bench_ascon::ascon_xofa)
     { 32, 64 }                                  // output, to be squeezed
   });
 
-// register for benchmarking Ascon-{PRF, MAC}.
+// register for benchmarking Ascon-{PRF, MAC, PRFShort}.
 BENCHMARK(bench_ascon::ascon_prf)
   ->ArgsProduct({
     benchmark::CreateRange(1 << 6, 1 << 12, 2), // input, to be absorbed
@@ -78,6 +79,12 @@ BENCHMARK(bench_ascon::ascon_mac_authenticate)
 BENCHMARK(bench_ascon::ascon_mac_verify)
   ->RangeMultiplier(2)
   ->Range(1 << 6, 1 << 12) // input, to be authenticated
+  ;
+BENCHMARK(bench_ascon::ascon_prfs_authenticate)
+  ->DenseRange(1, ascon_prfs::MAX_MSG_LEN, 1) // input, to be authenticated
+  ;
+BENCHMARK(bench_ascon::ascon_prfs_verify)
+  ->DenseRange(1, ascon_prfs::MAX_MSG_LEN, 1) // input, to be authenticated
   ;
 
 // drive benchmark execution
