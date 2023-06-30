@@ -33,7 +33,8 @@ ascon_mac_authenticate(benchmark::State& state)
     benchmark::ClobberMemory();
   }
 
-  state.SetBytesProcessed((mlen + ascon_mac::TAG_LEN) * state.iterations());
+  const size_t bytes_per_iter = key.size() + msg.size() + tag.size();
+  state.SetBytesProcessed(bytes_per_iter * state.iterations());
 }
 
 // Benchmark Ascon-MAC verification implementation for variable length input
@@ -75,7 +76,8 @@ ascon_mac_verify(benchmark::State& state)
     benchmark::ClobberMemory();
   }
 
-  state.SetBytesProcessed((mlen + 2 * ascon_mac::TAG_LEN) * state.iterations());
+  const size_t bytes_per_iter = key.size() + mlen + 2 * ascon_mac::TAG_LEN;
+  state.SetBytesProcessed(bytes_per_iter * state.iterations());
 }
 
 }

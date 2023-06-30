@@ -30,8 +30,8 @@ ascon_hasha(benchmark::State& state)
     benchmark::ClobberMemory();
   }
 
-  state.SetBytesProcessed((mlen + ascon_hasha::DIGEST_LEN) *
-                          state.iterations());
+  const size_t bytes_per_iter = msg.size() + dig.size();
+  state.SetBytesProcessed(bytes_per_iter * state.iterations());
 }
 
 }

@@ -45,7 +45,8 @@ ascon128a_aead_encrypt(benchmark::State& state)
     benchmark::ClobberMemory();
   }
 
-  state.SetBytesProcessed((dt_len + ct_len) * state.iterations());
+  const size_t bpi = key.size() + nonce.size() + dt_len + ct_len + tag.size();
+  state.SetBytesProcessed(bpi * state.iterations());
 }
 
 // Benchmark Ascon-128a verified decryption with variable length input.
@@ -77,15 +78,16 @@ ascon128a_aead_decrypt(benchmark::State& state)
                           enc.data(),
                           tag.data());
 
+  bool flag = true;
   for (auto _ : state) {
-    bool flag = ascon128a_aead::decrypt(key.data(),
-                                        nonce.data(),
-                                        data.data(),
-                                        data.size(),
-                                        enc.data(),
-                                        enc.size(),
-                                        dec.data(),
-                                        tag.data());
+    flag &= ascon128a_aead::decrypt(key.data(),
+                                    nonce.data(),
+                                    data.data(),
+                                    data.size(),
+                                    enc.data(),
+                                    enc.size(),
+                                    dec.data(),
+                                    tag.data());
 
     benchmark::DoNotOptimize(flag);
     benchmark::DoNotOptimize(key);
@@ -97,7 +99,10 @@ ascon128a_aead_decrypt(benchmark::State& state)
     benchmark::ClobberMemory();
   }
 
-  state.SetBytesProcessed((dt_len + ct_len) * state.iterations());
+  assert(flag);
+
+  const size_t bpi = key.size() + nonce.size() + dt_len + ct_len + tag.size();
+  state.SetBytesProcessed(bpi * state.iterations());
 }
 
 }

@@ -35,7 +35,8 @@ ascon_prf(benchmark::State& state)
     benchmark::ClobberMemory();
   }
 
-  state.SetBytesProcessed((mlen + tlen) * state.iterations());
+  const size_t bytes_per_iter = key.size() + msg.size() + tag.size();
+  state.SetBytesProcessed(bytes_per_iter * state.iterations());
 }
 
 }
