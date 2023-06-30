@@ -51,23 +51,27 @@ prf_short(const uint8_t* const __restrict key, // 16 -bytes secret key
   std::memcpy(rate, msg, mlen);
   std::memset(rate + mlen, 0, sizeof(rate) - mlen);
 
+  const uint64_t key0 = ascon_utils::from_be_bytes<uint64_t>(key);
+  const uint64_t key1 = ascon_utils::from_be_bytes<uint64_t>(key + 8);
+
   uint64_t state[5];
 
   state[0] = IV ^ ((mlen * 8) << 48);
-  state[1] = ascon_utils::from_be_bytes<uint64_t>(key);
-  state[2] = ascon_utils::from_be_bytes<uint64_t>(key + 8);
+  state[1] = key0;
+  state[2] = key1;
   state[3] = ascon_utils::from_be_bytes<uint64_t>(rate);
   state[4] = ascon_utils::from_be_bytes<uint64_t>(rate + 8);
 
   ascon_permutation::permute<ROUNDS_A>(state);
 
+  state[3] ^= key0;
+  state[4] ^= key1;
+
   ascon_utils::to_be_bytes(state[3], rate);
   ascon_utils::to_be_bytes(state[4], rate + 8);
 
   const size_t off = MAX_TAG_LEN - tlen;
-  for (size_t i = off; i < MAX_TAG_LEN; i++) {
-    tag[i - off] = rate[i] ^ key[i];
-  }
+  std::memcpy(tag, rate + off, tlen);
 }
 
 // Authenticates at max 16 -bytes input message, by absorbing it into RATE
