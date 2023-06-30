@@ -43,6 +43,8 @@ main()
   // 4) Receiver verifies if locally computed tag is same as the one computed by
   // sender and shared over-the-wire.
   bool flag = mac_rcv.verify(rcvd_tag.data(), cmtd_tag.data());
+
+  // Authentication check must pass !
   assert(flag);
 
   {
