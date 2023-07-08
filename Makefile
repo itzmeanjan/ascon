@@ -13,24 +13,22 @@ tests/a.out: tests/main.cpp include/*.hpp include/*/*.hpp
 test: tests/a.out
 	./$<
 
-benchmarks/main.o: benchmarks/main.cpp include/*.hpp include/*/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
-
-benchmarks/bench.out: benchmarks/main.o
+benchmarks/bench.out: benchmarks/main.cpp include/*.hpp include/*/*.hpp
 	# In case you haven't built google-benchmark with libPFM support.
-	# More @ https://github.com/google/benchmark/blob/b323288cbac5fd1dd35f153e767497a23c337742/docs/perf_counters.md
-	$(CXX) $(OPT_FLAGS) $^ -lbenchmark -o $@
+	# More @ https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) $< -lbenchmark -lpthread -o $@
 
 benchmark: benchmarks/bench.out
 	./$< --benchmark_counters_tabular=true
 
-benchmarks/perf.out: benchmarks/main.o
+benchmarks/perf.out: benchmarks/main.cpp include/*.hpp include/*/*.hpp
 	# In case you've built google-benchmark with libPFM support.
-	# More @ https://github.com/google/benchmark/blob/b323288cbac5fd1dd35f153e767497a23c337742/docs/perf_counters.md
-	$(CXX) $(OPT_FLAGS) $^ -lbenchmark -lpfm -o $@
+	# More @ https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) \
+				-DCYCLES_PER_BYTE -DINSTRUCTIONS_PER_CYCLE $< -lbenchmark -lpthread -lpfm -o $@
 
 perf: benchmarks/perf.out
-	./$< --benchmark_counters_tabular=true --benchmark_perf_counters=CYCLES
+	./$< --benchmark_counters_tabular=true --benchmark_perf_counters=CYCLES,INSTRUCTIONS
 
 clean:
 	find . -name '*.out' -o -name '*.o' -o -name '*.gch' | xargs rm -rf

@@ -30,7 +30,17 @@ ascon_hash(benchmark::State& state)
     benchmark::ClobberMemory();
   }
 
-  state.SetBytesProcessed((mlen + ascon_hash::DIGEST_LEN) * state.iterations());
+  const size_t bytes_processed = (msg.size() + dig.size()) * state.iterations();
+  state.SetBytesProcessed(bytes_processed);
+
+#ifdef CYCLES_PER_BYTE
+  state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / bytes_processed;
+#endif
+
+#ifdef INSTRUCTIONS_PER_CYCLE
+  const double ipc = state.counters["INSTRUCTIONS"] / state.counters["CYCLES"];
+  state.counters["INSTRUCTIONS/ CYCLE"] = ipc;
+#endif
 }
 
 }

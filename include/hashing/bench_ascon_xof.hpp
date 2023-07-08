@@ -31,7 +31,17 @@ ascon_xof(benchmark::State& state)
     benchmark::ClobberMemory();
   }
 
-  state.SetBytesProcessed((mlen + dlen) * state.iterations());
+  const size_t bytes_processed = (mlen + dlen) * state.iterations();
+  state.SetBytesProcessed(bytes_processed);
+
+#ifdef CYCLES_PER_BYTE
+  state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / bytes_processed;
+#endif
+
+#ifdef INSTRUCTIONS_PER_CYCLE
+  const double ipc = state.counters["INSTRUCTIONS"] / state.counters["CYCLES"];
+  state.counters["INSTRUCTIONS/ CYCLE"] = ipc;
+#endif
 }
 
 }
