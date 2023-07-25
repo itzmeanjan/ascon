@@ -113,8 +113,13 @@ public:
   // Zeros Ascon permutation state, for sake of reusing same object.
   inline void reset() { std::memset(this, 0x00, sizeof(*this)); }
 
-  // Returns 64 -bit wide row of Ascon permutation state, given idx ∈ [0, 5).
-  inline constexpr uint64_t operator[](const size_t idx) const
+  // Returns reference to 64 -bit row of Ascon permutation state, given idx ∈
+  // [0, 5).
+  inline constexpr uint64_t& operator[](const size_t idx) { return state[idx]; }
+
+  // Returns const reference to 64 -bit row of Ascon permutation state, given
+  // idx ∈ [0, 5).
+  inline constexpr const uint64_t& operator[](const size_t idx) const
   {
     return state[idx];
   }
