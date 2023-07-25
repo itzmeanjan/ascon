@@ -1,6 +1,7 @@
 #include "aead/ascon128.hpp"
 #include <fstream>
 #include <gtest/gtest.h>
+#include <span>
 
 // Test functional correctness of Ascon-128 authenticated encryption and
 // verified decryption implementation for different combination of input sizes.
@@ -19,30 +20,24 @@ test_ascon128_aead(const size_t dlen, // bytes; >= 0
   std::vector<uint8_t> enc(ctlen);
   std::vector<uint8_t> dec(ctlen);
 
-  ascon_utils::random_data(key.data(), key.size());
-  ascon_utils::random_data(nonce.data(), nonce.size());
-  ascon_utils::random_data(data.data(), data.size());
-  ascon_utils::random_data(text.data(), text.size());
+  auto _key = std::span<uint8_t, ascon128_aead::KEY_LEN>(key);
+  auto _nonce = std::span<uint8_t, ascon128_aead::NONCE_LEN>(nonce);
+  auto _tag = std::span<uint8_t, ascon128_aead::TAG_LEN>(tag);
+  auto _data = std::span(data);
+  auto _text = std::span(text);
+  auto _enc = std::span(enc);
+  auto _dec = std::span(dec);
 
-  ascon128_aead::encrypt(key.data(),
-                         nonce.data(),
-                         data.data(),
-                         data.size(),
-                         text.data(),
-                         text.size(),
-                         enc.data(),
-                         tag.data());
-  bool flag = ascon128_aead::decrypt(key.data(),
-                                     nonce.data(),
-                                     data.data(),
-                                     data.size(),
-                                     enc.data(),
-                                     enc.size(),
-                                     dec.data(),
-                                     tag.data());
+  ascon_utils::random_data<uint8_t>(_key);
+  ascon_utils::random_data<uint8_t>(_nonce);
+  ascon_utils::random_data(_data);
+  ascon_utils::random_data(_text);
+
+  ascon128_aead::encrypt(_key, _nonce, _data, _text, _enc, _tag);
+  bool flag = ascon128_aead::decrypt(_key, _nonce, _data, _enc, _dec, _tag);
 
   ASSERT_TRUE(flag);
-  ASSERT_EQ(text, dec);
+  ASSERT_EQ(_text, _dec);
 }
 
 TEST(AsconAEAD, CorrectnessTestAscon128AEAD)
@@ -98,33 +93,26 @@ kat_ascon128_aead()
       auto ad = ascon_utils::from_hex(ad2);
       auto ct = ascon_utils::from_hex(ct2);
 
+      auto _key = std::span<uint8_t, ascon128_aead::KEY_LEN>(key);
+      auto _nonce = std::span<uint8_t, ascon128_aead::NONCE_LEN>(nonce);
+      auto _ad = std::span(ad);
+      auto _pt = std::span(pt);
+      auto _ct = std::span(ct);
+
       std::vector<uint8_t> ctxt(pt.size());
       std::vector<uint8_t> tag(ascon128_aead::TAG_LEN);
       std::vector<uint8_t> ptxt(ctxt.size());
 
-      ascon128_aead::encrypt(key.data(),
-                             nonce.data(),
-                             ad.data(),
-                             ad.size(),
-                             pt.data(),
-                             pt.size(),
-                             ctxt.data(),
-                             tag.data());
-      bool flag = ascon128_aead::decrypt(key.data(),
-                                         nonce.data(),
-                                         ad.data(),
-                                         ad.size(),
-                                         ctxt.data(),
-                                         ctxt.size(),
-                                         ptxt.data(),
-                                         tag.data());
+      auto _ctxt = std::span(ctxt);
+      auto _tag = std::span<uint8_t, ascon128_aead::TAG_LEN>(tag);
+      auto _ptxt = std::span(ptxt);
+
+      ascon128_aead::encrypt(_key, _nonce, _ad, _pt, _ctxt, _tag);
+      bool flag = ascon128_aead::decrypt(_key, _nonce, _ad, _ctxt, _ptxt, _tag);
 
       ASSERT_TRUE(flag);
-      ASSERT_TRUE(
-        ascon_utils::ct_eq_byte_array(ctxt.data(), ct.data(), pt.size()));
-
-      auto tag_ = ct.data() + pt.size();
-      ASSERT_TRUE(ascon_utils::ct_eq_byte_array(tag.data(), tag_, tag.size()));
+      ASSERT_EQ(_ct.subspan(0, pt.size()), _ctxt);
+      ASSERT_EQ(_ct.subspan(pt.size()), _tag);
 
       std::string empty_line;
       std::getline(file, empty_line);
