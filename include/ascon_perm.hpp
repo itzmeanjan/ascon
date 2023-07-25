@@ -96,8 +96,8 @@ public:
     state = words;
   }
 
-  // Sequentially apply Ascon permutation for R -many times | R <= 12;
-  // taken from section 2.6 of Ascon specification
+  // Applies Ascon permutation round for R -many times | R <= 12; taken from
+  // section 2.6 of Ascon specification
   // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
   template<const size_t R>
   inline constexpr void permute()
