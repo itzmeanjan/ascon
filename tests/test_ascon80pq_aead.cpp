@@ -1,4 +1,5 @@
 #include "aead/ascon80pq.hpp"
+#include "test_aead_common.hpp"
 #include <fstream>
 #include <gtest/gtest.h>
 #include <span>
@@ -37,13 +38,13 @@ test_ascon80pq_aead(const size_t dlen, // bytes; >= 0
   bool flag = ascon80pq_aead::decrypt(_key, _nonce, _data, _enc, _dec, _tag);
 
   ASSERT_TRUE(flag);
-  ASSERT_EQ(_text, _dec);
+  ASSERT_EQ(text, dec);
 }
 
 TEST(AsconAEAD, CorrectnessTestAscon80pqAEAD)
 {
-  for (size_t dlen = 0; dlen <= 32; dlen++) {
-    for (size_t ctlen = 0; ctlen <= 32; ctlen++) {
+  for (size_t dlen = MIN_AD_LEN; dlen <= MAX_AD_LEN; dlen++) {
+    for (size_t ctlen = MIN_CT_LEN; ctlen <= MAX_CT_LEN; ctlen++) {
       test_ascon80pq_aead(dlen, ctlen);
     }
   }
@@ -111,8 +112,8 @@ kat_ascon80pq_aead()
       bool flag = ascon80pq_aead::decrypt(_key, _nonce, _ad, _ctxt, _ptxt, _tag);
 
       ASSERT_TRUE(flag);
-      ASSERT_EQ(_ct.subspan(0, pt.size()), _ctxt);
-      ASSERT_EQ(_ct.subspan(pt.size()), _tag);
+      ASSERT_TRUE(std::ranges::equal(_ct.subspan(0, pt.size()), _ctxt));
+      ASSERT_TRUE(std::ranges::equal(_ct.subspan(pt.size()), _tag));
 
       std::string empty_line;
       std::getline(file, empty_line);
