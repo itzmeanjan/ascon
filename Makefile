@@ -13,7 +13,10 @@ tests/test_ascon_perm.o: tests/test_ascon_perm.cpp include/*.hpp
 tests/test_ascon128_aead.o: tests/test_ascon128_aead.cpp include/*.hpp include/*/*.hpp
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
 
-tests/a.out: tests/test_ascon_perm.o tests/test_ascon128_aead.o
+tests/test_ascon128a_aead.o: tests/test_ascon128a_aead.cpp include/*.hpp include/*/*.hpp
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
+
+tests/a.out: tests/test_ascon_perm.o tests/test_ascon128_aead.o tests/test_ascon128a_aead.o
 	$(CXX) $(OPT_FLAGS) $^ -lgtest -lgtest_main -o $@
 
 test: tests/a.out
