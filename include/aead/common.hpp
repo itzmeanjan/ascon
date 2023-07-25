@@ -220,8 +220,8 @@ process_plaintext(ascon_perm::ascon_perm_t& state,
     // force compile-time branch evaluation
     static_assert(rate == 128, "Rate must be 128 -bits");
 
-    auto _chunk0 = chunk.template subspan<0, 8>();
-    auto _chunk1 = chunk.template subspan<8, 8>();
+    auto _chunk0 = _chunk.template subspan<0, 8>();
+    auto _chunk1 = _chunk.template subspan<8, 8>();
 
     const uint64_t word0 = ascon_utils::from_be_bytes<uint64_t>(_chunk0);
     const uint64_t word1 = ascon_utils::from_be_bytes<uint64_t>(_chunk1);
@@ -272,10 +272,10 @@ process_ciphertext(ascon_perm::ascon_perm_t& state,
       // force compile-time branch evaluation
       static_assert(rate == 128, "Rate must be 128 -bits");
 
-      ascon_utils::get_ith_msg_blk(cipher, i, chunk);
+      ascon_utils::get_ith_msg_blk(cipher, i, _chunk);
 
-      const auto _chunk0 = chunk.template subspan<0, 8>();
-      const auto _chunk1 = chunk.template subspan<8, 8>();
+      const auto _chunk0 = _chunk.template subspan<0, 8>();
+      const auto _chunk1 = _chunk.template subspan<8, 8>();
 
       const uint64_t cword0 = ascon_utils::from_be_bytes<uint64_t>(_chunk0);
       const uint64_t cword1 = ascon_utils::from_be_bytes<uint64_t>(_chunk1);
