@@ -87,14 +87,8 @@ public:
   constexpr ascon_perm_t() = default;
   constexpr ascon_perm_t(std::array<uint64_t, 5>& words) { state = words; }
   constexpr ascon_perm_t(std::array<uint64_t, 5>&& words) { state = words; }
-  constexpr ascon_perm_t(const std::array<uint64_t, 5>& words)
-  {
-    state = words;
-  }
-  constexpr ascon_perm_t(const std::array<uint64_t, 5>&& words)
-  {
-    state = words;
-  }
+  constexpr ascon_perm_t(const std::array<uint64_t, 5>& words) { state = words; }
+  constexpr ascon_perm_t(const std::array<uint64_t, 5>&& words) { state = words; }
 
   // Applies Ascon permutation round for R -many times | R <= 12; taken from
   // section 2.6 of Ascon specification
