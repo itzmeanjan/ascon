@@ -5,7 +5,7 @@
 // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf for following test
 // cases.
 
-TEST(AsconCipherSuite, AsconPermWithAsconHashIV)
+TEST(AsconPermutation, AsconPermWithAsconHashIV)
 {
   ascon_perm::ascon_perm_t perm({ 0x00400c0000000100ul, 0ul, 0ul, 0ul, 0ul });
   perm.permute<12>();
@@ -19,7 +19,7 @@ TEST(AsconCipherSuite, AsconPermWithAsconHashIV)
               .reveal());
 }
 
-TEST(AsconCipherSuite, AsconPermWithAsconHashAIV)
+TEST(AsconPermutation, AsconPermWithAsconHashAIV)
 {
   ascon_perm::ascon_perm_t perm({ 0x00400c0400000100ul, 0ul, 0ul, 0ul, 0ul });
   perm.permute<12>();
@@ -33,7 +33,7 @@ TEST(AsconCipherSuite, AsconPermWithAsconHashAIV)
               .reveal());
 }
 
-TEST(AsconCipherSuite, AsconPermWithAsconXofIV)
+TEST(AsconPermutation, AsconPermWithAsconXofIV)
 {
   ascon_perm::ascon_perm_t perm({ 0x00400c0000000000ul, 0ul, 0ul, 0ul, 0ul });
   perm.permute<12>();
@@ -47,7 +47,7 @@ TEST(AsconCipherSuite, AsconPermWithAsconXofIV)
               .reveal());
 }
 
-TEST(AsconCipherSuite, AsconPermWithAsconXofAIV)
+TEST(AsconPermutation, AsconPermWithAsconXofAIV)
 {
   ascon_perm::ascon_perm_t perm({ 0x00400c0400000000ul, 0ul, 0ul, 0ul, 0ul });
   perm.permute<12>();
