@@ -45,7 +45,7 @@ encrypt(const uint8_t* const __restrict key,   // 16 -bytes key
         uint8_t* const __restrict tag          // 16 -bytes authentication tag
 )
 {
-  uint64_t state[5]{};
+  ascon_perm::ascon_perm_t state;
 
   ascon_aead::initialize<ROUNDS_A, IV, KEY_LEN * 8>(state, key, nonce);
   ascon_aead::process_associated_data<ROUNDS_B, RATE>(state, data, dlen);
@@ -76,7 +76,7 @@ decrypt(const uint8_t* const __restrict key,    // 16 -bytes key
         const uint8_t* const __restrict tag     // 16 -bytes authentication tag
 )
 {
-  uint64_t state[5]{};
+  ascon_perm::ascon_perm_t state;
   uint8_t _tag[TAG_LEN];
 
   ascon_aead::initialize<ROUNDS_A, IV, KEY_LEN * 8>(state, key, nonce);

@@ -1,20 +1,17 @@
 #pragma once
-#include "permutation.hpp"
+#include "ascon_perm.hpp"
 #include "utils.hpp"
 
 // Common functions required for implementing Ascon-{128, 128a, 80pq}
 // authenticated encryption & verified decryption
 namespace ascon_aead {
 
-// = (1 << 64) - 1; maximum number that can be represented using 64 -bits
-constexpr uint64_t MAX_ULONG = -1ul;
-
 // Initialize cipher state for Ascon{128, 128a, 80pq} authenticated encryption/
 // decryption; see section 2.4.1 of Ascon specification
 // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 template<const size_t rounds_a, const uint64_t IV, const size_t klen>
 static inline void
-initialize(uint64_t* const __restrict state,     // uninitialized hash state
+initialize(ascon_perm::ascon_perm_t& state,      // uninitialized hash state
            const uint8_t* const __restrict key,  // {128, 160} -bit secret key
            const uint8_t* const __restrict nonce // 128 -bit nonce
 )
@@ -30,7 +27,7 @@ initialize(uint64_t* const __restrict state,     // uninitialized hash state
     state[3] = ascon_utils::from_be_bytes<uint64_t>(nonce);
     state[4] = ascon_utils::from_be_bytes<uint64_t>(nonce + 8);
 
-    ascon_permutation::permute<rounds_a>(state);
+    state.permute<rounds_a>();
 
     state[3] ^= key0;
     state[4] ^= key1;
@@ -48,7 +45,7 @@ initialize(uint64_t* const __restrict state,     // uninitialized hash state
     state[3] = ascon_utils::from_be_bytes<uint64_t>(nonce);
     state[4] = ascon_utils::from_be_bytes<uint64_t>(nonce + 8);
 
-    ascon_permutation::permute<12>(state);
+    state.permute<ascon_perm::MAX_ROUNDS>();
 
     state[2] ^= (key0 >> 32);
     state[3] ^= (key0 << 32) | (key1 >> 32);
@@ -61,7 +58,7 @@ initialize(uint64_t* const __restrict state,     // uninitialized hash state
 // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 template<const size_t rounds_b, const size_t rate>
 static inline void
-process_associated_data(uint64_t* const __restrict state,
+process_associated_data(ascon_perm::ascon_perm_t& state,
                         const uint8_t* const __restrict data, // associated data
                         const size_t dlen // in terms of bytes, can be >= 0
                         )
@@ -91,7 +88,7 @@ process_associated_data(uint64_t* const __restrict state,
         state[1] ^= word1;
       }
 
-      ascon_permutation::permute<rounds_b>(state);
+      state.permute<rounds_b>();
     }
 
     // Process last message block, which is padded.
@@ -118,7 +115,7 @@ process_associated_data(uint64_t* const __restrict state,
       state[1] ^= word1;
     }
 
-    ascon_permutation::permute<rounds_b>(state);
+    state.permute<rounds_b>();
   }
 
   // final 1 -bit domain seperator constant mixing is mandatory
@@ -130,7 +127,7 @@ process_associated_data(uint64_t* const __restrict state,
 // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 template<const size_t rounds_b, const size_t rate>
 static inline void
-process_plaintext(uint64_t* const __restrict state,
+process_plaintext(ascon_perm::ascon_perm_t& state,
                   const uint8_t* const __restrict text,
                   const size_t ctlen, // in terms of bytes, can be >= 0
                   uint8_t* const __restrict cipher // has length same as `text`
@@ -166,7 +163,7 @@ process_plaintext(uint64_t* const __restrict state,
       ascon_utils::to_be_bytes(state[1], cipher + off + 8);
     }
 
-    ascon_permutation::permute<rounds_b>(state);
+    state.permute<rounds_b>();
     off += rbytes;
   }
 
@@ -209,7 +206,7 @@ process_plaintext(uint64_t* const __restrict state,
 // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 template<const size_t rounds_b, const size_t rate>
 static inline void
-process_ciphertext(uint64_t* const __restrict state,
+process_ciphertext(ascon_perm::ascon_perm_t& state,
                    const uint8_t* const __restrict cipher,
                    const size_t ctlen, // in terms of bytes, can be >= 0
                    uint8_t* const __restrict text // has length same as `cipher`
@@ -249,7 +246,7 @@ process_ciphertext(uint64_t* const __restrict state,
       state[1] = cword1;
     }
 
-    ascon_permutation::permute<rounds_b>(state);
+    state.permute<rounds_b>();
     off += rbytes;
   }
 
@@ -304,7 +301,7 @@ process_ciphertext(uint64_t* const __restrict state,
 // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 template<const size_t rounds_a, const size_t rate, const size_t klen>
 static inline void
-finalize(uint64_t* const __restrict state,
+finalize(ascon_perm::ascon_perm_t& state,
          const uint8_t* const __restrict key, // {128, 160} -bit secret key
          uint8_t* const __restrict tag        // 128 -bit tag
          )
@@ -326,7 +323,7 @@ finalize(uint64_t* const __restrict state,
       state[3] ^= key1;
     }
 
-    ascon_permutation::permute<rounds_a>(state);
+    state.permute<rounds_a>();
 
     ascon_utils::to_be_bytes(state[3] ^ key0, tag);
     ascon_utils::to_be_bytes(state[4] ^ key1, tag + 8);
@@ -341,7 +338,7 @@ finalize(uint64_t* const __restrict state,
     state[2] ^= key1;
     state[3] ^= static_cast<uint64_t>(key2) << 32;
 
-    ascon_permutation::permute<rounds_a>(state);
+    state.permute<rounds_a>();
 
     const auto t0 = (key0 << 32) | (key1 >> 32);
     const auto t1 = (key1 << 32) | static_cast<uint64_t>(key2);
