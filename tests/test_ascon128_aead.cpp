@@ -1,20 +1,16 @@
-#pragma once
-#include "ascon128.hpp"
-#include <cassert>
+#include "aead/ascon128.hpp"
 #include <fstream>
-
-// Test Ascon Light Weight Cryptography Implementation
-namespace ascon_test {
-
-using namespace std::literals;
+#include <gtest/gtest.h>
 
 // Test functional correctness of Ascon-128 authenticated encryption and
-// verified decryption implementation for different input sizes.
+// verified decryption implementation for different combination of input sizes.
 inline void
-ascon128_aead(const size_t dlen, // bytes; >= 0
-              const size_t ctlen // bytes; >= 0
+test_ascon128_aead(const size_t dlen, // bytes; >= 0
+                   const size_t ctlen // bytes; >= 0
 )
 {
+  using namespace std::literals;
+
   std::vector<uint8_t> key(ascon128_aead::KEY_LEN);
   std::vector<uint8_t> nonce(ascon128_aead::NONCE_LEN);
   std::vector<uint8_t> tag(ascon128_aead::TAG_LEN);
@@ -45,15 +41,26 @@ ascon128_aead(const size_t dlen, // bytes; >= 0
                                      dec.data(),
                                      tag.data());
 
-  assert(flag);
-  assert(std::ranges::equal(text, dec));
+  ASSERT_TRUE(flag);
+  ASSERT_EQ(text, dec);
+}
+
+TEST(AsconAEAD, CorrectnessTestAscon128AEAD)
+{
+  for (size_t dlen = 0; dlen <= 32; dlen++) {
+    for (size_t ctlen = 0; ctlen <= 32; ctlen++) {
+      test_ascon128_aead(dlen, ctlen);
+    }
+  }
 }
 
 // Ensure that Ascon-128 AEAD implementation conforms to the specification,
 // by testing using Known Answer Tests.
 inline void
-ascon128_aead_kat()
+kat_ascon128_aead()
 {
+  using namespace std::literals;
+
   const std::string kat_file = "./kats/ascon128_aead.kat";
   std::fstream file(kat_file);
 
@@ -112,11 +119,12 @@ ascon128_aead_kat()
                                          ptxt.data(),
                                          tag.data());
 
-      assert(flag);
-      assert(ascon_utils::ct_eq_byte_array(ctxt.data(), ct.data(), pt.size()));
+      ASSERT_TRUE(flag);
+      ASSERT_TRUE(
+        ascon_utils::ct_eq_byte_array(ctxt.data(), ct.data(), pt.size()));
 
       auto tag_ = ct.data() + pt.size();
-      assert(ascon_utils::ct_eq_byte_array(tag.data(), tag_, tag.size()));
+      ASSERT_TRUE(ascon_utils::ct_eq_byte_array(tag.data(), tag_, tag.size()));
 
       std::string empty_line;
       std::getline(file, empty_line);
@@ -128,4 +136,7 @@ ascon128_aead_kat()
   file.close();
 }
 
+TEST(AsconAEAD, KnownAnswerTestsAscon128AEAD)
+{
+  kat_ascon128_aead();
 }
