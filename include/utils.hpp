@@ -92,12 +92,22 @@ get_ith_msg_blk(
 )
 {
   // This routine makes an assumption that function caller invokes it with such
-  // `i` value that off <= mlen.
+  // `i` value that off <= msg.size()
   const size_t off = i * len;
   const size_t readable = std::min(len, msg.size() - off);
 
   std::memcpy(msg_blk.data(), msg.data() + off, readable);
   return readable;
+}
+
+// Padding a message block of `len` -bytes, following 10* rule s.t. first `used` -many
+// bytes are filled and they can't be touched.
+template<const size_t len>
+inline void
+pad_msg_blk(std::span<uint8_t, len> msg_blk, const size_t used)
+{
+  std::memset(msg_blk.data() + used, 0x00, len - used);
+  std::memset(msg_blk.data() + used, 0x80, std::min(len - used, 1ul));
 }
 
 // Converts byte array into hex string; see https://stackoverflow.com/a/14051107
