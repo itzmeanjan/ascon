@@ -43,7 +43,7 @@ bswap(const T a)
 }
 
 // Given big-endian byte array of length 4/ 8, this function interprets it as
-// 32/ 64 -bit unsigned integer
+// 32/ 64 -bit unsigned integer.
 template<typename T>
 inline T
 from_be_bytes(std::span<const uint8_t> bytes)
@@ -60,7 +60,7 @@ from_be_bytes(std::span<const uint8_t> bytes)
 }
 
 // Given a 32/ 64 -bit unsigned integer, this function interprets it as a
-// big-endian byte array of length 4/ 8
+// big-endian byte array of length 4/ 8.
 template<typename T>
 inline void
 to_be_bytes(const T num, std::span<uint8_t> bytes)
@@ -75,14 +75,13 @@ to_be_bytes(const T num, std::span<uint8_t> bytes)
 }
 
 // Given a N (>=0) -bytes message, this routine can be used for extracting at
-// max `msg_blk_len` -bytes chunk, which is (zero based indexing) indexed by i
-// s.t. i ∈ [0, (mlen + msg_blk_len - 1)/ msg_blk_len). Note, it's possible that
-// very last chunk of message may not have `msg_blk_len` -bytes to fill up the
-// full chunk. This function returns how many bytes were actually read for this
-// chunk, which must ∈ [0, msg_blk_len]. And it doesn't touch remaining bytes of
-// chunk, if they can't be filled up. It's caller's responsibility to take
-// proper care of them, before using the message chunk, as it may be some
-// garbage bytes from previous iteration.
+// max `len` -bytes chunk, which is (zero based indexing) indexed by `i` s.t. i ∈ [0,
+// (mlen + len - 1)/ len). Note, it's possible that very last chunk of message may not
+// have `len` -bytes to fill up the full chunk. This function returns how many bytes
+// were actually read for this chunk, which must ∈ [0, len]. And it doesn't touch
+// remaining bytes of chunk, if they can't be filled up. It's caller's responsibility to
+// take proper care of them, before using the message chunk, as it may be some garbage
+// bytes from previous iteration.
 template<const size_t len>
 inline size_t
 get_ith_msg_blk(
@@ -172,13 +171,12 @@ ct_eq_byte_array(std::span<const uint8_t, len> byte_arr_a,
 // pointed to by `byte_arr` ) to some provided value ( `val` ), in
 // constant-time, only if `cond` holds truth value ( = 0xffffffff ). Otherwise,
 // it shouldn't mutate bytes.
-template<const size_t len>
 inline constexpr void
 ct_conditional_memset(const uint32_t cond,
-                      std::span<uint8_t, len> byte_arr,
+                      std::span<uint8_t> byte_arr,
                       const uint8_t val)
 {
-  for (size_t i = 0; i < len; i++) {
+  for (size_t i = 0; i < byte_arr.size(); i++) {
     byte_arr[i] = subtle::ct_select(cond, val, byte_arr[i]);
   }
 }
