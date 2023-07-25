@@ -1,22 +1,18 @@
-#pragma once
-#include "ascon128a.hpp"
+#include "aead/ascon128.hpp"
 #include <benchmark/benchmark.h>
 #include <cassert>
 #include <vector>
 
-// Benchmark Ascon Light Weight Cryptography Implementation
-namespace bench_ascon {
-
-// Benchmark Ascon-128a authenticated encryption with variable length input.
-inline void
-ascon128a_aead_encrypt(benchmark::State& state)
+// Benchmark Ascon-128 authenticated encryption with variable length input.
+void
+ascon128_aead_encrypt(benchmark::State& state)
 {
   const size_t ct_len = static_cast<size_t>(state.range(0));
   const size_t dt_len = static_cast<size_t>(state.range(1));
 
-  std::vector<uint8_t> key(ascon128a_aead::KEY_LEN);
-  std::vector<uint8_t> nonce(ascon128a_aead::NONCE_LEN);
-  std::vector<uint8_t> tag(ascon128a_aead::TAG_LEN);
+  std::vector<uint8_t> key(ascon128_aead::KEY_LEN);
+  std::vector<uint8_t> nonce(ascon128_aead::NONCE_LEN);
+  std::vector<uint8_t> tag(ascon128_aead::TAG_LEN);
   std::vector<uint8_t> data(dt_len);
   std::vector<uint8_t> text(ct_len);
   std::vector<uint8_t> enc(ct_len);
@@ -27,14 +23,14 @@ ascon128a_aead_encrypt(benchmark::State& state)
   ascon_utils::random_data(text.data(), text.size());
 
   for (auto _ : state) {
-    ascon128a_aead::encrypt(key.data(),
-                            nonce.data(),
-                            data.data(),
-                            data.size(),
-                            text.data(),
-                            text.size(),
-                            enc.data(),
-                            tag.data());
+    ascon128_aead::encrypt(key.data(),
+                           nonce.data(),
+                           data.data(),
+                           data.size(),
+                           text.data(),
+                           text.size(),
+                           enc.data(),
+                           tag.data());
 
     benchmark::DoNotOptimize(key);
     benchmark::DoNotOptimize(nonce);
@@ -58,16 +54,16 @@ ascon128a_aead_encrypt(benchmark::State& state)
 #endif
 }
 
-// Benchmark Ascon-128a verified decryption with variable length input.
+// Benchmark Ascon-128 verified decryption with variable length input.
 inline void
-ascon128a_aead_decrypt(benchmark::State& state)
+ascon128_aead_decrypt(benchmark::State& state)
 {
   const size_t ct_len = static_cast<size_t>(state.range(0));
   const size_t dt_len = static_cast<size_t>(state.range(1));
 
-  std::vector<uint8_t> key(ascon128a_aead::KEY_LEN);
-  std::vector<uint8_t> nonce(ascon128a_aead::NONCE_LEN);
-  std::vector<uint8_t> tag(ascon128a_aead::TAG_LEN);
+  std::vector<uint8_t> key(ascon128_aead::KEY_LEN);
+  std::vector<uint8_t> nonce(ascon128_aead::NONCE_LEN);
+  std::vector<uint8_t> tag(ascon128_aead::TAG_LEN);
   std::vector<uint8_t> data(dt_len);
   std::vector<uint8_t> text(ct_len);
   std::vector<uint8_t> enc(ct_len);
@@ -78,25 +74,25 @@ ascon128a_aead_decrypt(benchmark::State& state)
   ascon_utils::random_data(data.data(), data.size());
   ascon_utils::random_data(text.data(), text.size());
 
-  ascon128a_aead::encrypt(key.data(),
-                          nonce.data(),
-                          data.data(),
-                          data.size(),
-                          text.data(),
-                          text.size(),
-                          enc.data(),
-                          tag.data());
+  ascon128_aead::encrypt(key.data(),
+                         nonce.data(),
+                         data.data(),
+                         data.size(),
+                         text.data(),
+                         text.size(),
+                         enc.data(),
+                         tag.data());
 
   bool flag = true;
   for (auto _ : state) {
-    flag &= ascon128a_aead::decrypt(key.data(),
-                                    nonce.data(),
-                                    data.data(),
-                                    data.size(),
-                                    enc.data(),
-                                    enc.size(),
-                                    dec.data(),
-                                    tag.data());
+    flag &= ascon128_aead::decrypt(key.data(),
+                                   nonce.data(),
+                                   data.data(),
+                                   data.size(),
+                                   enc.data(),
+                                   enc.size(),
+                                   dec.data(),
+                                   tag.data());
 
     benchmark::DoNotOptimize(flag);
     benchmark::DoNotOptimize(key);
@@ -123,4 +119,14 @@ ascon128a_aead_decrypt(benchmark::State& state)
 #endif
 }
 
-}
+// Register for benchmarking Ascon-128 AEAD.
+BENCHMARK(ascon128_aead_encrypt)
+  ->ArgsProduct({
+    benchmark::CreateRange(1 << 6, 1 << 12, 2), // plain text
+    { 32 }                                      // associated data
+  });
+BENCHMARK(ascon128_aead_decrypt)
+  ->ArgsProduct({
+    benchmark::CreateRange(1 << 6, 1 << 12, 2), // cipher text
+    { 32 }                                      // associated data
+  });

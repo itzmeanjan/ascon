@@ -31,21 +31,27 @@ benchmarks/bench_ascon_perm.o: benchmarks/bench_ascon_perm.cpp include/*.hpp
 benchmarks/perf_ascon_perm.o: benchmarks/bench_ascon_perm.cpp include/*.hpp
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -DCYCLES_PER_BYTE -DINSTRUCTIONS_PER_CYCLE -c $< -o $@
 
-benchmarks/bench.out: benchmarks/bench_ascon_perm.o
+benchmarks/bench_ascon128_aead.o: benchmarks/bench_ascon128_aead.cpp include/*.hpp include/aead/*.hpp
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
+
+benchmarks/perf_ascon128_aead.o: benchmarks/bench_ascon128_aead.cpp include/*.hpp include/aead/*.hpp
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -DCYCLES_PER_BYTE -DINSTRUCTIONS_PER_CYCLE -c $< -o $@
+
+benchmarks/bench.out: benchmarks/bench_ascon_perm.o benchmarks/bench_ascon128_aead.o
 	# In case you haven't built google-benchmark with libPFM support.
 	# More @ https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7
 	$(CXX) $(OPT_FLAGS) $^ -lbenchmark -lbenchmark_main -lpthread -o $@
 
-benchmarks/perf.out: benchmarks/perf_ascon_perm.o
+benchmarks/perf.out: benchmarks/perf_ascon_perm.o benchmarks/perf_ascon128_aead.o
 	# In case you've built google-benchmark with libPFM support.
 	# More @ https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7
 	$(CXX) $(OPT_FLAGS) $^ -lbenchmark -lbenchmark_main -lpthread -lpfm -o $@
 
 bench: benchmarks/bench.out
-	./$< --benchmark_counters_tabular=true --benchmark_min_warmup_time=1
+	./$< --benchmark_counters_tabular=true --benchmark_min_warmup_time=1.
 
 perf: benchmarks/perf.out
-	./$< --benchmark_counters_tabular=true --benchmark_min_warmup_time=1 --benchmark_perf_counters=CYCLES,INSTRUCTIONS
+	./$< --benchmark_counters_tabular=true --benchmark_min_warmup_time=1. --benchmark_perf_counters=CYCLES,INSTRUCTIONS
 
 clean:
 	find . -name '*.out' -o -name '*.o' -o -name '*.gch' | xargs rm -rf
