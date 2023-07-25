@@ -16,22 +16,27 @@ tests/a.out: tests/test_ascon_perm.o
 test: tests/a.out
 	./$<
 
-benchmarks/bench.out: benchmarks/main.cpp include/*.hpp include/*/*.hpp
+benchmarks/bench_ascon_perm.o: benchmarks/bench_ascon_perm.cpp include/*.hpp
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
+
+benchmarks/perf_ascon_perm.o: benchmarks/bench_ascon_perm.cpp include/*.hpp
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -DCYCLES_PER_BYTE -DINSTRUCTIONS_PER_CYCLE -c $< -o $@
+
+benchmarks/bench.out: benchmarks/bench_ascon_perm.o
 	# In case you haven't built google-benchmark with libPFM support.
 	# More @ https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) $< -lbenchmark -lpthread -o $@
+	$(CXX) $(OPT_FLAGS) $^ -lbenchmark -lbenchmark_main -lpthread -o $@
 
-benchmark: benchmarks/bench.out
-	./$< --benchmark_counters_tabular=true
-
-benchmarks/perf.out: benchmarks/main.cpp include/*.hpp include/*/*.hpp
+benchmarks/perf.out: benchmarks/perf_ascon_perm.o
 	# In case you've built google-benchmark with libPFM support.
 	# More @ https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) \
-				-DCYCLES_PER_BYTE -DINSTRUCTIONS_PER_CYCLE $< -lbenchmark -lpthread -lpfm -o $@
+	$(CXX) $(OPT_FLAGS) $^ -lbenchmark -lbenchmark_main -lpthread -lpfm -o $@
+
+bench: benchmarks/bench.out
+	./$< --benchmark_counters_tabular=true --benchmark_min_warmup_time=1
 
 perf: benchmarks/perf.out
-	./$< --benchmark_counters_tabular=true --benchmark_perf_counters=CYCLES,INSTRUCTIONS
+	./$< --benchmark_counters_tabular=true --benchmark_min_warmup_time=1 --benchmark_perf_counters=CYCLES,INSTRUCTIONS
 
 clean:
 	find . -name '*.out' -o -name '*.o' -o -name '*.gch' | xargs rm -rf
