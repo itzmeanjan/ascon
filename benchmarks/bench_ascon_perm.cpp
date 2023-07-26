@@ -11,7 +11,7 @@ ascon_permutation(benchmark::State& state)
 {
   // Generate initial random permutation state.
   std::array<uint64_t, 5> data;
-  ascon_utils::random_data(data.data(), data.size());
+  ascon_utils::random_data<uint64_t>(data);
 
   ascon_perm::ascon_perm_t perm(data);
 
