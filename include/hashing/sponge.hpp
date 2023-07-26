@@ -8,6 +8,17 @@ namespace sponge {
 // Common bit width for RATE portion of sponge.
 constexpr size_t RATE_BITS = 64;
 
+// Compile-time compute initial 320 -bit Ascon permutation state, used for Ascon based
+// hashing schemes, following description in section 2.5.1 of Ascon v1.2 spec.
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf.
+constexpr ascon_perm::ascon_perm_t
+compute_init_state(const uint64_t iv)
+{
+  ascon_perm::ascon_perm_t state({ iv, 0, 0, 0, 0 });
+  state.permute<ascon_perm::MAX_ROUNDS>();
+  return state;
+}
+
 // Given `mlen` (>=0) -bytes message, this routine consumes it into RATE portion
 // of Ascon permutation state, s.t. `offset` ( second parameter ) denotes how
 // many bytes are already consumed into RATE portion of the state.
