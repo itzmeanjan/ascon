@@ -23,7 +23,7 @@ test_ascon_hash(const size_t mlen)
 
   // oneshot hashing
   {
-    ascon_hash::ascon_hash hasher;
+    ascon_hash::ascon_hash_t hasher;
 
     hasher.absorb(_msg);
     hasher.finalize();
@@ -32,7 +32,7 @@ test_ascon_hash(const size_t mlen)
 
   // incremental hashing
   {
-    ascon_hash::ascon_hash hasher;
+    ascon_hash::ascon_hash_t hasher;
 
     size_t off = 0;
     while (off < mlen) {
@@ -91,7 +91,7 @@ kat_ascon_hash()
       auto _msg = std::span(msg);
       auto _digest = std::span<uint8_t, ascon_hash::DIGEST_LEN>(digest);
 
-      ascon_hash::ascon_hash hasher;
+      ascon_hash::ascon_hash_t hasher;
       hasher.absorb(_msg);
       hasher.finalize();
       hasher.digest(_digest);

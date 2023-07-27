@@ -24,7 +24,7 @@ constexpr auto INIT_PERM_STATE = sponge::compute_init_state(IV);
 //
 // See section 2.5 of Ascon specification
 // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
-struct ascon_xofa
+struct ascon_xofa_t
 {
 private:
   ascon_perm::ascon_perm_t state = INIT_PERM_STATE;
@@ -34,7 +34,7 @@ private:
 
 public:
   // Constructor
-  constexpr inline ascon_xofa() = default;
+  constexpr inline ascon_xofa_t() = default;
 
   // Given N -bytes input message, this routine consumes those into Ascon
   // permutation state.
