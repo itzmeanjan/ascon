@@ -88,8 +88,10 @@ public:
   // interested in reusing the same object for absorbing new messages.
   inline void reset()
   {
-    std::memset(this, 0x00, sizeof(*this));
     this->state = INIT_PERM_STATE;
+    this->offset = 0;
+    this->absorbed = false;
+    this->squeezed = false;
   }
 };
 
