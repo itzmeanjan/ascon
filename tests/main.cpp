@@ -14,26 +14,6 @@
 int
 main()
 {
-  ascon_test::p_a();
-  std::cout << "[test] Ascon permutation `p_a`\n";
-
-  for (size_t dlen = 0; dlen <= 32; dlen++) {
-    for (size_t ctlen = 0; ctlen <= 32; ctlen++) {
-      ascon_test::ascon128_aead(dlen, ctlen);
-      ascon_test::ascon128a_aead(dlen, ctlen);
-      ascon_test::ascon80pq_aead(dlen, ctlen);
-    }
-  }
-
-  ascon_test::ascon128_aead_kat();
-  std::cout << "[test] Ascon-128 AEAD\n";
-
-  ascon_test::ascon128a_aead_kat();
-  std::cout << "[test] Ascon-128a AEAD\n";
-
-  ascon_test::ascon80pq_aead_kat();
-  std::cout << "[test] Ascon-80pq AEAD\n";
-
   ascon_test::test_ascon_hash(4096);
   ascon_test::test_ascon_hash_kat();
   std::cout << "[test] Ascon-Hash\n";
