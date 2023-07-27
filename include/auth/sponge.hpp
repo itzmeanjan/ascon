@@ -32,8 +32,8 @@ initialize(ascon_perm::ascon_perm_t& state, std::span<const uint8_t, klen / 8> k
     ;
 
   state[0] = iv;
-  state[1] = ascon_utils::from_be_bytes<uint64_t>(key);
-  state[2] = ascon_utils::from_be_bytes<uint64_t>(key + 8);
+  state[1] = ascon_utils::from_be_bytes<uint64_t>(key.template subspan<0, 8>());
+  state[2] = ascon_utils::from_be_bytes<uint64_t>(key.template subspan<8, 8>());
   state[3] = 0;
   state[4] = 0;
 
