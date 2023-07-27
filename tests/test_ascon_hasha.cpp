@@ -1,5 +1,5 @@
 #include "hashing/ascon_hasha.hpp"
-#include "test_aead_common.hpp"
+#include "test_common.hpp"
 #include <fstream>
 #include <gtest/gtest.h>
 #include <span>
