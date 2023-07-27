@@ -1,32 +1,32 @@
-#pragma once
-#include "ascon_hasha.hpp"
+#include "hashing/ascon_hasha.hpp"
 #include <benchmark/benchmark.h>
+#include <span>
 #include <vector>
-
-// Benchmark Ascon Light Weight Cryptography Implementation
-namespace bench_ascon {
 
 // Benchmark Ascon-HashA with variable length input.
 inline void
-ascon_hasha(benchmark::State& state)
+bench_ascon_hasha(benchmark::State& state)
 {
   const size_t mlen = static_cast<size_t>(state.range(0));
 
   std::vector<uint8_t> msg(mlen);
   std::vector<uint8_t> dig(ascon_hasha::DIGEST_LEN);
 
-  ascon_utils::random_data(msg.data(), msg.size());
+  auto _msg = std::span(msg);
+  auto _dig = std::span<uint8_t, ascon_hasha::DIGEST_LEN>(dig);
+
+  ascon_utils::random_data(_msg);
 
   for (auto _ : state) {
-    ascon_hasha::ascon_hasha hasher;
+    ascon_hasha::ascon_hasha_t hasher;
 
-    hasher.absorb(msg.data(), msg.size());
+    hasher.absorb(_msg);
     hasher.finalize();
-    hasher.digest(dig.data());
+    hasher.digest(_dig);
 
     benchmark::DoNotOptimize(hasher);
-    benchmark::DoNotOptimize(msg);
-    benchmark::DoNotOptimize(dig);
+    benchmark::DoNotOptimize(_msg);
+    benchmark::DoNotOptimize(_dig);
     benchmark::ClobberMemory();
   }
 
@@ -43,4 +43,8 @@ ascon_hasha(benchmark::State& state)
 #endif
 }
 
-}
+// Register for benchmarking Ascon-HashA.
+BENCHMARK(bench_ascon_hasha)
+  ->RangeMultiplier(2)
+  ->Range(1 << 6, 1 << 12)
+  ->Name("ascon_hasha");
