@@ -95,7 +95,7 @@ get_ith_msg_blk(
   const size_t off = i * len;
   const size_t readable = std::min(len, msg.size() - off);
 
-  std::memcpy(msg_blk.data(), msg.data() + off, readable);
+  std::memcpy(msg_blk.data(), msg.subspan(off).data(), readable);
   return readable;
 }
 
@@ -105,8 +105,8 @@ template<const size_t len>
 inline void
 pad_msg_blk(std::span<uint8_t, len> msg_blk, const size_t used)
 {
-  std::memset(msg_blk.data() + used, 0x00, len - used);
-  std::memset(msg_blk.data() + used, 0x80, std::min(len - used, 1ul));
+  std::memset(msg_blk.subspan(used).data(), 0x00, len - used);
+  std::memset(msg_blk.subspan(used).data(), 0x80, std::min(len - used, 1ul));
 }
 
 // Converts byte array into hex string; see https://stackoverflow.com/a/14051107
