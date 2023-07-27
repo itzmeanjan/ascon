@@ -1,4 +1,3 @@
-#pragma once
 #include "aead/ascon80pq.hpp"
 #include <benchmark/benchmark.h>
 #include <cassert>
