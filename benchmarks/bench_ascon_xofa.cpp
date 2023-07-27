@@ -1,14 +1,11 @@
-#pragma once
-#include "ascon_xofa.hpp"
+#include "hashing/ascon_xofa.hpp"
 #include <benchmark/benchmark.h>
+#include <span>
 #include <vector>
-
-// Benchmark Ascon Light Weight Cryptography Implementation
-namespace bench_ascon {
 
 // Benchmark Ascon-XofA with variable length input and squeezed output.
 inline void
-ascon_xofa(benchmark::State& state)
+bench_ascon_xofa(benchmark::State& state)
 {
   const size_t mlen = static_cast<size_t>(state.range(0));
   const size_t dlen = static_cast<size_t>(state.range(1));
@@ -16,18 +13,21 @@ ascon_xofa(benchmark::State& state)
   std::vector<uint8_t> msg(mlen);
   std::vector<uint8_t> dig(dlen);
 
-  ascon_utils::random_data(msg.data(), msg.size());
+  auto _msg = std::span(msg);
+  auto _dig = std::span(dig);
+
+  ascon_utils::random_data(_msg);
 
   for (auto _ : state) {
-    ascon_xofa::ascon_xofa hasher;
+    ascon_xofa::ascon_xofa_t hasher;
 
-    hasher.absorb(msg.data(), msg.size());
+    hasher.absorb(_msg);
     hasher.finalize();
-    hasher.read(dig.data(), dig.size());
+    hasher.squeeze(_dig);
 
     benchmark::DoNotOptimize(hasher);
-    benchmark::DoNotOptimize(msg);
-    benchmark::DoNotOptimize(dig);
+    benchmark::DoNotOptimize(_msg);
+    benchmark::DoNotOptimize(_dig);
     benchmark::ClobberMemory();
   }
 
@@ -44,4 +44,10 @@ ascon_xofa(benchmark::State& state)
 #endif
 }
 
-}
+// Register for benchmarking Ascon-XofA.
+BENCHMARK(bench_ascon_xofa)
+  ->ArgsProduct({
+    benchmark::CreateRange(1 << 6, 1 << 12, 2), // input, to be absorbed
+    { 32, 64 }                                  // output, to be squeezed
+  })
+  ->Name("ascon_xofa");
