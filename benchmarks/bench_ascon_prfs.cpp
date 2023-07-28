@@ -1,10 +1,5 @@
-#pragma once
-#include "ascon_prfs.hpp"
+#include "auth/ascon_prfs.hpp"
 #include <benchmark/benchmark.h>
-#include <vector>
-
-// Benchmark Ascon Light Weight Cryptography Implementation
-namespace bench_ascon {
 
 // Benchmark Ascon-PRFShort based authentication scheme implementation for short
 // variable length input message.
@@ -17,16 +12,20 @@ ascon_prfs_authenticate(benchmark::State& state)
   std::vector<uint8_t> msg(mlen);
   std::vector<uint8_t> tag(ascon_prfs::MAX_TAG_LEN);
 
-  ascon_utils::random_data(key.data(), key.size());
-  ascon_utils::random_data(msg.data(), msg.size());
+  auto _key = std::span<uint8_t, ascon_prfs::KEY_LEN>(key);
+  auto _msg = std::span<uint8_t>(msg);
+  auto _tag = std::span<uint8_t, ascon_prfs::MAX_TAG_LEN>(tag);
+
+  ascon_utils::random_data<uint8_t>(_key);
+  ascon_utils::random_data(_msg);
 
   for (auto _ : state) {
     using namespace ascon_prfs;
-    prfs_authenticate(key.data(), msg.data(), msg.size(), tag.data());
+    prfs_authenticate(_key, _msg, _tag);
 
-    benchmark::DoNotOptimize(key);
-    benchmark::DoNotOptimize(msg);
-    benchmark::DoNotOptimize(tag);
+    benchmark::DoNotOptimize(_key);
+    benchmark::DoNotOptimize(_msg);
+    benchmark::DoNotOptimize(_tag);
     benchmark::ClobberMemory();
   }
 
@@ -54,25 +53,29 @@ ascon_prfs_verify(benchmark::State& state)
   std::vector<uint8_t> msg(mlen);
   std::vector<uint8_t> tag(ascon_prfs::MAX_TAG_LEN);
 
-  ascon_utils::random_data(key.data(), key.size());
-  ascon_utils::random_data(msg.data(), msg.size());
+  auto _key = std::span<uint8_t, ascon_prfs::KEY_LEN>(key);
+  auto _msg = std::span<uint8_t>(msg);
+  auto _tag = std::span<uint8_t, ascon_prfs::MAX_TAG_LEN>(tag);
+
+  ascon_utils::random_data<uint8_t>(_key);
+  ascon_utils::random_data(_msg);
 
   // Authentication step.
   {
     using namespace ascon_prfs;
-    prfs_authenticate(key.data(), msg.data(), msg.size(), tag.data());
+    prfs_authenticate(_key, _msg, _tag);
   }
 
   bool flg = true;
   for (auto _ : state) {
     // Verification step.
     using namespace ascon_prfs;
-    flg &= prfs_verify(key.data(), msg.data(), msg.size(), tag.data());
+    flg &= prfs_verify(_key, _msg, _tag);
 
     benchmark::DoNotOptimize(flg);
-    benchmark::DoNotOptimize(key);
-    benchmark::DoNotOptimize(msg);
-    benchmark::DoNotOptimize(tag);
+    benchmark::DoNotOptimize(_key);
+    benchmark::DoNotOptimize(_msg);
+    benchmark::DoNotOptimize(_tag);
     benchmark::ClobberMemory();
   }
 
@@ -91,4 +94,12 @@ ascon_prfs_verify(benchmark::State& state)
 #endif
 }
 
-}
+// Register for benchmarking Ascon-PRFShort.
+BENCHMARK(ascon_prfs_authenticate)
+  ->RangeMultiplier(2)
+  ->Range(1, ascon_prfs::MAX_MSG_LEN) // input, to be authenticated
+  ;
+BENCHMARK(ascon_prfs_verify)
+  ->RangeMultiplier(2)
+  ->Range(1, ascon_prfs::MAX_MSG_LEN) // input, to be authenticated
+  ;
