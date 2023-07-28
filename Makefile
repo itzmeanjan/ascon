@@ -20,21 +20,25 @@ tests/test_ascon128a_aead.o: tests/test_ascon128a_aead.cpp include/*.hpp include
 tests/test_ascon80pq_aead.o: tests/test_ascon80pq_aead.cpp include/*.hpp include/aead/*.hpp
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
 
-tests/test_ascon_hash.o: tests/test_ascon_hash.cpp include/*.hpp include/aead/*.hpp
+tests/test_ascon_hash.o: tests/test_ascon_hash.cpp include/*.hpp include/hashing/*.hpp
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
 
-tests/test_ascon_hasha.o: tests/test_ascon_hasha.cpp include/*.hpp include/aead/*.hpp
+tests/test_ascon_hasha.o: tests/test_ascon_hasha.cpp include/*.hpp include/hashing/*.hpp
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
 
-tests/test_ascon_xof.o: tests/test_ascon_xof.cpp include/*.hpp include/aead/*.hpp
+tests/test_ascon_xof.o: tests/test_ascon_xof.cpp include/*.hpp include/hashing/*.hpp
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
 
-tests/test_ascon_xofa.o: tests/test_ascon_xofa.cpp include/*.hpp include/aead/*.hpp
+tests/test_ascon_xofa.o: tests/test_ascon_xofa.cpp include/*.hpp include/hashing/*.hpp
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
+
+tests/test_ascon_prf.o: tests/test_ascon_prf.cpp include/*.hpp include/auth/*.hpp
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
 
 tests/a.out: tests/test_ascon_perm.o \
 				tests/test_ascon128_aead.o tests/test_ascon128a_aead.o tests/test_ascon80pq_aead.o \
-					tests/test_ascon_hash.o tests/test_ascon_hasha.o tests/test_ascon_xof.o tests/test_ascon_xofa.o
+					tests/test_ascon_hash.o tests/test_ascon_hasha.o tests/test_ascon_xof.o tests/test_ascon_xofa.o \
+						tests/test_ascon_prf.o
 	$(CXX) $(OPT_FLAGS) $^ -lgtest -lgtest_main -o $@
 
 test: tests/a.out
