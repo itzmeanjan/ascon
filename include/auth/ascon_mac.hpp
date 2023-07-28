@@ -1,6 +1,6 @@
 #pragma once
-#include "common.hpp"
-#include "utils.hpp"
+#include "ascon_perm.hpp"
+#include "sponge.hpp"
 
 // Ascon-MAC ( message authentication code )
 namespace ascon_mac {
@@ -24,21 +24,20 @@ constexpr size_t TAG_LEN = 16;
 //
 // Following section 2.5 and algorithm 2 of spec.
 // https://eprint.iacr.org/2021/1574.pdf.
-struct ascon_mac
+struct ascon_mac_t
 {
 private:
-  uint64_t state[5]{};
+  ascon_perm::ascon_perm_t state;
   size_t offset = 0;
   alignas(8) bool absorbed = false;
 
 public:
   // Initialize 320 -bit Ascon permutation state, with 16 -bytes secret key, so
   // that we can start authenticating arbitrary many message bytes.
-  inline constexpr ascon_mac(const uint8_t* const key)
+  inline constexpr ascon_mac_t(std::span<const uint8_t, KEY_LEN> key)
   {
-    ascon_auth::
-      initialize<ROUNDS_A, IN_RATE, OUT_RATE, KEY_LEN * 8, TAG_LEN * 8>(state,
-                                                                        key);
+    ascon_auth::initialize<ROUNDS_A, IN_RATE, OUT_RATE, KEY_LEN * 8, TAG_LEN * 8>(state,
+                                                                                  key);
 
     offset = 0;
     absorbed = false;
@@ -48,10 +47,10 @@ public:
   // state, for authenticating it. You may invoke this routine any number of
   // times, each time absorbing any number of message bytes, for authentication
   // purpose, until state is finalized, producing 16 -bytes tag/ mac.
-  inline void authenticate(const uint8_t* const msg, const size_t mlen)
+  inline void authenticate(std::span<const uint8_t> msg)
   {
     if (!absorbed) {
-      ascon_auth::absorb<ROUNDS_A, IN_RATE>(state, &offset, msg, mlen);
+      ascon_auth::absorb<ROUNDS_A, IN_RATE>(state, offset, msg);
     }
   }
 
@@ -59,30 +58,31 @@ public:
   // permutation state, for authentication purpose, this routine can be used for
   // finalizing the state, so that we can squeeze 16 -bytes authentication tag/
   // message authentication code, from it.
-  inline void finalize(uint8_t* const tag)
+  inline void finalize(std::span<uint8_t, TAG_LEN> tag)
   {
     if (!absorbed) {
-      ascon_auth::finalize<ROUNDS_A, IN_RATE>(state, &offset);
+      ascon_auth::finalize<ROUNDS_A, IN_RATE>(state, offset);
 
       absorbed = true;
       size_t readable = OUT_RATE / 8;
 
-      ascon_auth::squeeze<ROUNDS_A, OUT_RATE>(state, &readable, tag, TAG_LEN);
+      ascon_auth::squeeze<ROUNDS_A, OUT_RATE>(state, readable, tag);
     }
   }
 
-  // When verifying if received ( say over the wire ) authentication tag
-  // matches the locally computed one, one invokes this routine, for comparing
-  // them in constant-time fashion, returning boolean truth value, denoting
-  // success or false value, denoting failure, in tag verification.
+  // For verifying the received ( say over the wire ) authentication tag, one compares
+  // it with the locally computed tag, in constant-time. This routine returns boolean
+  // truth value, denoting success or false value, denoting failure, during tag
+  // verification.
   //
-  // The Ascon-MAC instance used for verifying tag, must have locally computed
+  // Note, the Ascon-MAC instance used for verifying tag, must have locally computed
   // tag, by invoking authenticate->finalize routines, as required.
-  inline bool verify(const uint8_t* const __restrict transmitted_tag,
-                     const uint8_t* const __restrict finalized_tag)
+  inline bool verify(std::span<const uint8_t, TAG_LEN> transmitted_tag, // received
+                     std::span<const uint8_t, TAG_LEN> finalized_tag    // computed
+  )
   {
     bool fl = false;
-    fl = ascon_utils::ct_eq_byte_array(transmitted_tag, finalized_tag, TAG_LEN);
+    fl = ascon_utils::ct_eq_byte_array(transmitted_tag, finalized_tag);
     return fl & absorbed;
   }
 };
