@@ -66,8 +66,10 @@ absorb(ascon_perm::ascon_perm_t& state,
   size_t moff = 0;
 
   for (size_t i = 0; i < blk_cnt; i++) {
+    const size_t readable = rbytes - offset;
+
     std::memset(_chunk.data(), 0x00, offset);
-    std::memcpy(_chunk.subspan(offset), msg.subspan(moff), rbytes - offset);
+    std::memcpy(_chunk.subspan(offset).data(), msg.subspan(moff).data(), readable);
 
     auto _chunk0 = _chunk.template subspan<0, 8>();
     auto _chunk1 = _chunk.template subspan<8, 8>();
@@ -93,7 +95,7 @@ absorb(ascon_perm::ascon_perm_t& state,
   const size_t rm_bytes = mlen - moff;
 
   std::memset(_chunk.data(), 0x00, rbytes);
-  std::memcpy(_chunk.subspan(offset), msg.subspan(moff), rm_bytes);
+  std::memcpy(_chunk.subspan(offset).data(), msg.subspan(moff).data(), rm_bytes);
 
   auto _chunk0 = _chunk.template subspan<0, 8>();
   auto _chunk1 = _chunk.template subspan<8, 8>();
@@ -133,7 +135,7 @@ finalize(ascon_perm::ascon_perm_t& state,
   auto _chunk = std::span(chunk);
 
   std::memset(_chunk.data(), 0x00, rbytes);
-  std::memset(_chunk.subspan(offset), 0x80, 1);
+  std::memset(_chunk.subspan(offset).data(), 0x80, 1);
 
   auto _chunk0 = _chunk.template subspan<0, 8>();
   auto _chunk1 = _chunk.template subspan<8, 8>();
@@ -179,7 +181,7 @@ squeeze(ascon_perm::ascon_perm_t& state,
     ascon_utils::to_be_bytes(state[0], _chunk.template subspan<0, 8>());
     ascon_utils::to_be_bytes(state[1], _chunk.template subspan<8, 8>());
 
-    std::memcpy(out.subspan(ooff), _chunk.subspan(soff), elen);
+    std::memcpy(out.subspan(ooff).data(), _chunk.subspan(soff).data(), elen);
 
     readable -= elen;
     ooff += elen;
