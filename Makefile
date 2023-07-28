@@ -104,10 +104,16 @@ benchmarks/bench_ascon_prf.o: benchmarks/bench_ascon_prf.cpp include/*.hpp inclu
 benchmarks/perf_ascon_prf.o: benchmarks/bench_ascon_prf.cpp include/*.hpp include/auth/*.hpp
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) $(PERF_DEFS) -c $< -o $@
 
+benchmarks/bench_ascon_mac.o: benchmarks/bench_ascon_mac.cpp include/*.hpp include/auth/*.hpp
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
+
+benchmarks/perf_ascon_mac.o: benchmarks/bench_ascon_mac.cpp include/*.hpp include/auth/*.hpp
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) $(PERF_DEFS) -c $< -o $@
+
 benchmarks/bench.out: benchmarks/bench_ascon_perm.o \
 						benchmarks/bench_ascon128_aead.o benchmarks/bench_ascon128a_aead.o benchmarks/bench_ascon80pq_aead.o \
 							benchmarks/bench_ascon_hash.o benchmarks/bench_ascon_hasha.o benchmarks/bench_ascon_xof.o benchmarks/bench_ascon_xofa.o \
-								benchmarks/bench_ascon_prf.o
+								benchmarks/bench_ascon_prf.o benchmarks/bench_ascon_mac.o
 	# In case you haven't built google-benchmark with libPFM support.
 	# More @ https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7
 	$(CXX) $(OPT_FLAGS) $^ -lbenchmark -lbenchmark_main -lpthread -o $@
@@ -115,7 +121,7 @@ benchmarks/bench.out: benchmarks/bench_ascon_perm.o \
 benchmarks/perf.out: benchmarks/perf_ascon_perm.o \
 						benchmarks/perf_ascon128_aead.o benchmarks/perf_ascon128a_aead.o benchmarks/perf_ascon80pq_aead.o \
 							benchmarks/perf_ascon_hash.o benchmarks/perf_ascon_hasha.o benchmarks/perf_ascon_xof.o benchmarks/perf_ascon_xofa.o \
-								benchmarks/perf_ascon_prf.o
+								benchmarks/perf_ascon_prf.o benchmarks/perf_ascon_mac.o
 	# In case you've built google-benchmark with libPFM support.
 	# More @ https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7
 	$(CXX) $(OPT_FLAGS) $^ -lbenchmark -lbenchmark_main -lpthread -lpfm -o $@
