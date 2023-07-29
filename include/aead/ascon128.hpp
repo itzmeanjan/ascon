@@ -22,10 +22,10 @@ constexpr uint64_t IV = 0x80400c0600000000ul;
 constexpr size_t KEY_LEN = 16;
 
 // Byte length of public message nonce of Ascon-128 AEAD
-constexpr size_t NONCE_LEN = 16;
+constexpr size_t NONCE_LEN = ascon_aead::NONCE_LEN;
 
 // Byte length of authentication tag of Ascon-128 AEAD
-constexpr size_t TAG_LEN = 16;
+constexpr size_t TAG_LEN = ascon_aead::TAG_LEN;
 
 // Encrypts arbitrary many plain text with Ascon-128 authenticated encryption
 // algorithm, given 16 -bytes secret key, 16 -bytes public message nonce and
@@ -35,21 +35,19 @@ constexpr size_t TAG_LEN = 16;
 // Note, associated data is never encrypted, only plain text is encrypted.
 // Though both associated data and cipher text are authenticated.
 inline void
-encrypt(const uint8_t* const __restrict key,   // 16 -bytes key
-        const uint8_t* const __restrict nonce, // 16 -bytes nonce
-        const uint8_t* const __restrict data,  // Associated Data
-        const size_t dlen,                     // bytes; can be >= 0
-        const uint8_t* const __restrict text,  // Plain text
-        const size_t ctlen,                    // bytes; can be >= 0
-        uint8_t* const __restrict cipher,      // Cipher text
-        uint8_t* const __restrict tag          // 16 -bytes authentication tag
+encrypt(std::span<const uint8_t, KEY_LEN> key,     // 16 -bytes key
+        std::span<const uint8_t, NONCE_LEN> nonce, // 16 -bytes nonce
+        std::span<const uint8_t> data,             // Associated Data
+        std::span<const uint8_t> text,             // Plain text
+        std::span<uint8_t> cipher,                 // Cipher text
+        std::span<uint8_t, TAG_LEN> tag            // 16 -bytes authentication tag
 )
 {
-  uint64_t state[5]{};
+  ascon_perm::ascon_perm_t state;
 
   ascon_aead::initialize<ROUNDS_A, IV, KEY_LEN * 8>(state, key, nonce);
-  ascon_aead::process_associated_data<ROUNDS_B, RATE>(state, data, dlen);
-  ascon_aead::process_plaintext<ROUNDS_B, RATE>(state, text, ctlen, cipher);
+  ascon_aead::process_associated_data<ROUNDS_B, RATE>(state, data);
+  ascon_aead::process_plaintext<ROUNDS_B, RATE>(state, text, cipher);
   ascon_aead::finalize<ROUNDS_A, RATE, KEY_LEN * 8>(state, key, tag);
 }
 
@@ -66,26 +64,24 @@ encrypt(const uint8_t* const __restrict key,   // 16 -bytes key
 // This function should return truth value, if authentication check passes,
 // while it will return false value, in case tag verification fails.
 inline bool
-decrypt(const uint8_t* const __restrict key,    // 16 -bytes key
-        const uint8_t* const __restrict nonce,  // 16 -bytes nonce
-        const uint8_t* const __restrict data,   // Associated Data
-        const size_t dlen,                      // bytes; can be >= 0
-        const uint8_t* const __restrict cipher, // Cipher text
-        const size_t ctlen,                     // bytes; can be >= 0
-        uint8_t* const __restrict text,         // Plain text
-        const uint8_t* const __restrict tag     // 16 -bytes authentication tag
+decrypt(std::span<const uint8_t, KEY_LEN> key,     // 16 -bytes key
+        std::span<const uint8_t, NONCE_LEN> nonce, // 16 -bytes nonce
+        std::span<const uint8_t> data,             // Associated Data
+        std::span<const uint8_t> cipher,           // Cipher text
+        std::span<uint8_t> text,                   // Plain text
+        std::span<const uint8_t, TAG_LEN> tag      // 16 -bytes authentication tag
 )
 {
-  uint64_t state[5]{};
-  uint8_t _tag[TAG_LEN];
+  ascon_perm::ascon_perm_t state;
+  std::array<uint8_t, TAG_LEN> _tag{};
 
   ascon_aead::initialize<ROUNDS_A, IV, KEY_LEN * 8>(state, key, nonce);
-  ascon_aead::process_associated_data<ROUNDS_B, RATE>(state, data, dlen);
-  ascon_aead::process_ciphertext<ROUNDS_B, RATE>(state, cipher, ctlen, text);
+  ascon_aead::process_associated_data<ROUNDS_B, RATE>(state, data);
+  ascon_aead::process_ciphertext<ROUNDS_B, RATE>(state, cipher, text);
   ascon_aead::finalize<ROUNDS_A, RATE, KEY_LEN * 8>(state, key, _tag);
 
-  const uint32_t flg = ascon_utils::ct_eq_byte_array(tag, _tag, TAG_LEN);
-  ascon_utils::ct_conditional_memset(~flg, text, 0, ctlen);
+  const uint32_t flg = ascon_utils::ct_eq_byte_array<TAG_LEN>(tag, _tag);
+  ascon_utils::ct_conditional_memset(~flg, text, 0);
 
   return static_cast<bool>(flg);
 }

@@ -1,18 +1,13 @@
-#pragma once
-#include "ascon_mac.hpp"
-#include <cassert>
+#include "auth/ascon_mac.hpp"
 #include <fstream>
+#include <gtest/gtest.h>
 
-// Test Ascon Light Weight Cryptography Implementation
-namespace ascon_test {
-
-using namespace std::literals;
-
-// Ensure that this Ascon-MAC implementation is conformant to the
-// specification, using known answer tests.
-inline void
-test_ascon_mac_kat()
+// Ensure that this Ascon-MAC implementation is conformant to the specification, using
+// known answer tests.
+TEST(AsconAuth, KnownAnswerTestsAsconMac)
 {
+  using namespace std::literals;
+
   const std::string kat_file = "./kats/ascon_mac.kat";
   std::fstream file(kat_file);
 
@@ -42,12 +37,17 @@ test_ascon_mac_kat()
 
       std::vector<uint8_t> computed(tag.size());
 
-      ascon_mac::ascon_mac mac(key.data());
-      mac.authenticate(msg.data(), msg.size());
-      mac.finalize(computed.data());
-      bool flg = mac.verify(tag.data(), computed.data());
+      auto _key = std::span<const uint8_t, ascon_mac::KEY_LEN>(key);
+      auto _msg = std::span(msg);
+      auto _computed = std::span<uint8_t, ascon_mac::TAG_LEN>(computed);
+      auto _tag = std::span<const uint8_t, ascon_mac::TAG_LEN>(tag);
 
-      assert(flg);
+      ascon_mac::ascon_mac_t mac(_key);
+      mac.authenticate(_msg);
+      mac.finalize(_computed);
+      bool flg = mac.verify(_tag, _computed);
+
+      ASSERT_TRUE(flg);
 
       std::string empty_line;
       std::getline(file, empty_line);
@@ -57,6 +57,4 @@ test_ascon_mac_kat()
   }
 
   file.close();
-}
-
 }

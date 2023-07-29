@@ -1,5 +1,5 @@
 #pragma once
-#include "permutation.hpp"
+#include "ascon_perm.hpp"
 #include "utils.hpp"
 
 // Ascon-PRFShort
@@ -26,8 +26,8 @@ constexpr size_t KEY_LEN = 16;
 // Compile-time compute initialization value for Ascon-PRFShort, following
 // section 2.6 ( page 7 ) of spec. https://eprint.iacr.org/2021/1574.pdf.
 constexpr uint64_t IV =
-  ((KEY_LEN * 8) << 56) | // 8 -bit wide, bit length of secret key
-  (0b00000000ul << 48) |  // 8 -bit wide, message bit length, not yet filled
+  ((KEY_LEN * 8) << 56) |           // 8 -bit wide, bit length of secret key
+  (0b00000000ul << 48) |            // 8 -bit wide, message bit length, not yet filled
   (((1ul << 6) ^ ROUNDS_A) << 40) | // 8 -bit wide, round number as 2^6 ⊕ a
   (OUT_RATE << 32)                  // 8 -bit wide, bit width of output block
   // 32 zero bits
@@ -40,52 +40,53 @@ constexpr uint64_t IV =
 // This routine is an implementation of algorithm 3 of spec.
 // https://eprint.iacr.org/2021/1574.pdf.
 inline void
-prf_short(const uint8_t* const __restrict key, // 16 -bytes secret key
-          const uint8_t* const __restrict msg, // Input message
-          const size_t mlen,             // Byte length of input, must be <= 16
-          uint8_t* const __restrict tag, // Authentication tag, to be computed
-          const size_t tlen // Byte length of requested tag, must be <= 16
+prf_short(std::span<const uint8_t, KEY_LEN> key, // 16 -bytes secret key
+          std::span<const uint8_t> msg,          // Input message
+          std::span<uint8_t> tag                 // <=16 -bytes Authentication tag
 )
 {
-  uint8_t rate[IN_RATE / 8];
-  std::memcpy(rate, msg, mlen);
-  std::memset(rate + mlen, 0, sizeof(rate) - mlen);
+  std::array<uint8_t, IN_RATE / 8> rate{};
+  auto _rate = std::span(rate);
 
-  const uint64_t key0 = ascon_utils::from_be_bytes<uint64_t>(key);
-  const uint64_t key1 = ascon_utils::from_be_bytes<uint64_t>(key + 8);
+  const size_t mlen = msg.size();
+  const size_t tlen = tag.size();
 
-  uint64_t state[5];
+  std::memcpy(_rate.data(), msg.data(), mlen);
+  std::memset(_rate.subspan(mlen).data(), 0x00, _rate.size() - mlen);
+
+  const uint64_t key0 = ascon_utils::from_be_bytes<uint64_t>(key.subspan<0, 8>());
+  const uint64_t key1 = ascon_utils::from_be_bytes<uint64_t>(key.subspan<8, 8>());
+
+  ascon_perm::ascon_perm_t state;
 
   state[0] = IV ^ ((mlen * 8) << 48);
   state[1] = key0;
   state[2] = key1;
-  state[3] = ascon_utils::from_be_bytes<uint64_t>(rate);
-  state[4] = ascon_utils::from_be_bytes<uint64_t>(rate + 8);
+  state[3] = ascon_utils::from_be_bytes<uint64_t>(_rate.subspan<0, 8>());
+  state[4] = ascon_utils::from_be_bytes<uint64_t>(_rate.subspan<8, 8>());
 
-  ascon_permutation::permute<ROUNDS_A>(state);
+  state.permute<ROUNDS_A>();
 
   state[3] ^= key0;
   state[4] ^= key1;
 
-  ascon_utils::to_be_bytes(state[3], rate);
-  ascon_utils::to_be_bytes(state[4], rate + 8);
+  ascon_utils::to_be_bytes(state[3], _rate.subspan<0, 8>());
+  ascon_utils::to_be_bytes(state[4], _rate.subspan<8, 8>());
 
   const size_t off = MAX_TAG_LEN - tlen;
-  std::memcpy(tag, rate + off, tlen);
+  std::memcpy(tag.data(), _rate.subspan(off).data(), tlen);
 }
 
 // Authenticates at max 16 -bytes input message, by absorbing it into RATE
 // portion of Ascon permutation state, while computing a 16 -bytes
 // authentication tag, when a 16 -bytes secret key is provided as input.
 inline void
-prfs_authenticate(
-  const uint8_t* const __restrict key, // 16 -bytes key
-  const uint8_t* const __restrict msg, // Input message, to be authenticated
-  const size_t mlen,                   // Byte length of input, must be <= 16
-  uint8_t* const __restrict tag        // 16 -bytes tag, to be computed
+prfs_authenticate(std::span<const uint8_t, KEY_LEN> key, // 16 -bytes key
+                  std::span<const uint8_t> msg, // Input message, to be authenticated
+                  std::span<uint8_t, MAX_TAG_LEN> tag // 16 -bytes tag, to be computed
 )
 {
-  prf_short(key, msg, mlen, tag, MAX_TAG_LEN);
+  prf_short(key, msg, tag);
 }
 
 // Verifies 16 -bytes authentication tag, for a message of byte length at max
@@ -93,17 +94,18 @@ prfs_authenticate(
 // computed tag, given 16 -bytes secret key. Returns boolean truth value,
 // denoting successful tag comparison, while false value is returned, otherwise.
 inline bool
-prfs_verify(
-  const uint8_t* const __restrict key, // 16 -bytes key
-  const uint8_t* const __restrict msg, // Input message, to be authenticated
-  const size_t mlen,                   // Byte length of input, must be <= 16
-  const uint8_t* const __restrict tag  // 16 -bytes tag, to be verified
+prfs_verify(std::span<const uint8_t, KEY_LEN> key, // 16 -bytes key
+            std::span<const uint8_t> msg,          // Input message, to be authenticated
+            std::span<const uint8_t, MAX_TAG_LEN> tag // 16 -bytes tag, to be verified
 )
 {
-  uint8_t computed_tag[MAX_TAG_LEN];
-  prf_short(key, msg, mlen, computed_tag, MAX_TAG_LEN);
+  std::array<uint8_t, MAX_TAG_LEN> computed_tag{};
+  auto _computed_tag = std::span(computed_tag);
 
-  return ascon_utils::ct_eq_byte_array(tag, computed_tag, MAX_TAG_LEN);
+  prf_short(key, msg, _computed_tag);
+
+  auto _const_computed_tag = std::span<const uint8_t, MAX_TAG_LEN>(_computed_tag);
+  return ascon_utils::ct_eq_byte_array(tag, _const_computed_tag);
 }
 
 }

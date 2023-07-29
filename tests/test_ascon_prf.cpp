@@ -1,18 +1,13 @@
-#pragma once
-#include "ascon_prf.hpp"
-#include <cassert>
+#include "auth/ascon_prf.hpp"
 #include <fstream>
+#include <gtest/gtest.h>
 
-// Test Ascon Light Weight Cryptography Implementation
-namespace ascon_test {
-
-using namespace std::literals;
-
-// Ensure that this Ascon-PRF implementation is conformant to the
-// specification, using known answer tests.
-inline void
-test_ascon_prf_kat()
+// Ensure that this Ascon-PRF implementation is conformant to the specification, using
+// known answer tests.
+TEST(AsconAuth, KnownAnswerTestsAsconPRF)
 {
+  using namespace std::literals;
+
   const std::string kat_file = "./kats/ascon_prf.kat";
   std::fstream file(kat_file);
 
@@ -42,12 +37,16 @@ test_ascon_prf_kat()
 
       std::vector<uint8_t> out(tag.size());
 
-      ascon_prf::ascon_prf prf(key.data());
-      prf.absorb(msg.data(), msg.size());
-      prf.finalize();
-      prf.squeeze(out.data(), out.size());
+      auto _key = std::span<uint8_t, ascon_prf::KEY_LEN>(key);
+      auto _msg = std::span(msg);
+      auto _out = std::span(out);
 
-      assert(std::ranges::equal(out, tag));
+      ascon_prf::ascon_prf_t prf(_key);
+      prf.absorb(_msg);
+      prf.finalize();
+      prf.squeeze(_out);
+
+      ASSERT_EQ(out, tag);
 
       std::string empty_line;
       std::getline(file, empty_line);
@@ -57,6 +56,4 @@ test_ascon_prf_kat()
   }
 
   file.close();
-}
-
 }

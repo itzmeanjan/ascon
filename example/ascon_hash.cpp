@@ -10,24 +10,22 @@ main()
 {
   constexpr size_t msg_len = 64; // bytes
 
-  // acquire resources
-  uint8_t* msg = static_cast<uint8_t*>(malloc(msg_len)); // input
-  uint8_t* out = static_cast<uint8_t*>(malloc(ascon_hash::DIGEST_LEN));
+  std::vector<uint8_t> msg(msg_len);
+  std::vector<uint8_t> out(ascon_hash::DIGEST_LEN);
 
-  ascon_utils::random_data(msg, msg_len);
+  auto _msg = std::span(msg);
+  auto _out = std::span<uint8_t, ascon_hash::DIGEST_LEN>(out);
 
-  ascon_hash::ascon_hash hasher;
-  hasher.absorb(msg, msg_len);
+  ascon_utils::random_data(_msg);
+
+  ascon_hash::ascon_hash_t hasher;
+  hasher.absorb(_msg);
   hasher.finalize();
-  hasher.digest(out);
+  hasher.digest(_out);
 
   std::cout << "Ascon Hash\n\n";
-  std::cout << "Message :\t" << ascon_utils::to_hex(msg, msg_len) << "\n";
-  std::cout << "Digest  :\t" << ascon_utils::to_hex(out, 32) << "\n";
-
-  // deallocate resources
-  free(msg);
-  free(out);
+  std::cout << "Message :\t" << ascon_utils::to_hex(_msg) << "\n";
+  std::cout << "Digest  :\t" << ascon_utils::to_hex(_out) << "\n";
 
   return EXIT_SUCCESS;
 }

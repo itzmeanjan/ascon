@@ -1,18 +1,14 @@
-#pragma once
-#include "ascon_prfs.hpp"
-#include <cassert>
+#include "auth/ascon_prfs.hpp"
+#include <cstdint>
 #include <fstream>
+#include <gtest/gtest.h>
 
-// Test Ascon Light Weight Cryptography Implementation
-namespace ascon_test {
-
-using namespace std::literals;
-
-// Ensure that this Ascon-PRFShort implementation is conformant to the
-// specification, using known answer tests.
-inline void
-test_ascon_prfs_kat()
+// Ensure that this Ascon-PRFShort implementation is conformant to the specification,
+// using known answer tests.
+TEST(AsconAuth, KnownAnswerTestsAsconPRFShort)
 {
+  using namespace std::literals;
+
   const std::string kat_file = "./kats/ascon_prfs.kat";
   std::fstream file(kat_file);
 
@@ -42,12 +38,15 @@ test_ascon_prfs_kat()
 
       std::vector<uint8_t> computed(tag.size());
 
-      ascon_prfs::prfs_authenticate(
-        key.data(), msg.data(), msg.size(), computed.data());
-      bool flg =
-        ascon_prfs::prfs_verify(key.data(), msg.data(), msg.size(), tag.data());
+      auto _key = std::span<const uint8_t, ascon_prfs::KEY_LEN>(key);
+      auto _msg = std::span<const uint8_t>(msg);
+      auto _computed = std::span<uint8_t, ascon_prfs::MAX_TAG_LEN>(computed);
+      auto _tag = std::span<const uint8_t, ascon_prfs::MAX_TAG_LEN>(tag);
 
-      assert(flg);
+      ascon_prfs::prfs_authenticate(_key, _msg, _computed);
+      bool flg = ascon_prfs::prfs_verify(_key, _msg, _tag);
+
+      ASSERT_TRUE(flg);
 
       std::string empty_line;
       std::getline(file, empty_line);
@@ -57,6 +56,4 @@ test_ascon_prfs_kat()
   }
 
   file.close();
-}
-
 }

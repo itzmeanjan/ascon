@@ -8,6 +8,7 @@
 #include <cstring>
 #include <iomanip>
 #include <random>
+#include <span>
 #include <sstream>
 
 // Utility functions for Ascon Light Weight Cipher Suite Implementation
@@ -33,27 +34,23 @@ bswap(const T a)
 #if defined __GNUG__
     return __builtin_bswap64(a);
 #else
-    return ((a & 0x00000000000000fful) << 56) |
-           ((a & 0x000000000000ff00ul) << 40) |
-           ((a & 0x0000000000ff0000ul) << 24) |
-           ((a & 0x00000000ff000000ul) << 0x8) |
-           ((a & 0x000000ff00000000ul) >> 0x8) |
-           ((a & 0x0000ff0000000000ul) >> 24) |
-           ((a & 0x00ff000000000000ul) >> 40) |
-           ((a & 0xff00000000000000ul) >> 56);
+    return ((a & 0x00000000000000fful) << 56) | ((a & 0x000000000000ff00ul) << 40) |
+           ((a & 0x0000000000ff0000ul) << 24) | ((a & 0x00000000ff000000ul) << 0x8) |
+           ((a & 0x000000ff00000000ul) >> 0x8) | ((a & 0x0000ff0000000000ul) >> 24) |
+           ((a & 0x00ff000000000000ul) >> 40) | ((a & 0xff00000000000000ul) >> 56);
 #endif
   }
 }
 
 // Given big-endian byte array of length 4/ 8, this function interprets it as
-// 32/ 64 -bit unsigned integer
+// 32/ 64 -bit unsigned integer.
 template<typename T>
 inline T
-from_be_bytes(const uint8_t* const i_bytes)
+from_be_bytes(std::span<const uint8_t> bytes)
   requires(std::unsigned_integral<T> && ((sizeof(T) == 4) || (sizeof(T) == 8)))
 {
   T res = 0;
-  std::memcpy(&res, i_bytes, sizeof(T));
+  std::memcpy(&res, bytes.data(), bytes.size());
 
   if constexpr (std::endian::native == std::endian::little) {
     return bswap(res);
@@ -63,55 +60,63 @@ from_be_bytes(const uint8_t* const i_bytes)
 }
 
 // Given a 32/ 64 -bit unsigned integer, this function interprets it as a
-// big-endian byte array of length 4/ 8
+// big-endian byte array of length 4/ 8.
 template<typename T>
 inline void
-to_be_bytes(const T num, uint8_t* const bytes)
+to_be_bytes(const T num, std::span<uint8_t> bytes)
   requires(std::unsigned_integral<T> && ((sizeof(T) == 4) || (sizeof(T) == 8)))
 {
   if constexpr (std::endian::native == std::endian::little) {
     const auto res = bswap(num);
-    std::memcpy(bytes, &res, sizeof(T));
+    std::memcpy(bytes.data(), &res, sizeof(T));
   } else {
-    std::memcpy(bytes, &num, sizeof(T));
+    std::memcpy(bytes.data(), &num, sizeof(T));
   }
 }
 
 // Given a N (>=0) -bytes message, this routine can be used for extracting at
-// max `msg_blk_len` -bytes chunk, which is (zero based indexing) indexed by i
-// s.t. i ∈ [0, (mlen + msg_blk_len - 1)/ msg_blk_len). Note, it's possible that
-// very last chunk of message may not have `msg_blk_len` -bytes to fill up the
-// full chunk. This function returns how many bytes were actually read for this
-// chunk, which must ∈ [0, msg_blk_len]. And it doesn't touch remaining bytes of
-// chunk, if they can't be filled up. It's caller's responsibility to take
-// proper care of them, before using the message chunk, as it may be some
-// garbage bytes from previous iteration.
-template<const size_t msg_blk_len>
+// max `len` -bytes chunk, which is (zero based indexing) indexed by `i` s.t. i ∈ [0,
+// (mlen + len - 1)/ len). Note, it's possible that very last chunk of message may not
+// have `len` -bytes to fill up the full chunk. This function returns how many bytes
+// were actually read for this chunk, which must ∈ [0, len]. And it doesn't touch
+// remaining bytes of chunk, if they can't be filled up. It's caller's responsibility to
+// take proper care of them, before using the message chunk, as it may be some garbage
+// bytes from previous iteration.
+template<const size_t len>
 inline size_t
 get_ith_msg_blk(
-  const uint8_t* const __restrict msg, // chunk(s) to be read from this message
-  const size_t mlen,                   // byte length of message
-  const size_t i,                      // index of message chunk, to be read
-  uint8_t* const __restrict msg_blk    // msg_blk_len -bytes chunk
+  std::span<const uint8_t> msg,   // chunk(s) to be read from this message
+  const size_t i,                 // index of message chunk, to be read
+  std::span<uint8_t, len> msg_blk // len -bytes chunk to be (partially) filled
 )
 {
   // This routine makes an assumption that function caller invokes it with such
-  // `i` value that off <= mlen.
-  const size_t off = i * msg_blk_len;
-  const size_t readable = std::min(msg_blk_len, mlen - off);
+  // `i` value that off <= msg.size()
+  const size_t off = i * len;
+  const size_t readable = std::min(len, msg.size() - off);
 
-  std::memcpy(msg_blk, msg + off, readable);
+  std::memcpy(msg_blk.data(), msg.subspan(off).data(), readable);
   return readable;
+}
+
+// Padding a message block of `len` -bytes, following 10* rule s.t. first `used` -many
+// bytes are filled and they can't be touched.
+template<const size_t len>
+inline void
+pad_msg_blk(std::span<uint8_t, len> msg_blk, const size_t used)
+{
+  std::memset(msg_blk.subspan(used).data(), 0x00, len - used);
+  std::memset(msg_blk.subspan(used).data(), 0x80, std::min(len - used, 1ul));
 }
 
 // Converts byte array into hex string; see https://stackoverflow.com/a/14051107
 inline const std::string
-to_hex(const uint8_t* const bytes, const size_t len)
+to_hex(std::span<const uint8_t> bytes)
 {
   std::stringstream ss;
   ss << std::hex;
 
-  for (size_t i = 0; i < len; i++) {
+  for (size_t i = 0; i < bytes.size(); i++) {
     ss << std::setw(2) << std::setfill('0') << static_cast<uint32_t>(bytes[i]);
   }
   return ss.str();
@@ -148,10 +153,10 @@ from_hex(std::string_view hex)
 // equality of them, in constant-time, returning truth value ( 0xffffffff ), in
 // case they are equal. Otherwise it returns 0x00000000, denoting inequality of
 // content of two byte arrays.
+template<const size_t len>
 inline constexpr uint32_t
-ct_eq_byte_array(const uint8_t* const __restrict byte_arr_a,
-                 const uint8_t* const __restrict byte_arr_b,
-                 const size_t len)
+ct_eq_byte_array(std::span<const uint8_t, len> byte_arr_a,
+                 std::span<const uint8_t, len> byte_arr_b)
 {
   uint32_t flag = -1u;
   for (size_t i = 0; i < len; i++) {
@@ -168,11 +173,10 @@ ct_eq_byte_array(const uint8_t* const __restrict byte_arr_a,
 // it shouldn't mutate bytes.
 inline constexpr void
 ct_conditional_memset(const uint32_t cond,
-                      uint8_t* const __restrict byte_arr,
-                      const uint8_t val,
-                      const size_t len)
+                      std::span<uint8_t> byte_arr,
+                      const uint8_t val)
 {
-  for (size_t i = 0; i < len; i++) {
+  for (size_t i = 0; i < byte_arr.size(); i++) {
     byte_arr[i] = subtle::ct_select(cond, val, byte_arr[i]);
   }
 }
@@ -182,14 +186,14 @@ ct_conditional_memset(const uint32_t cond,
 // **Not cryptographically secure !**
 template<typename T>
 inline void
-random_data(T* const data, const size_t len)
+random_data(std::span<T> data)
   requires(std::is_unsigned_v<T>)
 {
   std::random_device rd;
   std::mt19937_64 gen(rd());
   std::uniform_int_distribution<T> dis;
 
-  for (size_t i = 0; i < len; i++) {
+  for (size_t i = 0; i < data.size(); i++) {
     data[i] = dis(gen);
   }
 }

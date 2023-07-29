@@ -1,11 +1,7 @@
-#pragma once
-#include "ascon80pq.hpp"
+#include "aead/ascon80pq.hpp"
 #include <benchmark/benchmark.h>
 #include <cassert>
 #include <vector>
-
-// Benchmark Ascon Light Weight Cryptography Implementation
-namespace bench_ascon {
 
 // Benchmark Ascon-80pq authenticated encryption with variable length input.
 inline void
@@ -21,27 +17,27 @@ ascon80pq_aead_encrypt(benchmark::State& state)
   std::vector<uint8_t> text(ct_len);
   std::vector<uint8_t> enc(ct_len);
 
-  ascon_utils::random_data(key.data(), key.size());
-  ascon_utils::random_data(nonce.data(), nonce.size());
-  ascon_utils::random_data(data.data(), data.size());
-  ascon_utils::random_data(text.data(), text.size());
+  auto _key = std::span<uint8_t, ascon80pq_aead::KEY_LEN>(key);
+  auto _nonce = std::span<uint8_t, ascon80pq_aead::NONCE_LEN>(nonce);
+  auto _tag = std::span<uint8_t, ascon80pq_aead::TAG_LEN>(tag);
+  auto _data = std::span(data);
+  auto _text = std::span(text);
+  auto _enc = std::span(enc);
+
+  ascon_utils::random_data<uint8_t>(_key);
+  ascon_utils::random_data<uint8_t>(_nonce);
+  ascon_utils::random_data(_data);
+  ascon_utils::random_data(_text);
 
   for (auto _ : state) {
-    ascon80pq_aead::encrypt(key.data(),
-                            nonce.data(),
-                            data.data(),
-                            data.size(),
-                            text.data(),
-                            text.size(),
-                            enc.data(),
-                            tag.data());
+    ascon80pq_aead::encrypt(_key, _nonce, _data, _text, _enc, _tag);
 
-    benchmark::DoNotOptimize(key);
-    benchmark::DoNotOptimize(nonce);
-    benchmark::DoNotOptimize(data);
-    benchmark::DoNotOptimize(text);
-    benchmark::DoNotOptimize(enc);
-    benchmark::DoNotOptimize(tag);
+    benchmark::DoNotOptimize(_key);
+    benchmark::DoNotOptimize(_nonce);
+    benchmark::DoNotOptimize(_data);
+    benchmark::DoNotOptimize(_text);
+    benchmark::DoNotOptimize(_enc);
+    benchmark::DoNotOptimize(_tag);
     benchmark::ClobberMemory();
   }
 
@@ -73,38 +69,32 @@ ascon80pq_aead_decrypt(benchmark::State& state)
   std::vector<uint8_t> enc(ct_len);
   std::vector<uint8_t> dec(ct_len);
 
-  ascon_utils::random_data(key.data(), key.size());
-  ascon_utils::random_data(nonce.data(), nonce.size());
-  ascon_utils::random_data(data.data(), data.size());
-  ascon_utils::random_data(text.data(), text.size());
+  auto _key = std::span<uint8_t, ascon80pq_aead::KEY_LEN>(key);
+  auto _nonce = std::span<uint8_t, ascon80pq_aead::NONCE_LEN>(nonce);
+  auto _tag = std::span<uint8_t, ascon80pq_aead::TAG_LEN>(tag);
+  auto _data = std::span(data);
+  auto _text = std::span(text);
+  auto _enc = std::span(enc);
+  auto _dec = std::span(dec);
 
-  ascon80pq_aead::encrypt(key.data(),
-                          nonce.data(),
-                          data.data(),
-                          data.size(),
-                          text.data(),
-                          text.size(),
-                          enc.data(),
-                          tag.data());
+  ascon_utils::random_data<uint8_t>(_key);
+  ascon_utils::random_data<uint8_t>(_nonce);
+  ascon_utils::random_data(_data);
+  ascon_utils::random_data(_text);
+
+  ascon80pq_aead::encrypt(_key, _nonce, _data, _text, _enc, _tag);
 
   bool flag = true;
   for (auto _ : state) {
-    flag &= ascon80pq_aead::decrypt(key.data(),
-                                    nonce.data(),
-                                    data.data(),
-                                    data.size(),
-                                    enc.data(),
-                                    enc.size(),
-                                    dec.data(),
-                                    tag.data());
+    flag &= ascon80pq_aead::decrypt(_key, _nonce, _data, _enc, _dec, _tag);
 
     benchmark::DoNotOptimize(flag);
-    benchmark::DoNotOptimize(key);
-    benchmark::DoNotOptimize(nonce);
-    benchmark::DoNotOptimize(data);
-    benchmark::DoNotOptimize(enc);
-    benchmark::DoNotOptimize(dec);
-    benchmark::DoNotOptimize(tag);
+    benchmark::DoNotOptimize(_key);
+    benchmark::DoNotOptimize(_nonce);
+    benchmark::DoNotOptimize(_data);
+    benchmark::DoNotOptimize(_enc);
+    benchmark::DoNotOptimize(_dec);
+    benchmark::DoNotOptimize(_tag);
     benchmark::ClobberMemory();
   }
 
@@ -123,4 +113,14 @@ ascon80pq_aead_decrypt(benchmark::State& state)
 #endif
 }
 
-}
+// Register for benchmarking Ascon-80pq AEAD.
+BENCHMARK(ascon80pq_aead_encrypt)
+  ->ArgsProduct({
+    benchmark::CreateRange(1 << 6, 1 << 12, 2), // plain text
+    { 32 }                                      // associated data
+  });
+BENCHMARK(ascon80pq_aead_decrypt)
+  ->ArgsProduct({
+    benchmark::CreateRange(1 << 6, 1 << 12, 2), // cipher text
+    { 32 }                                      // associated data
+  });

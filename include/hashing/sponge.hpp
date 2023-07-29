@@ -1,9 +1,23 @@
 #pragma once
-#include "permutation.hpp"
+#include "ascon_perm.hpp"
 #include "utils.hpp"
 
 // Common functions required for implementing sponge-based hash functions.
 namespace sponge {
+
+// Common bit width for RATE portion of sponge.
+constexpr size_t RATE_BITS = 64;
+
+// Compile-time compute initial 320 -bit Ascon permutation state, used for Ascon based
+// hashing schemes, following description in section 2.5.1 of Ascon v1.2 spec.
+// https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf.
+constexpr ascon_perm::ascon_perm_t
+compute_init_state(const uint64_t iv)
+{
+  ascon_perm::ascon_perm_t state({ iv, 0, 0, 0, 0 });
+  state.permute<ascon_perm::MAX_ROUNDS>();
+  return state;
+}
 
 // Given `mlen` (>=0) -bytes message, this routine consumes it into RATE portion
 // of Ascon permutation state, s.t. `offset` ( second parameter ) denotes how
@@ -16,39 +30,42 @@ namespace sponge {
 // many message bytes, until permutation state is finalized.
 template<const size_t rounds_b, const size_t rate>
 static inline void
-absorb(uint64_t* const __restrict state,
-       size_t* const __restrict offset,
-       const uint8_t* const __restrict msg,
-       const size_t mlen)
+absorb(ascon_perm::ascon_perm_t& state, size_t& offset, std::span<const uint8_t> msg)
+  requires(rate == RATE_BITS)
 {
   constexpr size_t rbytes = rate / 8;
-  uint8_t blk_bytes[rbytes];
+  const size_t mlen = msg.size();
 
-  const size_t blk_cnt = (*offset + mlen) / rbytes;
+  std::array<uint8_t, rbytes> block{};
+  auto _block = std::span(block);
+
+  const size_t blk_cnt = (offset + mlen) / rbytes;
   size_t moff = 0;
 
   for (size_t i = 0; i < blk_cnt; i++) {
-    std::memset(blk_bytes, 0, *offset);
-    std::memcpy(blk_bytes + *offset, msg + moff, rbytes - *offset);
+    const size_t readable = rbytes - offset;
 
-    const auto word = ascon_utils::from_be_bytes<uint64_t>(blk_bytes);
+    std::memset(_block.data(), 0x00, offset);
+    std::memcpy(_block.subspan(offset).data(), msg.subspan(moff).data(), readable);
+
+    const auto word = ascon_utils::from_be_bytes<uint64_t>(_block);
     state[0] ^= word;
 
-    moff += (rbytes - *offset);
+    moff += readable;
 
-    ascon_permutation::permute<rounds_b>(state);
-    *offset = 0;
+    state.permute<rounds_b>();
+    offset = 0;
   }
 
   const size_t rm_bytes = mlen - moff;
 
-  std::memset(blk_bytes, 0, rbytes);
-  std::memcpy(blk_bytes + *offset, msg + moff, rm_bytes);
+  std::memset(_block.data(), 0x00, rbytes);
+  std::memcpy(_block.subspan(offset).data(), msg.subspan(moff).data(), rm_bytes);
 
-  const auto word = ascon_utils::from_be_bytes<uint64_t>(blk_bytes);
+  const auto word = ascon_utils::from_be_bytes<uint64_t>(_block);
   state[0] ^= word;
 
-  *offset += rm_bytes;
+  offset += rm_bytes;
 }
 
 // Given arbitrary many message bytes are already absorbed into RATE portion of
@@ -62,18 +79,19 @@ absorb(uint64_t* const __restrict state,
 // bytes, though you can squeeze output bytes from it.
 template<const size_t rounds_a, const size_t rate>
 static inline void
-finalize(uint64_t* const __restrict state, size_t* const __restrict offset)
+finalize(ascon_perm::ascon_perm_t& state, size_t& offset)
+  requires(rate == RATE_BITS)
 {
   constexpr size_t rbytes = rate / 8;
 
-  const size_t pad_bytes = rbytes - *offset;
+  const size_t pad_bytes = rbytes - offset;
   const size_t pad_bits = pad_bytes * 8;
   const uint64_t pad_mask = 1ul << (pad_bits - 1);
 
   state[0] ^= pad_mask;
-  ascon_permutation::permute<rounds_a>(state);
+  state.permute<rounds_a>();
 
-  *offset = 0;
+  offset = 0;
 }
 
 // Given that sponge state is already finalized, this routine can be invoked for
@@ -86,17 +104,16 @@ finalize(uint64_t* const __restrict state, size_t* const __restrict offset)
 // which `rbytes` can again be squeezed from rate portion of the state.
 template<const size_t rounds_b, const size_t rate>
 static inline void
-squeeze(uint64_t* const __restrict state,
-        size_t* const __restrict readable,
-        uint8_t* const __restrict out,
-        const size_t olen)
+squeeze(ascon_perm::ascon_perm_t& state, size_t& readable, std::span<uint8_t> out)
+  requires(rate == RATE_BITS)
 {
   constexpr size_t rbytes = rate / 8;
+  const size_t olen = out.size();
 
   size_t ooff = 0;
   while (ooff < olen) {
-    const size_t elen = std::min(*readable, olen - ooff);
-    const size_t soff = rbytes - *readable;
+    const size_t elen = std::min(readable, olen - ooff);
+    const size_t soff = rbytes - readable;
 
     uint64_t word = state[0];
 
@@ -104,14 +121,16 @@ squeeze(uint64_t* const __restrict state,
       word = ascon_utils::bswap(word);
     }
 
-    std::memcpy(out + ooff, reinterpret_cast<uint8_t*>(&word) + soff, elen);
+    auto _out = out.subspan(ooff);
+    auto _word = reinterpret_cast<uint8_t*>(&word) + soff;
+    std::memcpy(_out.data(), _word, elen);
 
-    *readable -= elen;
+    readable -= elen;
     ooff += elen;
 
-    if (*readable == 0) {
-      ascon_permutation::permute<rounds_b>(state);
-      *readable = rbytes;
+    if (readable == 0) {
+      state.permute<rounds_b>();
+      readable = rbytes;
     }
   }
 }
