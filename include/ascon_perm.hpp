@@ -30,7 +30,7 @@ private:
 
   // Addition of constants step; see section 2.6.1 of Ascon specification
   // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
-  inline constexpr void p_c(const size_t r_idx) { state[2] ^= RC[r_idx]; }
+  inline constexpr void p_c(const uint64_t rc) { state[2] ^= rc; }
 
   // Substitution layer i.e. 5 -bit S-box S(x) applied on Ascon state; taken
   // from figure 5 in Ascon specification
@@ -41,43 +41,42 @@ private:
     state[4] ^= state[3];
     state[2] ^= state[1];
 
-    const uint64_t t0 = state[1] & ~state[0];
-    const uint64_t t1 = state[2] & ~state[1];
-    const uint64_t t2 = state[3] & ~state[2];
-    const uint64_t t3 = state[4] & ~state[3];
-    const uint64_t t4 = state[0] & ~state[4];
+    const uint64_t row0 = state[0] ^ (~state[1] & state[2]);
+    const uint64_t row2 = state[2] ^ (~state[3] & state[4]);
+    const uint64_t row4 = state[4] ^ (~state[0] & state[1]);
+    const uint64_t row1 = state[1] ^ (~state[2] & state[3]);
+    const uint64_t row3 = state[3] ^ (~state[4] & state[0]);
 
-    state[0] ^= t1;
-    state[1] ^= t2;
-    state[2] ^= t3;
-    state[3] ^= t4;
-    state[4] ^= t0;
-
-    state[1] ^= state[0];
-    state[0] ^= state[4];
-    state[3] ^= state[2];
-    state[2] = ~state[2];
+    state[1] = row1 ^ row0;
+    state[3] = row3 ^ row2;
+    state[0] = row0 ^ row4;
+    state[4] = row4;
+    state[2] = ~row2;
   }
 
   // Linear diffusion layer; taken from figure 4.b in Ascon specification
   // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
   inline constexpr void p_l()
   {
-    using namespace std;
+    const uint64_t row0 = state[0] ^ std::rotr(state[0], 19);
+    const uint64_t row1 = state[1] ^ std::rotr(state[1], 61);
+    const uint64_t row2 = state[2] ^ std::rotr(state[2], 1);
+    const uint64_t row3 = state[3] ^ std::rotr(state[3], 10);
+    const uint64_t row4 = state[4] ^ std::rotr(state[4], 7);
 
-    state[0] = state[0] ^ rotr(state[0], 19) ^ rotr(state[0], 28);
-    state[1] = state[1] ^ rotr(state[1], 61) ^ rotr(state[1], 39);
-    state[2] = state[2] ^ rotr(state[2], 1) ^ rotr(state[2], 6);
-    state[3] = state[3] ^ rotr(state[3], 10) ^ rotr(state[3], 17);
-    state[4] = state[4] ^ rotr(state[4], 7) ^ rotr(state[4], 41);
+    state[0] = row0 ^ std::rotr(state[0], 28);
+    state[1] = row1 ^ std::rotr(state[1], 39);
+    state[2] = row2 ^ std::rotr(state[2], 6);
+    state[3] = row3 ^ std::rotr(state[3], 17);
+    state[4] = row4 ^ std::rotr(state[4], 41);
   }
 
   // Single round of Ascon permutation; taken from section 2.6 of Ascon
   // specification
   // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
-  inline constexpr void round(const size_t r_idx)
+  inline constexpr void round(const uint64_t rc)
   {
-    p_c(r_idx);
+    p_c(rc);
     p_s();
     p_l();
   }
@@ -100,7 +99,7 @@ public:
     constexpr size_t BEG = MAX_ROUNDS - R;
 
     for (size_t i = BEG; i < MAX_ROUNDS; i++) {
-      round(i);
+      round(RC[i]);
     }
   }
 
