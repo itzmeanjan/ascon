@@ -27,7 +27,7 @@ initialize(ascon_perm::ascon_perm_t& state, std::span<const uint8_t, klen / 8> k
   constexpr uint64_t iv = (klen << 56) |     // 8 -bit wide bit length of secret key
                           (out_rate << 48) | // 8 -bit wide bit length of output rate
                           (((1ul << 7) ^ rounds_a) << 40) | // 8 -bit wide, 2^7 ⊕ a
-                          (0b00000000ul << 32) |            // 8 zero bits
+                          (0b00000000ull << 32) |            // 8 zero bits
                           max_out_len // 32 -bit wide max. output bit length
     ;
 

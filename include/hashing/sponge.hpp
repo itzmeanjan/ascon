@@ -86,7 +86,7 @@ finalize(ascon_perm::ascon_perm_t& state, size_t& offset)
 
   const size_t pad_bytes = rbytes - offset;
   const size_t pad_bits = pad_bytes * 8;
-  const uint64_t pad_mask = 1ul << (pad_bits - 1);
+  const uint64_t pad_mask = 1ull  << (pad_bits - 1);
 
   state[0] ^= pad_mask;
   state.permute<rounds_a>();
