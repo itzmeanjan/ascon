@@ -24,15 +24,19 @@ bswap(const T a)
   requires(std::unsigned_integral<T> && ((sizeof(T) == 4) || (sizeof(T) == 8)))
 {
   if constexpr (sizeof(T) == 4) {
-#if defined __GNUG__
+#if defined __GNUG__ || defined __MINGW64__
     return __builtin_bswap32(a);
+#elif defined _MSC_VER
+	return _byteswap_uint32(a);
 #else
     return ((a & 0x000000ffu) << 24) | ((a & 0x0000ff00u) << 8) |
            ((a & 0x00ff0000u) >> 8) | ((a & 0xff000000u) >> 24);
 #endif
   } else {
-#if defined __GNUG__
+#if defined __GNUG__ || defined __MINGW64__
     return __builtin_bswap64(a);
+#elif defined _MSC_VER
+	return _byteswap_uint64(a);
 #else
     return ((a & 0x00000000000000fful) << 56) | ((a & 0x000000000000ff00ul) << 40) |
            ((a & 0x0000000000ff0000ul) << 24) | ((a & 0x00000000ff000000ul) << 0x8) |
@@ -106,7 +110,7 @@ inline void
 pad_msg_blk(std::span<uint8_t, len> msg_blk, const size_t used)
 {
   std::memset(msg_blk.subspan(used).data(), 0x00, len - used);
-  std::memset(msg_blk.subspan(used).data(), 0x80, std::min(len - used, 1ul));
+  std::memset(msg_blk.subspan(used).data(), 0x80, std::min<size_t>(len - used, 1ul));
 }
 
 // Converts byte array into hex string; see https://stackoverflow.com/a/14051107
@@ -191,7 +195,7 @@ random_data(std::span<T> data)
 {
   std::random_device rd;
   std::mt19937_64 gen(rd());
-  std::uniform_int_distribution<T> dis;
+  std::uniform_int_distribution<> dis;
 
   for (size_t i = 0; i < data.size(); i++) {
     data[i] = dis(gen);
