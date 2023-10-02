@@ -1,4 +1,8 @@
 #include "ascon_perm.hpp"
+#include "hashing/ascon_hash.hpp"
+#include "hashing/ascon_hasha.hpp"
+#include "hashing/ascon_xof.hpp"
+#include "hashing/ascon_xofa.hpp"
 #include <array>
 #include <gtest/gtest.h>
 
@@ -18,7 +22,7 @@ apply_permutation(const uint64_t row0)
 
 TEST(AsconPermutation, AsconPermWithAsconHashIV)
 {
-  constexpr bool res = apply_permutation(0x00400c0000000100ul).reveal() ==
+  constexpr bool res = apply_permutation(ascon_hash::IV).reveal() ==
                        std::array<uint64_t, 5>{ 0xee9398aadb67f03dul,
                                                 0x8bb21831c60f1002ul,
                                                 0xb48a92db98d5da62ul,
@@ -30,7 +34,7 @@ TEST(AsconPermutation, AsconPermWithAsconHashIV)
 
 TEST(AsconPermutation, AsconPermWithAsconHashAIV)
 {
-  constexpr bool res = apply_permutation(0x00400c0400000100ul).reveal() ==
+  constexpr bool res = apply_permutation(ascon_hasha::IV).reveal() ==
                        std::array<uint64_t, 5>{ 0x01470194fc6528a6,
                                                 0x738ec38ac0adffa7,
                                                 0x2ec8e3296c76384c,
@@ -42,7 +46,7 @@ TEST(AsconPermutation, AsconPermWithAsconHashAIV)
 
 TEST(AsconPermutation, AsconPermWithAsconXofIV)
 {
-  constexpr bool res = apply_permutation(0x00400c0000000000ul).reveal() ==
+  constexpr bool res = apply_permutation(ascon_xof::IV).reveal() ==
                        std::array<uint64_t, 5>{ 0xb57e273b814cd416,
                                                 0x2b51042562ae2420,
                                                 0x66a3a7768ddf2218,
@@ -54,7 +58,7 @@ TEST(AsconPermutation, AsconPermWithAsconXofIV)
 
 TEST(AsconPermutation, AsconPermWithAsconXofAIV)
 {
-  constexpr bool res = apply_permutation(0x00400c0400000000ul).reveal() ==
+  constexpr bool res = apply_permutation(ascon_xofa::IV).reveal() ==
                        std::array<uint64_t, 5>{ 0x44906568b77b9832,
                                                 0xcd8d6cae53455532,
                                                 0xf7b5212756422129,
