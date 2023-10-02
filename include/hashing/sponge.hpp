@@ -1,6 +1,8 @@
 #pragma once
 #include "ascon_perm.hpp"
 #include "utils.hpp"
+#include <algorithm>
+#include <cstdint>
 
 // Common functions required for implementing sponge-based hash functions.
 namespace sponge {
@@ -29,7 +31,7 @@ compute_init_state(const uint64_t iv)
 // One may invoke this function arbitrary many times, for absorbing arbitrary
 // many message bytes, until permutation state is finalized.
 template<const size_t rounds_b, const size_t rate>
-static inline void
+static inline constexpr void
 absorb(ascon_perm::ascon_perm_t& state, size_t& offset, std::span<const uint8_t> msg)
   requires(rate == RATE_BITS)
 {
@@ -45,8 +47,11 @@ absorb(ascon_perm::ascon_perm_t& state, size_t& offset, std::span<const uint8_t>
   for (size_t i = 0; i < blk_cnt; i++) {
     const size_t readable = rbytes - offset;
 
-    std::memset(_block.data(), 0x00, offset);
-    std::memcpy(_block.subspan(offset).data(), msg.subspan(moff).data(), readable);
+    auto __block = _block.subspan(0, offset);
+    std::fill(__block.begin(), __block.end(), 0x00);
+
+    auto _msg = msg.subspan(moff, readable);
+    std::copy(_msg.begin(), _msg.end(), _block.subspan(offset, readable).begin());
 
     const auto word = ascon_utils::from_be_bytes<uint64_t>(_block);
     state[0] ^= word;
@@ -58,9 +63,10 @@ absorb(ascon_perm::ascon_perm_t& state, size_t& offset, std::span<const uint8_t>
   }
 
   const size_t rm_bytes = mlen - moff;
+  auto _msg = msg.subspan(moff, rm_bytes);
 
-  std::memset(_block.data(), 0x00, rbytes);
-  std::memcpy(_block.subspan(offset).data(), msg.subspan(moff).data(), rm_bytes);
+  std::fill(_block.begin(), _block.end(), 0x00);
+  std::copy(_msg.begin(), _msg.end(), _block.subspan(offset, rm_bytes).begin());
 
   const auto word = ascon_utils::from_be_bytes<uint64_t>(_block);
   state[0] ^= word;
@@ -78,7 +84,7 @@ absorb(ascon_perm::ascon_perm_t& state, size_t& offset, std::span<const uint8_t>
 // Once Ascon permutation state is finalized, it can't absorb any more message
 // bytes, though you can squeeze output bytes from it.
 template<const size_t rounds_a, const size_t rate>
-static inline void
+static inline constexpr void
 finalize(ascon_perm::ascon_perm_t& state, size_t& offset)
   requires(rate == RATE_BITS)
 {
@@ -86,7 +92,7 @@ finalize(ascon_perm::ascon_perm_t& state, size_t& offset)
 
   const size_t pad_bytes = rbytes - offset;
   const size_t pad_bits = pad_bytes * 8;
-  const uint64_t pad_mask = 1ull  << (pad_bits - 1);
+  const uint64_t pad_mask = 1ull << (pad_bits - 1);
 
   state[0] ^= pad_mask;
   state.permute<rounds_a>();
@@ -103,7 +109,7 @@ finalize(ascon_perm::ascon_perm_t& state, size_t& offset)
 // - When `readable` becomes 0, sponge state needs to be permutated again, after
 // which `rbytes` can again be squeezed from rate portion of the state.
 template<const size_t rounds_b, const size_t rate>
-static inline void
+static inline constexpr void
 squeeze(ascon_perm::ascon_perm_t& state, size_t& readable, std::span<uint8_t> out)
   requires(rate == RATE_BITS)
 {
@@ -121,9 +127,9 @@ squeeze(ascon_perm::ascon_perm_t& state, size_t& readable, std::span<uint8_t> ou
       word = ascon_utils::bswap(word);
     }
 
-    auto _out = out.subspan(ooff);
-    auto _word = reinterpret_cast<uint8_t*>(&word) + soff;
-    std::memcpy(_out.data(), _word, elen);
+    auto _out = out.subspan(ooff, elen);
+    auto _word = std::span<uint8_t>(reinterpret_cast<uint8_t*>(&word) + soff, elen);
+    std::copy(_word.begin(), _word.end(), _out.begin());
 
     readable -= elen;
     ooff += elen;
