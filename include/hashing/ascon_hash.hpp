@@ -37,7 +37,7 @@ private:
 
 public:
   // Constructor
-  constexpr inline ascon_hash_t() = default;
+  inline constexpr ascon_hash_t() = default;
 
   // Given N -bytes input message, this routine consumes those into
   // Ascon permutation state.
@@ -45,7 +45,7 @@ public:
   // Note, this routine can be called arbitrary number of times, each time with
   // arbitrary bytes of input message, until Ascon permutation state is
   // finalized ( by calling routine with similar name ).
-  inline void absorb(std::span<const uint8_t> msg)
+  inline constexpr void absorb(std::span<const uint8_t> msg)
   {
     if (!absorbed) {
       sponge::absorb<ROUNDS_B, RATE>(state, offset, msg);
@@ -60,7 +60,7 @@ public:
   // same Ascon-Hash object, doesn't do anything. After finalization, one would
   // like to read 32 -bytes of digest by squeezing sponge, which is done by
   // calling digest() function only once.
-  inline void finalize()
+  inline void constexpr finalize()
   {
     if (!absorbed) {
       sponge::finalize<ROUNDS_A, RATE>(state, offset);
@@ -73,7 +73,7 @@ public:
   // function again and again doesn't have any effect. You may continue using same
   // hasher object for another round of absorb->finalize->digest flow, by explicitly
   // calling reset() function.
-  inline void digest(std::span<uint8_t, DIGEST_LEN> out)
+  inline void constexpr digest(std::span<uint8_t, DIGEST_LEN> out)
   {
     if (absorbed && !squeezed) {
       size_t readable = RATE / 8;
@@ -86,7 +86,7 @@ public:
   // Resets internal state of Ascon-Hash object, making it ready for yet another
   // absorb->finalize->digest round. You must explicitly call this function if you're
   // interested in reusing the same object for absorbing new messages.
-  inline void reset()
+  inline void constexpr reset()
   {
     this->state = INIT_PERM_STATE;
     this->offset = 0;
