@@ -49,12 +49,15 @@ bswap(const T a)
 // Given big-endian byte array of length 4/ 8, this function interprets it as
 // 32/ 64 -bit unsigned integer.
 template<typename T>
-inline T
+inline constexpr T
 from_be_bytes(std::span<const uint8_t> bytes)
   requires(std::unsigned_integral<T> && ((sizeof(T) == 4) || (sizeof(T) == 8)))
 {
+  using num_t = std::span<uint8_t, sizeof(T)>;
+
   T res = 0;
-  std::memcpy(&res, bytes.data(), bytes.size());
+  auto _res = num_t(reinterpret_cast<uint8_t*>(&res), sizeof(T));
+  std::copy(bytes.begin(), bytes.end(), _res.begin());
 
   if constexpr (std::endian::native == std::endian::little) {
     return bswap(res);
@@ -66,15 +69,20 @@ from_be_bytes(std::span<const uint8_t> bytes)
 // Given a 32/ 64 -bit unsigned integer, this function interprets it as a
 // big-endian byte array of length 4/ 8.
 template<typename T>
-inline void
+inline constexpr void
 to_be_bytes(const T num, std::span<uint8_t> bytes)
   requires(std::unsigned_integral<T> && ((sizeof(T) == 4) || (sizeof(T) == 8)))
 {
+  using num_t = std::span<const uint8_t, sizeof(T)>;
+
   if constexpr (std::endian::native == std::endian::little) {
     const auto res = bswap(num);
-    std::memcpy(bytes.data(), &res, sizeof(T));
+
+    auto _res = num_t(reinterpret_cast<const uint8_t*>(&res), sizeof(T));
+    std::copy(_res.begin(), _res.end(), bytes.begin());
   } else {
-    std::memcpy(bytes.data(), &num, sizeof(T));
+    auto _num = num_t(reinterpret_cast<const uint8_t*>(&num), sizeof(T));
+    std::copy(_num.begin(), _num.end(), bytes.begin());
   }
 }
 
@@ -87,7 +95,7 @@ to_be_bytes(const T num, std::span<uint8_t> bytes)
 // take proper care of them, before using the message chunk, as it may be some garbage
 // bytes from previous iteration.
 template<const size_t len>
-inline size_t
+inline constexpr size_t
 get_ith_msg_blk(
   std::span<const uint8_t> msg,   // chunk(s) to be read from this message
   const size_t i,                 // index of message chunk, to be read
@@ -99,18 +107,24 @@ get_ith_msg_blk(
   const size_t off = i * len;
   const size_t readable = std::min(len, msg.size() - off);
 
-  std::memcpy(msg_blk.data(), msg.subspan(off).data(), readable);
+  auto _msg = msg.subspan(off, readable);
+  std::copy(_msg.begin(), _msg.end(), msg_blk.begin());
+
   return readable;
 }
 
 // Padding a message block of `len` -bytes, following 10* rule s.t. first `used` -many
-// bytes are filled and they can't be touched.
+// bytes are already filled with message and they can't be touched. It's guaranteed that
+// whenever this function is called `used` must be < `len` - and that's why the last
+// line of this function is correct, it may not be in case this assumption changes.
 template<const size_t len>
-inline void
+inline constexpr void
 pad_msg_blk(std::span<uint8_t, len> msg_blk, const size_t used)
 {
-  std::memset(msg_blk.subspan(used).data(), 0x00, len - used);
-  std::memset(msg_blk.subspan(used).data(), 0x80, std::min<size_t>(len - used, 1ul));
+  auto _msg_blk0 = msg_blk.subspan(used, len - used);
+  std::fill(_msg_blk0.begin(), _msg_blk0.end(), 0x00);
+
+  msg_blk[used] = 0x80;
 }
 
 // Converts byte array into hex string; see https://stackoverflow.com/a/14051107
