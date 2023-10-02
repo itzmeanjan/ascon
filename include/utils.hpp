@@ -27,7 +27,7 @@ bswap(const T a)
 #if defined __GNUG__ || defined __MINGW64__
     return __builtin_bswap32(a);
 #elif defined _MSC_VER
-	return _byteswap_uint32(a);
+    return _byteswap_uint32(a);
 #else
     return ((a & 0x000000ffu) << 24) | ((a & 0x0000ff00u) << 8) |
            ((a & 0x00ff0000u) >> 8) | ((a & 0xff000000u) >> 24);
@@ -36,7 +36,7 @@ bswap(const T a)
 #if defined __GNUG__ || defined __MINGW64__
     return __builtin_bswap64(a);
 #elif defined _MSC_VER
-	return _byteswap_uint64(a);
+    return _byteswap_uint64(a);
 #else
     return ((a & 0x00000000000000fful) << 56) | ((a & 0x000000000000ff00ul) << 40) |
            ((a & 0x0000000000ff0000ul) << 24) | ((a & 0x00000000ff000000ul) << 0x8) |
