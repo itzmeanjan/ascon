@@ -46,7 +46,7 @@ TEST(AsconAuth, KnownAnswerTestsAsconPRF)
       prf.finalize();
       prf.squeeze(_out);
 
-      ASSERT_EQ(out, tag);
+      EXPECT_EQ(out, tag);
 
       std::string empty_line;
       std::getline(file, empty_line);

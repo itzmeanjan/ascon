@@ -46,7 +46,7 @@ TEST(AsconAuth, KnownAnswerTestsAsconPRFShort)
       ascon_prfs::prfs_authenticate(_key, _msg, _computed);
       bool flg = ascon_prfs::prfs_verify(_key, _msg, _tag);
 
-      ASSERT_TRUE(flg);
+      EXPECT_TRUE(flg);
 
       std::string empty_line;
       std::getline(file, empty_line);

@@ -1,145 +1,81 @@
-CXX = g++
+CXX = clang++
 CXX_FLAGS = -std=c++20
 WARN_FLAGS = -Wall -Wextra -pedantic
-OPT_FLAGS = -O3 -march=native -mtune=native
-IFLAGS = -I ./include
+OPT_FLAGS = -O3 -march=native
+LINK_FLAGS = -flto
+I_FLAGS = -I ./include
 DEP_IFLAGS = -I ./subtle/include
 PERF_DEFS = -DCYCLES_PER_BYTE -DINSTRUCTIONS_PER_CYCLE
 
+SRC_DIR = include
+ASCON_SOURCES := $(wildcard $(SRC_DIR)/*.hpp)
+BUILD_DIR = build
+
+TEST_DIR = tests
+TEST_SOURCES := $(wildcard $(TEST_DIR)/*.cpp)
+TEST_BUILD_DIR := $(BUILD_DIR)/$(TEST_DIR)
+TEST_OBJECTS := $(addprefix $(TEST_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(TEST_SOURCES))))
+TEST_LINK_FLAGS = -lgtest -lgtest_main
+TEST_BINARY = $(TEST_BUILD_DIR)/test.out
+
+BENCHMARK_DIR = benchmarks
+BENCHMARK_SOURCES := $(wildcard $(BENCHMARK_DIR)/*.cpp)
+BENCHMARK_BUILD_DIR := $(BUILD_DIR)/$(BENCHMARK_DIR)
+PERF_BUILD_DIR := $(BUILD_DIR)/perfs
+BENCHMARK_OBJECTS := $(addprefix $(BENCHMARK_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(BENCHMARK_SOURCES))))
+PERF_OBJECTS := $(addprefix $(PERF_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(BENCHMARK_SOURCES))))
+BENCHMARK_LINK_FLAGS = -lbenchmark -lbenchmark_main
+BENCHMARK_BINARY = $(BENCHMARK_BUILD_DIR)/bench.out
+PERF_LINK_FLAGS = -lbenchmark -lbenchmark_main -lpthread -lpfm
+PERF_BINARY = $(PERF_BUILD_DIR)/perf.out
+
 all: test
 
-tests/test_ascon_perm.o: tests/test_ascon_perm.cpp include/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
+$(BUILD_DIR):
+	mkdir -p $@
 
-tests/test_ascon128_aead.o: tests/test_ascon128_aead.cpp include/*.hpp include/aead/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
+$(TEST_BUILD_DIR): $(BUILD_DIR)
+	mkdir -p $@
 
-tests/test_ascon128a_aead.o: tests/test_ascon128a_aead.cpp include/*.hpp include/aead/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
+$(BENCHMARK_BUILD_DIR): $(BUILD_DIR)
+	mkdir -p $@
 
-tests/test_ascon80pq_aead.o: tests/test_ascon80pq_aead.cpp include/*.hpp include/aead/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
+$(PERF_BUILD_DIR): $(BUILD_DIR)
+	mkdir -p $@
 
-tests/test_ascon_hash.o: tests/test_ascon_hash.cpp include/*.hpp include/hashing/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
+$(TEST_BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp $(TEST_BUILD_DIR)
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) $(DEP_IFLAGS) -c $< -o $@
 
-tests/test_ascon_hasha.o: tests/test_ascon_hasha.cpp include/*.hpp include/hashing/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
+$(TEST_BINARY): $(TEST_OBJECTS)
+	$(CXX) $(OPT_FLAGS) $(LINK_FLAGS) $^ $(TEST_LINK_FLAGS) -o $@
 
-tests/test_ascon_xof.o: tests/test_ascon_xof.cpp include/*.hpp include/hashing/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
-
-tests/test_ascon_xofa.o: tests/test_ascon_xofa.cpp include/*.hpp include/hashing/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
-
-tests/test_ascon_prf.o: tests/test_ascon_prf.cpp include/*.hpp include/auth/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
-
-tests/test_ascon_mac.o: tests/test_ascon_mac.cpp include/*.hpp include/auth/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
-
-tests/test_ascon_prfs.o: tests/test_ascon_prfs.cpp include/*.hpp include/auth/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
-
-tests/a.out: tests/test_ascon_perm.o \
-				tests/test_ascon128_aead.o tests/test_ascon128a_aead.o tests/test_ascon80pq_aead.o \
-					tests/test_ascon_hash.o tests/test_ascon_hasha.o tests/test_ascon_xof.o tests/test_ascon_xofa.o \
-						tests/test_ascon_prf.o tests/test_ascon_mac.o tests/test_ascon_prfs.o
-	$(CXX) $(OPT_FLAGS) $^ -lgtest -lgtest_main -o $@
-
-test: tests/a.out
+test: $(TEST_BINARY)
 	./$<
 
-benchmarks/bench_ascon_perm.o: benchmarks/bench_ascon_perm.cpp include/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
+$(BENCHMARK_BUILD_DIR)/%.o: $(BENCHMARK_DIR)/%.cpp $(BENCHMARK_BUILD_DIR)
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) $(DEP_IFLAGS) -c $< -o $@
 
-benchmarks/perf_ascon_perm.o: benchmarks/bench_ascon_perm.cpp include/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) $(PERF_DEFS) -c $< -o $@
+$(PERF_BUILD_DIR)/%.o: $(BENCHMARK_DIR)/%.cpp $(PERF_BUILD_DIR)
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(PERF_DEFS) $(I_FLAGS) $(DEP_IFLAGS) -c $< -o $@
 
-benchmarks/bench_ascon128_aead.o: benchmarks/bench_ascon128_aead.cpp include/*.hpp include/aead/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
+$(BENCHMARK_BINARY): $(BENCHMARK_OBJECTS)
+	$(CXX) $(OPT_FLAGS) $(LINK_FLAGS) $^ $(BENCHMARK_LINK_FLAGS) -o $@
 
-benchmarks/perf_ascon128_aead.o: benchmarks/bench_ascon128_aead.cpp include/*.hpp include/aead/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) $(PERF_DEFS) -c $< -o $@
+benchmark: $(BENCHMARK_BINARY)
+	# Must *not* build google-benchmark with libPFM
+	./$< --benchmark_min_warmup_time=.1 --benchmark_enable_random_interleaving=true --benchmark_repetitions=8 --benchmark_min_time=0.1s --benchmark_counters_tabular=true --benchmark_display_aggregates_only=true
 
-benchmarks/bench_ascon128a_aead.o: benchmarks/bench_ascon128a_aead.cpp include/*.hpp include/aead/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
+$(PERF_BINARY): $(PERF_OBJECTS)
+	$(CXX) $(OPT_FLAGS) $(LINK_FLAGS) $^ $(PERF_LINK_FLAGS) -o $@
 
-benchmarks/perf_ascon128a_aead.o: benchmarks/bench_ascon128a_aead.cpp include/*.hpp include/aead/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) $(PERF_DEFS) -c $< -o $@
+perf: $(PERF_BINARY)
+	# Must build google-benchmark with libPFM, follow https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7
+	./$< --benchmark_min_warmup_time=.1 --benchmark_enable_random_interleaving=true --benchmark_repetitions=8 --benchmark_min_time=0.1s --benchmark_counters_tabular=true --benchmark_display_aggregates_only=true --benchmark_perf_counters=CYCLES,INSTRUCTIONS
 
-benchmarks/bench_ascon80pq_aead.o: benchmarks/bench_ascon80pq_aead.cpp include/*.hpp include/aead/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
-
-benchmarks/perf_ascon80pq_aead.o: benchmarks/bench_ascon80pq_aead.cpp include/*.hpp include/aead/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) $(PERF_DEFS) -c $< -o $@
-
-benchmarks/bench_ascon_hash.o: benchmarks/bench_ascon_hash.cpp include/*.hpp include/hashing/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
-
-benchmarks/perf_ascon_hash.o: benchmarks/bench_ascon_hash.cpp include/*.hpp include/hashing/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) $(PERF_DEFS) -c $< -o $@
-
-benchmarks/bench_ascon_hasha.o: benchmarks/bench_ascon_hasha.cpp include/*.hpp include/hashing/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
-
-benchmarks/perf_ascon_hasha.o: benchmarks/bench_ascon_hasha.cpp include/*.hpp include/hashing/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) $(PERF_DEFS) -c $< -o $@
-
-benchmarks/bench_ascon_xof.o: benchmarks/bench_ascon_xof.cpp include/*.hpp include/hashing/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
-
-benchmarks/perf_ascon_xof.o: benchmarks/bench_ascon_xof.cpp include/*.hpp include/hashing/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) $(PERF_DEFS) -c $< -o $@
-
-benchmarks/bench_ascon_xofa.o: benchmarks/bench_ascon_xofa.cpp include/*.hpp include/hashing/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
-
-benchmarks/perf_ascon_xofa.o: benchmarks/bench_ascon_xofa.cpp include/*.hpp include/hashing/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) $(PERF_DEFS) -c $< -o $@
-
-benchmarks/bench_ascon_prf.o: benchmarks/bench_ascon_prf.cpp include/*.hpp include/auth/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
-
-benchmarks/perf_ascon_prf.o: benchmarks/bench_ascon_prf.cpp include/*.hpp include/auth/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) $(PERF_DEFS) -c $< -o $@
-
-benchmarks/bench_ascon_mac.o: benchmarks/bench_ascon_mac.cpp include/*.hpp include/auth/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
-
-benchmarks/perf_ascon_mac.o: benchmarks/bench_ascon_mac.cpp include/*.hpp include/auth/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) $(PERF_DEFS) -c $< -o $@
-
-benchmarks/bench_ascon_prfs.o: benchmarks/bench_ascon_prfs.cpp include/*.hpp include/auth/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
-
-benchmarks/perf_ascon_prfs.o: benchmarks/bench_ascon_prfs.cpp include/*.hpp include/auth/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) $(PERF_DEFS) -c $< -o $@
-
-benchmarks/bench.out: benchmarks/bench_ascon_perm.o \
-						benchmarks/bench_ascon128_aead.o benchmarks/bench_ascon128a_aead.o benchmarks/bench_ascon80pq_aead.o \
-							benchmarks/bench_ascon_hash.o benchmarks/bench_ascon_hasha.o benchmarks/bench_ascon_xof.o benchmarks/bench_ascon_xofa.o \
-								benchmarks/bench_ascon_prf.o benchmarks/bench_ascon_mac.o benchmarks/bench_ascon_prfs.o
-	# In case you haven't built google-benchmark with libPFM support.
-	# More @ https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7
-	$(CXX) $(OPT_FLAGS) $^ -lbenchmark -lbenchmark_main -lpthread -o $@
-
-benchmarks/perf.out: benchmarks/perf_ascon_perm.o \
-						benchmarks/perf_ascon128_aead.o benchmarks/perf_ascon128a_aead.o benchmarks/perf_ascon80pq_aead.o \
-							benchmarks/perf_ascon_hash.o benchmarks/perf_ascon_hasha.o benchmarks/perf_ascon_xof.o benchmarks/perf_ascon_xofa.o \
-								benchmarks/perf_ascon_prf.o benchmarks/perf_ascon_mac.o benchmarks/perf_ascon_prfs.o
-	# In case you've built google-benchmark with libPFM support.
-	# More @ https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7
-	$(CXX) $(OPT_FLAGS) $^ -lbenchmark -lbenchmark_main -lpthread -lpfm -o $@
-
-bench: benchmarks/bench.out
-	./$< --benchmark_counters_tabular=true --benchmark_min_warmup_time=1.
-
-perf: benchmarks/perf.out
-	./$< --benchmark_counters_tabular=true --benchmark_min_warmup_time=1. --benchmark_perf_counters=CYCLES,INSTRUCTIONS
+.PHONY: format clean
 
 clean:
-	find . -name '*.out' -o -name '*.o' -o -name '*.gch' | xargs rm -rf
+	rm -rf $(BUILD_DIR)
 
-format:
-	find include/ benchmarks/ tests/ -name '*.hpp' -o -name '*.cpp' | xargs clang-format -i
+format: $(ASCON_SOURCES) $(TEST_SOURCES) $(BENCHMARK_SOURCES)
+	clang-format -i $^
