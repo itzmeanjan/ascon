@@ -1,8 +1,49 @@
 #include "hashing/ascon_xof.hpp"
 #include "test_common.hpp"
+#include <array>
 #include <fstream>
 #include <gtest/gtest.h>
 #include <span>
+
+// Given a statically known input message, computes olen -bytes Ascon-Xof digest on it,
+// returning hex-encoded character array as output, during program compilation time.
+template<size_t olen = 32>
+constexpr std::array<char, 2 * olen>
+eval_ascon_xof()
+{
+  // Statically defined input.
+  // Message = 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+  std::array<uint8_t, 32> data{};
+  std::iota(data.begin(), data.end(), 0);
+
+  // To be computed digest.
+  std::array<uint8_t, olen> md{};
+
+  ascon_xof::ascon_xof_t hasher;
+  hasher.absorb(data);
+  hasher.finalize();
+  hasher.squeeze(md);
+
+  // Returns hex-encoded digest.
+  return bytes_to_hex(md);
+}
+
+TEST(AsconHashing, CompileTimeEvalAsconXof)
+{
+  // AsconXof("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f") =
+  // "0b8e325b9bbf1bb43e77aa1eed93bee62b4ea1e4b0c5a696b2f5c5b09c968918"
+  constexpr auto md = eval_ascon_xof();
+  constexpr auto flg = md == std::array<char, 64>{
+    '0', 'b', '8', 'e', '3', '2', '5', 'b', '9', 'b', 'b', 'f', '1', 'b', 'b', '4',
+    '3', 'e', '7', '7', 'a', 'a', '1', 'e', 'e', 'd', '9', '3', 'b', 'e', 'e', '6',
+    '2', 'b', '4', 'e', 'a', '1', 'e', '4', 'b', '0', 'c', '5', 'a', '6', '9', '6',
+    'b', '2', 'f', '5', 'c', '5', 'b', '0', '9', 'c', '9', '6', '8', '9', '1', '8'
+  };
+
+  static_assert(
+    flg, "Must be able to evaluate Ascon-Xof during program compilation time itself !");
+  EXPECT_TRUE(flg);
+}
 
 // Ensure that both oneshot and incremental way of absorbing same message and squeezing
 // same length output, produces same digest for Ascon-Xof.
@@ -58,7 +99,7 @@ test_ascon_xof(const size_t mlen, const size_t dlen)
     }
   }
 
-  ASSERT_EQ(dig_oneshot, dig_incremental);
+  EXPECT_EQ(dig_oneshot, dig_incremental);
 }
 
 TEST(AsconHashing, IncrementalMessageAbsorptionSqueezingAsconXof)
@@ -109,7 +150,7 @@ kat_ascon_xof()
       hasher.finalize();
       hasher.squeeze(_digest);
 
-      ASSERT_EQ(digest, md);
+      EXPECT_EQ(digest, md);
 
       std::string empty_line;
       std::getline(file, empty_line);

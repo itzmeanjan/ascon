@@ -1,8 +1,49 @@
 #include "hashing/ascon_hasha.hpp"
 #include "test_common.hpp"
+#include <array>
 #include <fstream>
 #include <gtest/gtest.h>
 #include <span>
+
+// Given a statically known input message, computes Ascon-HashA digest on it, returning
+// hex-encoded character array as output, during program compilation time.
+constexpr std::array<char, 2 * ascon_hasha::DIGEST_LEN>
+eval_ascon_hasha()
+{
+  // Statically defined input.
+  // Message = 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+  std::array<uint8_t, 32> data{};
+  std::iota(data.begin(), data.end(), 0);
+
+  // To be computed digest.
+  std::array<uint8_t, ascon_hasha::DIGEST_LEN> md{};
+
+  ascon_hasha::ascon_hasha_t hasher;
+  hasher.absorb(data);
+  hasher.finalize();
+  hasher.digest(md);
+
+  // Returns hex-encoded digest.
+  return bytes_to_hex(md);
+}
+
+TEST(AsconHashing, CompileTimeEvalAsconHashA)
+{
+  // AsconHashA("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f") =
+  // "3237cbcc617a2550583a50e8bad3dacda82562e06220150448c109008fa054a2"
+  constexpr auto md = eval_ascon_hasha();
+  constexpr auto flg = md == std::array<char, ascon_hasha::DIGEST_LEN * 2>{
+    '3', '2', '3', '7', 'c', 'b', 'c', 'c', '6', '1', '7', 'a', '2', '5', '5', '0',
+    '5', '8', '3', 'a', '5', '0', 'e', '8', 'b', 'a', 'd', '3', 'd', 'a', 'c', 'd',
+    'a', '8', '2', '5', '6', '2', 'e', '0', '6', '2', '2', '0', '1', '5', '0', '4',
+    '4', '8', 'c', '1', '0', '9', '0', '0', '8', 'f', 'a', '0', '5', '4', 'a', '2'
+  };
+
+  static_assert(
+    flg,
+    "Must be able to evaluate Ascon-HashA during program compilation time itself !");
+  EXPECT_TRUE(flg);
+}
 
 // Ensure that both oneshot and incremental way of absorbing same message produces same
 // digest for Ascon-HashA.
@@ -47,7 +88,7 @@ test_ascon_hasha(const size_t mlen)
     hasher.digest(_dig_incremental);
   }
 
-  ASSERT_EQ(dig_oneshot, dig_incremental);
+  EXPECT_EQ(dig_oneshot, dig_incremental);
 }
 
 TEST(AsconHashing, IncrementalMessageAbsorptionAsconHashA)
@@ -96,7 +137,7 @@ kat_ascon_hasha()
       hasher.finalize();
       hasher.digest(_digest);
 
-      ASSERT_EQ(digest, md);
+      EXPECT_EQ(digest, md);
 
       std::string empty_line;
       std::getline(file, empty_line);
