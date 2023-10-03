@@ -29,7 +29,7 @@ TEST(AsconPermutation, AsconPermWithAsconHashIV)
                                                 0x43189921b8f8e3e8ul,
                                                 0x348fa5c9d525e140ul };
   static_assert(res, "Must compute init state of Ascon-Hash, in compile-time !");
-  ASSERT_TRUE(res);
+  EXPECT_TRUE(res);
 }
 
 TEST(AsconPermutation, AsconPermWithAsconHashAIV)
@@ -41,7 +41,7 @@ TEST(AsconPermutation, AsconPermWithAsconHashAIV)
                                                 0xd6f6a54d7f52377d,
                                                 0xa13c42a223be8d87 };
   static_assert(res, "Must compute init state of Ascon-HashA, in compile-time !");
-  ASSERT_TRUE(res);
+  EXPECT_TRUE(res);
 }
 
 TEST(AsconPermutation, AsconPermWithAsconXofIV)
@@ -53,7 +53,7 @@ TEST(AsconPermutation, AsconPermWithAsconXofIV)
                                                 0x5aad0a7a8153650c,
                                                 0x4f3e0e32539493b6 };
   static_assert(res, "Must compute init state of Ascon-Xof, in compile-time !");
-  ASSERT_TRUE(res);
+  EXPECT_TRUE(res);
 }
 
 TEST(AsconPermutation, AsconPermWithAsconXofAIV)
@@ -65,5 +65,5 @@ TEST(AsconPermutation, AsconPermWithAsconXofAIV)
                                                 0x246885e1de0d225b,
                                                 0xa8cb5ce33449973f };
   static_assert(res, "Must compute init state of Ascon-XofA, in compile-time !");
-  ASSERT_TRUE(res);
+  EXPECT_TRUE(res);
 }

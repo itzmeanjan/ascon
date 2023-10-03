@@ -37,8 +37,8 @@ test_ascon80pq_aead(const size_t dlen, // bytes; >= 0
   ascon80pq_aead::encrypt(_key, _nonce, _data, _text, _enc, _tag);
   bool flag = ascon80pq_aead::decrypt(_key, _nonce, _data, _enc, _dec, _tag);
 
-  ASSERT_TRUE(flag);
-  ASSERT_EQ(text, dec);
+  EXPECT_TRUE(flag);
+  EXPECT_EQ(text, dec);
 }
 
 TEST(AsconAEAD, CorrectnessTestAscon80pqAEAD)
@@ -111,9 +111,9 @@ kat_ascon80pq_aead()
       ascon80pq_aead::encrypt(_key, _nonce, _ad, _pt, _ctxt, _tag);
       bool flag = ascon80pq_aead::decrypt(_key, _nonce, _ad, _ctxt, _ptxt, _tag);
 
-      ASSERT_TRUE(flag);
-      ASSERT_TRUE(std::ranges::equal(_ct.subspan(0, pt.size()), _ctxt));
-      ASSERT_TRUE(std::ranges::equal(_ct.subspan(pt.size()), _tag));
+      EXPECT_TRUE(flag);
+      EXPECT_TRUE(std::ranges::equal(_ct.subspan(0, pt.size()), _ctxt));
+      EXPECT_TRUE(std::ranges::equal(_ct.subspan(pt.size()), _tag));
 
       std::string empty_line;
       std::getline(file, empty_line);

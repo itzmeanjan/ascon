@@ -47,7 +47,7 @@ TEST(AsconAuth, KnownAnswerTestsAsconMac)
       mac.finalize(_computed);
       bool flg = mac.verify(_tag, _computed);
 
-      ASSERT_TRUE(flg);
+      EXPECT_TRUE(flg);
 
       std::string empty_line;
       std::getline(file, empty_line);
