@@ -53,36 +53,50 @@ inline constexpr T
 from_be_bytes(std::span<const uint8_t> bytes)
   requires(std::unsigned_integral<T> && ((sizeof(T) == 4) || (sizeof(T) == 8)))
 {
-  using num_t = std::span<uint8_t, sizeof(T)>;
-
   T res = 0;
-  auto _res = num_t(reinterpret_cast<uint8_t*>(&res), sizeof(T));
-  std::copy(bytes.begin(), bytes.end(), _res.begin());
 
-  if constexpr (std::endian::native == std::endian::little) {
-    return bswap(res);
+  if constexpr (sizeof(T) == 4) {
+    res = (static_cast<T>(bytes[0]) << 24) | (static_cast<T>(bytes[1]) << 16) |
+          (static_cast<T>(bytes[2]) << 8) | static_cast<T>(bytes[3]);
   } else {
-    return res;
+    static_assert(sizeof(T) == 8, "T must be either 4 or 8 -bytes !");
+
+    res = (static_cast<T>(bytes[0]) << 56) | (static_cast<T>(bytes[1]) << 48) |
+          (static_cast<T>(bytes[2]) << 40) | (static_cast<T>(bytes[3]) << 32) |
+          (static_cast<T>(bytes[4]) << 24) | (static_cast<T>(bytes[5]) << 16) |
+          (static_cast<T>(bytes[6]) << 8) | static_cast<T>(bytes[7]);
   }
+
+  return res;
 }
 
 // Given a 32/ 64 -bit unsigned integer, this function interprets it as a
 // big-endian byte array of length 4/ 8.
 template<typename T>
 inline constexpr void
-to_be_bytes(const T num, std::span<uint8_t> bytes)
+to_be_bytes(T num, std::span<uint8_t> bytes)
   requires(std::unsigned_integral<T> && ((sizeof(T) == 4) || (sizeof(T) == 8)))
 {
-  using num_t = std::span<const uint8_t, sizeof(T)>;
-
   if constexpr (std::endian::native == std::endian::little) {
-    const auto res = bswap(num);
+    num = bswap(num);
+  }
 
-    auto _res = num_t(reinterpret_cast<const uint8_t*>(&res), sizeof(T));
-    std::copy(_res.begin(), _res.end(), bytes.begin());
+  if constexpr (sizeof(T) == 4) {
+    bytes[0] = static_cast<uint8_t>(num >> 0);
+    bytes[1] = static_cast<uint8_t>(num >> 8);
+    bytes[2] = static_cast<uint8_t>(num >> 16);
+    bytes[3] = static_cast<uint8_t>(num >> 24);
   } else {
-    auto _num = num_t(reinterpret_cast<const uint8_t*>(&num), sizeof(T));
-    std::copy(_num.begin(), _num.end(), bytes.begin());
+    static_assert(sizeof(T) == 8, "T must be either 4 or 8 -bytes !");
+
+    bytes[0] = static_cast<uint8_t>(num >> 0);
+    bytes[1] = static_cast<uint8_t>(num >> 8);
+    bytes[2] = static_cast<uint8_t>(num >> 16);
+    bytes[3] = static_cast<uint8_t>(num >> 24);
+    bytes[4] = static_cast<uint8_t>(num >> 32);
+    bytes[5] = static_cast<uint8_t>(num >> 40);
+    bytes[6] = static_cast<uint8_t>(num >> 48);
+    bytes[7] = static_cast<uint8_t>(num >> 56);
   }
 }
 

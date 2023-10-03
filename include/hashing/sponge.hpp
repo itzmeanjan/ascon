@@ -2,6 +2,7 @@
 #include "ascon_perm.hpp"
 #include "utils.hpp"
 #include <algorithm>
+#include <array>
 #include <cstdint>
 
 // Common functions required for implementing sponge-based hash functions.
@@ -114,6 +115,10 @@ squeeze(ascon_perm::ascon_perm_t& state, size_t& readable, std::span<uint8_t> ou
   requires(rate == RATE_BITS)
 {
   constexpr size_t rbytes = rate / 8;
+
+  std::array<uint8_t, rbytes> block{};
+  auto _block = std::span(block);
+
   const size_t olen = out.size();
 
   size_t ooff = 0;
@@ -121,15 +126,11 @@ squeeze(ascon_perm::ascon_perm_t& state, size_t& readable, std::span<uint8_t> ou
     const size_t elen = std::min(readable, olen - ooff);
     const size_t soff = rbytes - readable;
 
-    uint64_t word = state[0];
-
-    if constexpr (std::endian::native == std::endian::little) {
-      word = ascon_utils::bswap(word);
-    }
+    ascon_utils::to_be_bytes(state[0], _block);
 
     auto _out = out.subspan(ooff, elen);
-    auto _word = std::span<uint8_t>(reinterpret_cast<uint8_t*>(&word) + soff, elen);
-    std::copy(_word.begin(), _word.end(), _out.begin());
+    auto __block = _block.subspan(soff, elen);
+    std::copy(__block.begin(), __block.end(), _out.begin());
 
     readable -= elen;
     ooff += elen;
