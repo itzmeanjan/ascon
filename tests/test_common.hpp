@@ -1,4 +1,5 @@
 #pragma once
+#include <array>
 #include <cstddef>
 #include <cstdint>
 
@@ -17,3 +18,22 @@ constexpr size_t MAX_MSG_LEN = 1024;
 // Min. and max. byte length of output to be squeezed from sponge.
 constexpr size_t MIN_OUT_LEN = 0;
 constexpr size_t MAX_OUT_LEN = 256;
+
+// Given a byte array of length L, this routine can be used for interpreting those bytes
+// as a hex-encoded string of length 2*L.
+template<size_t L>
+constexpr std::array<char, L * 2>
+bytes_to_hex(std::array<uint8_t, L> bytes)
+{
+  constexpr std::array<char, 16> table{ '0', '1', '2', '3', '4', '5', '6', '7',
+                                        '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+
+  std::array<char, bytes.size() * 2> hex{};
+
+  for (size_t i = 0; i < bytes.size(); i++) {
+    hex[2 * i + 0] = table[bytes[i] >> 4];
+    hex[2 * i + 1] = table[bytes[i] & 0x0f];
+  }
+
+  return hex;
+}
