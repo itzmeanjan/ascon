@@ -107,14 +107,14 @@ ascon128_aead_decrypt(benchmark::State& state)
 // Register for benchmarking Ascon-128 AEAD.
 BENCHMARK(ascon128_aead_encrypt)
   ->ArgsProduct({
-    benchmark::CreateRange(1 << 6, 1 << 12, 2), // plain text
+    benchmark::CreateRange(1 << 6, 1 << 12, 4), // plain text
     { 32 }                                      // associated data
   })
   ->ComputeStatistics("min", compute_min)
   ->ComputeStatistics("max", compute_max);
 BENCHMARK(ascon128_aead_decrypt)
   ->ArgsProduct({
-    benchmark::CreateRange(1 << 6, 1 << 12, 2), // cipher text
+    benchmark::CreateRange(1 << 6, 1 << 12, 4), // cipher text
     { 32 }                                      // associated data
   })
   ->ComputeStatistics("min", compute_min)

@@ -43,8 +43,8 @@ bench_ascon_xof(benchmark::State& state)
 // Register for benchmarking Ascon-Xof.
 BENCHMARK(bench_ascon_xof)
   ->ArgsProduct({
-    benchmark::CreateRange(1 << 6, 1 << 12, 2), // input, to be absorbed
-    { 32, 64 }                                  // output, to be squeezed
+    benchmark::CreateRange(1 << 6, 1 << 12, 4), // input, to be absorbed
+    { 64 }                                      // output, to be squeezed
   })
   ->Name("ascon_xof")
   ->ComputeStatistics("min", compute_min)

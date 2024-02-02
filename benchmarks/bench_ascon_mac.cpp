@@ -95,12 +95,12 @@ ascon_mac_verify(benchmark::State& state)
 
 // Register for benchmarking Ascon-MAC.
 BENCHMARK(ascon_mac_authenticate)
-  ->RangeMultiplier(2)
+  ->RangeMultiplier(4)
   ->Range(1 << 6, 1 << 12) // input, to be authenticated
   ->ComputeStatistics("min", compute_min)
   ->ComputeStatistics("max", compute_max);
 BENCHMARK(ascon_mac_verify)
-  ->RangeMultiplier(2)
+  ->RangeMultiplier(4)
   ->Range(1 << 6, 1 << 12) // input, to be authenticated
   ->ComputeStatistics("min", compute_min)
   ->ComputeStatistics("max", compute_max);

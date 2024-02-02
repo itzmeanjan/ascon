@@ -87,12 +87,12 @@ ascon_prfs_verify(benchmark::State& state)
 
 // Register for benchmarking Ascon-PRFShort.
 BENCHMARK(ascon_prfs_authenticate)
-  ->RangeMultiplier(2)
+  ->RangeMultiplier(4)
   ->Range(1, ascon_prfs::MAX_MSG_LEN) // input, to be authenticated
   ->ComputeStatistics("min", compute_min)
   ->ComputeStatistics("max", compute_max);
 BENCHMARK(ascon_prfs_verify)
-  ->RangeMultiplier(2)
+  ->RangeMultiplier(4)
   ->Range(1, ascon_prfs::MAX_MSG_LEN) // input, to be authenticated
   ->ComputeStatistics("min", compute_min)
   ->ComputeStatistics("max", compute_max);

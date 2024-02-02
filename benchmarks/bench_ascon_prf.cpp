@@ -45,8 +45,8 @@ bench_ascon_prf(benchmark::State& state)
 // Register for benchmarking Ascon-PRF.
 BENCHMARK(bench_ascon_prf)
   ->ArgsProduct({
-    benchmark::CreateRange(1 << 6, 1 << 12, 2), // input, to be absorbed
-    { 16, 32, 64 }                              // output, to be squeezed
+    benchmark::CreateRange(1 << 6, 1 << 12, 4), // input, to be absorbed
+    { 64 }                                      // output, to be squeezed
   })
   ->Name("ascon_prf")
   ->ComputeStatistics("min", compute_min)

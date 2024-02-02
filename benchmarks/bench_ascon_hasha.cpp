@@ -41,7 +41,7 @@ bench_ascon_hasha(benchmark::State& state)
 
 // Register for benchmarking Ascon-HashA.
 BENCHMARK(bench_ascon_hasha)
-  ->RangeMultiplier(2)
+  ->RangeMultiplier(4)
   ->Range(1 << 6, 1 << 12)
   ->Name("ascon_hasha")
   ->ComputeStatistics("min", compute_min)

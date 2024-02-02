@@ -41,7 +41,7 @@ bench_ascon_hash(benchmark::State& state)
 
 // Register for benchmarking Ascon-Hash.
 BENCHMARK(bench_ascon_hash)
-  ->RangeMultiplier(2)
+  ->RangeMultiplier(4)
   ->Range(1 << 6, 1 << 12)
   ->Name("ascon_hash")
   ->ComputeStatistics("min", compute_min)
