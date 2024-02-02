@@ -39,8 +39,8 @@ absorb(ascon_perm::ascon_perm_t& state, size_t& offset, std::span<const uint8_t>
   constexpr size_t rbytes = rate / 8;
   const size_t mlen = msg.size();
 
-  std::array<uint8_t, rbytes> block{};
-  auto _block = std::span(block);
+  std::array<uint8_t, rbytes> in_block{};
+  auto _in_block = std::span(in_block);
 
   const size_t blk_cnt = (offset + mlen) / rbytes;
   size_t moff = 0;
@@ -48,13 +48,10 @@ absorb(ascon_perm::ascon_perm_t& state, size_t& offset, std::span<const uint8_t>
   for (size_t i = 0; i < blk_cnt; i++) {
     const size_t readable = rbytes - offset;
 
-    auto __block = _block.subspan(0, offset);
-    std::fill(__block.begin(), __block.end(), 0x00);
-
     auto _msg = msg.subspan(moff, readable);
-    std::copy(_msg.begin(), _msg.end(), _block.subspan(offset, readable).begin());
+    std::copy(_msg.begin(), _msg.end(), _in_block.subspan(offset, readable).begin());
 
-    const auto word = ascon_utils::from_be_bytes<uint64_t>(_block);
+    const auto word = ascon_utils::from_be_bytes<uint64_t>(_in_block);
     state[0] ^= word;
 
     moff += readable;
@@ -66,10 +63,10 @@ absorb(ascon_perm::ascon_perm_t& state, size_t& offset, std::span<const uint8_t>
   const size_t rm_bytes = mlen - moff;
   auto _msg = msg.subspan(moff, rm_bytes);
 
-  std::fill(_block.begin(), _block.end(), 0x00);
-  std::copy(_msg.begin(), _msg.end(), _block.subspan(offset, rm_bytes).begin());
+  std::fill(_in_block.begin(), _in_block.end(), 0x00);
+  std::copy(_msg.begin(), _msg.end(), _in_block.subspan(offset, rm_bytes).begin());
 
-  const auto word = ascon_utils::from_be_bytes<uint64_t>(_block);
+  const auto word = ascon_utils::from_be_bytes<uint64_t>(_in_block);
   state[0] ^= word;
 
   offset += rm_bytes;
@@ -116,8 +113,8 @@ squeeze(ascon_perm::ascon_perm_t& state, size_t& readable, std::span<uint8_t> ou
 {
   constexpr size_t rbytes = rate / 8;
 
-  std::array<uint8_t, rbytes> block{};
-  auto _block = std::span(block);
+  std::array<uint8_t, rbytes> out_block{};
+  auto _out_block = std::span(out_block);
 
   const size_t olen = out.size();
 
@@ -126,11 +123,11 @@ squeeze(ascon_perm::ascon_perm_t& state, size_t& readable, std::span<uint8_t> ou
     const size_t elen = std::min(readable, olen - ooff);
     const size_t soff = rbytes - readable;
 
-    ascon_utils::to_be_bytes(state[0], _block);
+    ascon_utils::to_be_bytes(state[0], _out_block);
 
     auto _out = out.subspan(ooff, elen);
-    auto __block = _block.subspan(soff, elen);
-    std::copy(__block.begin(), __block.end(), _out.begin());
+    auto __out_block = _out_block.subspan(soff, elen);
+    std::copy(__out_block.begin(), __out_block.end(), _out.begin());
 
     readable -= elen;
     ooff += elen;
