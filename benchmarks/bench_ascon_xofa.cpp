@@ -44,7 +44,7 @@ bench_ascon_xofa(benchmark::State& state)
 BENCHMARK(bench_ascon_xofa)
   ->ArgsProduct({
     benchmark::CreateRange(1 << 6, 1 << 12, 4), // input, to be absorbed
-    {  64 }                                  // output, to be squeezed
+    { 64 }                                      // output, to be squeezed
   })
   ->Name("ascon_xofa")
   ->ComputeStatistics("min", compute_min)

@@ -14,10 +14,12 @@ BUILD_DIR = build
 
 TEST_DIR = tests
 TEST_SOURCES := $(wildcard $(TEST_DIR)/*.cpp)
+TEST_HEADERS := $(wildcard $(TEST_DIR)/*.hpp)
 TEST_BUILD_DIR := $(BUILD_DIR)/$(TEST_DIR)
 TEST_OBJECTS := $(addprefix $(TEST_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(TEST_SOURCES))))
 TEST_LINK_FLAGS = -lgtest -lgtest_main
 TEST_BINARY = $(TEST_BUILD_DIR)/test.out
+GTEST_PARALLEL = ./gtest-parallel/gtest-parallel
 
 BENCHMARK_DIR = benchmarks
 BENCHMARK_SOURCES := $(wildcard $(BENCHMARK_DIR)/*.cpp)
@@ -48,14 +50,17 @@ $(PERF_BUILD_DIR): $(BUILD_DIR)
 $(SUBTLE_INC_DIR):
 	git submodule update --init
 
+$(GTEST_PARALLEL): $(SUBTLE_INC_DIR)
+	git submodule update --init
+
 $(TEST_BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp $(TEST_BUILD_DIR)
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) $(DEP_IFLAGS) -c $< -o $@
 
 $(TEST_BINARY): $(TEST_OBJECTS)
 	$(CXX) $(OPT_FLAGS) $(LINK_FLAGS) $^ $(TEST_LINK_FLAGS) -o $@
 
-test: $(TEST_BINARY)
-	./$<
+test: $(TEST_BINARY) $(GTEST_PARALLEL)
+	$(GTEST_PARALLEL) $< --print_test_times
 
 $(BENCHMARK_BUILD_DIR)/%.o: $(BENCHMARK_DIR)/%.cpp $(BENCHMARK_BUILD_DIR)
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) $(DEP_IFLAGS) -c $< -o $@
@@ -82,5 +87,5 @@ perf: $(PERF_BINARY)
 clean:
 	rm -rf $(BUILD_DIR)
 
-format: $(ASCON_SOURCES) $(TEST_SOURCES) $(BENCHMARK_SOURCES) $(BENCHMARK_HEADERS)
+format: $(ASCON_SOURCES) $(TEST_SOURCES) $(TEST_HEADERS) $(BENCHMARK_SOURCES) $(BENCHMARK_HEADERS)
 	clang-format -i $^
