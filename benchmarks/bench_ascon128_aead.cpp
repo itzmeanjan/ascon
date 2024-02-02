@@ -1,4 +1,5 @@
 #include "aead/ascon128.hpp"
+#include "bench_helper.hpp"
 #include <benchmark/benchmark.h>
 #include <cassert>
 #include <vector>
@@ -108,9 +109,13 @@ BENCHMARK(ascon128_aead_encrypt)
   ->ArgsProduct({
     benchmark::CreateRange(1 << 6, 1 << 12, 2), // plain text
     { 32 }                                      // associated data
-  });
+  })
+  ->ComputeStatistics("min", compute_min)
+  ->ComputeStatistics("max", compute_max);
 BENCHMARK(ascon128_aead_decrypt)
   ->ArgsProduct({
     benchmark::CreateRange(1 << 6, 1 << 12, 2), // cipher text
     { 32 }                                      // associated data
-  });
+  })
+  ->ComputeStatistics("min", compute_min)
+  ->ComputeStatistics("max", compute_max);

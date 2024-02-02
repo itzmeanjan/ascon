@@ -1,3 +1,4 @@
+#include "bench_helper.hpp"
 #include "hashing/ascon_xofa.hpp"
 #include <benchmark/benchmark.h>
 #include <span>
@@ -45,4 +46,6 @@ BENCHMARK(bench_ascon_xofa)
     benchmark::CreateRange(1 << 6, 1 << 12, 2), // input, to be absorbed
     { 32, 64 }                                  // output, to be squeezed
   })
-  ->Name("ascon_xofa");
+  ->Name("ascon_xofa")
+  ->ComputeStatistics("min", compute_min)
+  ->ComputeStatistics("max", compute_max);

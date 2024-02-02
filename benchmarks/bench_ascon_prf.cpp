@@ -1,4 +1,5 @@
 #include "auth/ascon_prf.hpp"
+#include "bench_helper.hpp"
 #include <benchmark/benchmark.h>
 
 // Benchmark Ascon-PRF implementation for variable length input message ( to be absorbed
@@ -47,4 +48,6 @@ BENCHMARK(bench_ascon_prf)
     benchmark::CreateRange(1 << 6, 1 << 12, 2), // input, to be absorbed
     { 16, 32, 64 }                              // output, to be squeezed
   })
-  ->Name("ascon_prf");
+  ->Name("ascon_prf")
+  ->ComputeStatistics("min", compute_min)
+  ->ComputeStatistics("max", compute_max);

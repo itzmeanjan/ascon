@@ -1,3 +1,4 @@
+#include "bench_helper.hpp"
 #include "hashing/ascon_hasha.hpp"
 #include <benchmark/benchmark.h>
 #include <span>
@@ -42,4 +43,6 @@ bench_ascon_hasha(benchmark::State& state)
 BENCHMARK(bench_ascon_hasha)
   ->RangeMultiplier(2)
   ->Range(1 << 6, 1 << 12)
-  ->Name("ascon_hasha");
+  ->Name("ascon_hasha")
+  ->ComputeStatistics("min", compute_min)
+  ->ComputeStatistics("max", compute_max);

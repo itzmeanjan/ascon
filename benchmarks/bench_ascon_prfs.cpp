@@ -1,4 +1,5 @@
 #include "auth/ascon_prfs.hpp"
+#include "bench_helper.hpp"
 #include <benchmark/benchmark.h>
 
 // Benchmark Ascon-PRFShort based authentication scheme implementation for short
@@ -88,8 +89,10 @@ ascon_prfs_verify(benchmark::State& state)
 BENCHMARK(ascon_prfs_authenticate)
   ->RangeMultiplier(2)
   ->Range(1, ascon_prfs::MAX_MSG_LEN) // input, to be authenticated
-  ;
+  ->ComputeStatistics("min", compute_min)
+  ->ComputeStatistics("max", compute_max);
 BENCHMARK(ascon_prfs_verify)
   ->RangeMultiplier(2)
   ->Range(1, ascon_prfs::MAX_MSG_LEN) // input, to be authenticated
-  ;
+  ->ComputeStatistics("min", compute_min)
+  ->ComputeStatistics("max", compute_max);

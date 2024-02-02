@@ -1,4 +1,5 @@
 #include "ascon_perm.hpp"
+#include "bench_helper.hpp"
 #include "utils.hpp"
 #include <benchmark/benchmark.h>
 
@@ -31,7 +32,15 @@ ascon_permutation(benchmark::State& state)
 }
 
 // Register for benchmarking Ascon permutation instances.
-BENCHMARK(ascon_permutation<1>);
-BENCHMARK(ascon_permutation<6>);
-BENCHMARK(ascon_permutation<8>);
-BENCHMARK(ascon_permutation<12>);
+BENCHMARK(ascon_permutation<1>)
+  ->ComputeStatistics("min", compute_min)
+  ->ComputeStatistics("max", compute_max);
+BENCHMARK(ascon_permutation<6>)
+  ->ComputeStatistics("min", compute_min)
+  ->ComputeStatistics("max", compute_max);
+BENCHMARK(ascon_permutation<8>)
+  ->ComputeStatistics("min", compute_min)
+  ->ComputeStatistics("max", compute_max);
+BENCHMARK(ascon_permutation<12>)
+  ->ComputeStatistics("min", compute_min)
+  ->ComputeStatistics("max", compute_max);
