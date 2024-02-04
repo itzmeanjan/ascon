@@ -1,10 +1,9 @@
-#include "hashing/ascon_xof.hpp"
+#include "hashing/ascon_xofa.hpp"
 #include <iostream>
 
 // Compile with
 //
-// g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./subtle/include
-// example/ascon_xof.cpp
+// g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./subtle/include examples/ascon_xofa.cpp
 int
 main()
 {
@@ -19,12 +18,12 @@ main()
 
   ascon_utils::random_data(_msg);
 
-  ascon_xof::ascon_xof_t hasher;
+  ascon_xofa::ascon_xofa_t hasher;
   hasher.absorb(_msg);
   hasher.finalize();
   hasher.squeeze(_out);
 
-  std::cout << "Ascon Xof\n\n";
+  std::cout << "Ascon XofA\n\n";
   std::cout << "Message :\t" << ascon_utils::to_hex(_msg) << "\n";
   std::cout << "Digest  :\t" << ascon_utils::to_hex(_out) << "\n";
 

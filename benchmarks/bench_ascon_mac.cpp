@@ -1,4 +1,5 @@
 #include "auth/ascon_mac.hpp"
+#include "bench_helper.hpp"
 #include <benchmark/benchmark.h>
 
 // Benchmark Ascon-MAC authentication implementation for variable length input message.
@@ -35,11 +36,6 @@ ascon_mac_authenticate(benchmark::State& state)
 
 #ifdef CYCLES_PER_BYTE
   state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / bytes_processed;
-#endif
-
-#ifdef INSTRUCTIONS_PER_CYCLE
-  const double ipc = state.counters["INSTRUCTIONS"] / state.counters["CYCLES"];
-  state.counters["INSTRUCTIONS/ CYCLE"] = ipc;
 #endif
 }
 
@@ -95,19 +91,16 @@ ascon_mac_verify(benchmark::State& state)
 #ifdef CYCLES_PER_BYTE
   state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / bytes_processed;
 #endif
-
-#ifdef INSTRUCTIONS_PER_CYCLE
-  const double ipc = state.counters["INSTRUCTIONS"] / state.counters["CYCLES"];
-  state.counters["INSTRUCTIONS/ CYCLE"] = ipc;
-#endif
 }
 
 // Register for benchmarking Ascon-MAC.
 BENCHMARK(ascon_mac_authenticate)
-  ->RangeMultiplier(2)
+  ->RangeMultiplier(4)
   ->Range(1 << 6, 1 << 12) // input, to be authenticated
-  ;
+  ->ComputeStatistics("min", compute_min)
+  ->ComputeStatistics("max", compute_max);
 BENCHMARK(ascon_mac_verify)
-  ->RangeMultiplier(2)
+  ->RangeMultiplier(4)
   ->Range(1 << 6, 1 << 12) // input, to be authenticated
-  ;
+  ->ComputeStatistics("min", compute_min)
+  ->ComputeStatistics("max", compute_max);

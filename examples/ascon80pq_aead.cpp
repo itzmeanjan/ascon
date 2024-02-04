@@ -4,8 +4,7 @@
 
 // Compile with
 //
-// g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./subtle/include
-// example/ascon80pq_aead.cpp
+// g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./subtle/include examples/ascon80pq_aead.cpp
 int
 main()
 {

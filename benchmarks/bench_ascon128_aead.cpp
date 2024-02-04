@@ -1,4 +1,5 @@
 #include "aead/ascon128.hpp"
+#include "bench_helper.hpp"
 #include <benchmark/benchmark.h>
 #include <cassert>
 #include <vector>
@@ -46,11 +47,6 @@ ascon128_aead_encrypt(benchmark::State& state)
 
 #ifdef CYCLES_PER_BYTE
   state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / bytes_processed;
-#endif
-
-#ifdef INSTRUCTIONS_PER_CYCLE
-  const double ipc = state.counters["INSTRUCTIONS"] / state.counters["CYCLES"];
-  state.counters["INSTRUCTIONS/ CYCLE"] = ipc;
 #endif
 }
 
@@ -106,21 +102,20 @@ ascon128_aead_decrypt(benchmark::State& state)
 #ifdef CYCLES_PER_BYTE
   state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / bytes_processed;
 #endif
-
-#ifdef INSTRUCTIONS_PER_CYCLE
-  const double ipc = state.counters["INSTRUCTIONS"] / state.counters["CYCLES"];
-  state.counters["INSTRUCTIONS/ CYCLE"] = ipc;
-#endif
 }
 
 // Register for benchmarking Ascon-128 AEAD.
 BENCHMARK(ascon128_aead_encrypt)
   ->ArgsProduct({
-    benchmark::CreateRange(1 << 6, 1 << 12, 2), // plain text
+    benchmark::CreateRange(1 << 6, 1 << 12, 4), // plain text
     { 32 }                                      // associated data
-  });
+  })
+  ->ComputeStatistics("min", compute_min)
+  ->ComputeStatistics("max", compute_max);
 BENCHMARK(ascon128_aead_decrypt)
   ->ArgsProduct({
-    benchmark::CreateRange(1 << 6, 1 << 12, 2), // cipher text
+    benchmark::CreateRange(1 << 6, 1 << 12, 4), // cipher text
     { 32 }                                      // associated data
-  });
+  })
+  ->ComputeStatistics("min", compute_min)
+  ->ComputeStatistics("max", compute_max);

@@ -1,3 +1,4 @@
+#include "bench_helper.hpp"
 #include "hashing/ascon_xof.hpp"
 #include <benchmark/benchmark.h>
 #include <span>
@@ -37,17 +38,14 @@ bench_ascon_xof(benchmark::State& state)
 #ifdef CYCLES_PER_BYTE
   state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / bytes_processed;
 #endif
-
-#ifdef INSTRUCTIONS_PER_CYCLE
-  const double ipc = state.counters["INSTRUCTIONS"] / state.counters["CYCLES"];
-  state.counters["INSTRUCTIONS/ CYCLE"] = ipc;
-#endif
 }
 
 // Register for benchmarking Ascon-Xof.
 BENCHMARK(bench_ascon_xof)
   ->ArgsProduct({
-    benchmark::CreateRange(1 << 6, 1 << 12, 2), // input, to be absorbed
-    { 32, 64 }                                  // output, to be squeezed
+    benchmark::CreateRange(1 << 6, 1 << 12, 4), // input, to be absorbed
+    { 64 }                                      // output, to be squeezed
   })
-  ->Name("ascon_xof");
+  ->Name("ascon_xof")
+  ->ComputeStatistics("min", compute_min)
+  ->ComputeStatistics("max", compute_max);

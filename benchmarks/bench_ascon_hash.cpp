@@ -1,3 +1,4 @@
+#include "bench_helper.hpp"
 #include "hashing/ascon_hash.hpp"
 #include <benchmark/benchmark.h>
 #include <span>
@@ -36,15 +37,12 @@ bench_ascon_hash(benchmark::State& state)
 #ifdef CYCLES_PER_BYTE
   state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / bytes_processed;
 #endif
-
-#ifdef INSTRUCTIONS_PER_CYCLE
-  const double ipc = state.counters["INSTRUCTIONS"] / state.counters["CYCLES"];
-  state.counters["INSTRUCTIONS/ CYCLE"] = ipc;
-#endif
 }
 
 // Register for benchmarking Ascon-Hash.
 BENCHMARK(bench_ascon_hash)
-  ->RangeMultiplier(2)
+  ->RangeMultiplier(4)
   ->Range(1 << 6, 1 << 12)
-  ->Name("ascon_hash");
+  ->Name("ascon_hash")
+  ->ComputeStatistics("min", compute_min)
+  ->ComputeStatistics("max", compute_max);

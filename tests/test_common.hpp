@@ -13,7 +13,7 @@ constexpr size_t MAX_CT_LEN = 128;
 
 // Min. and max. byte length of message to be absorbed into sponge.
 constexpr size_t MIN_MSG_LEN = 0;
-constexpr size_t MAX_MSG_LEN = 1024;
+constexpr size_t MAX_MSG_LEN = 256;
 
 // Min. and max. byte length of output to be squeezed from sponge.
 constexpr size_t MIN_OUT_LEN = 0;
@@ -25,8 +25,9 @@ template<size_t L>
 constexpr std::array<char, L * 2>
 bytes_to_hex(std::array<uint8_t, L> bytes)
 {
-  constexpr std::array<char, 16> table{ '0', '1', '2', '3', '4', '5', '6', '7',
-                                        '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+  constexpr std::array<char, 16> table{
+    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
+  };
 
   std::array<char, bytes.size() * 2> hex{};
 

@@ -4,14 +4,12 @@
 
 // Compile with
 //
-// g++ -std=c++20 -Wall -O3 -march=native -mtune=native -I ./include -I ./subtle/include
-// example/ascon_prfs.cpp
+// g++ -std=c++20 -Wall -O3 -march=native -mtune=native -I ./include -I ./subtle/include examples/ascon_prfs.cpp
 int
 main()
 {
   constexpr size_t msg_len = 8; // bytes
-  static_assert(msg_len <= ascon_prfs::MAX_MSG_LEN,
-                "Ascon-PRFShort can authenticate at max 16 -bytes message.");
+  static_assert(msg_len <= ascon_prfs::MAX_MSG_LEN, "Ascon-PRFShort can authenticate at max 16 -bytes message.");
 
   std::vector<uint8_t> key(ascon_prfs::KEY_LEN);
   std::vector<uint8_t> msg(msg_len);

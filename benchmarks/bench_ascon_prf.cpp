@@ -1,4 +1,5 @@
 #include "auth/ascon_prf.hpp"
+#include "bench_helper.hpp"
 #include <benchmark/benchmark.h>
 
 // Benchmark Ascon-PRF implementation for variable length input message ( to be absorbed
@@ -39,17 +40,14 @@ bench_ascon_prf(benchmark::State& state)
 #ifdef CYCLES_PER_BYTE
   state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / bytes_processed;
 #endif
-
-#ifdef INSTRUCTIONS_PER_CYCLE
-  const double ipc = state.counters["INSTRUCTIONS"] / state.counters["CYCLES"];
-  state.counters["INSTRUCTIONS/ CYCLE"] = ipc;
-#endif
 }
 
 // Register for benchmarking Ascon-PRF.
 BENCHMARK(bench_ascon_prf)
   ->ArgsProduct({
-    benchmark::CreateRange(1 << 6, 1 << 12, 2), // input, to be absorbed
-    { 16, 32, 64 }                              // output, to be squeezed
+    benchmark::CreateRange(1 << 6, 1 << 12, 4), // input, to be absorbed
+    { 64 }                                      // output, to be squeezed
   })
-  ->Name("ascon_prf");
+  ->Name("ascon_prf")
+  ->ComputeStatistics("min", compute_min)
+  ->ComputeStatistics("max", compute_max);

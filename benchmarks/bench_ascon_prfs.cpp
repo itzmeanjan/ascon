@@ -1,4 +1,5 @@
 #include "auth/ascon_prfs.hpp"
+#include "bench_helper.hpp"
 #include <benchmark/benchmark.h>
 
 // Benchmark Ascon-PRFShort based authentication scheme implementation for short
@@ -34,11 +35,6 @@ ascon_prfs_authenticate(benchmark::State& state)
 
 #ifdef CYCLES_PER_BYTE
   state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / bytes_processed;
-#endif
-
-#ifdef INSTRUCTIONS_PER_CYCLE
-  const double ipc = state.counters["INSTRUCTIONS"] / state.counters["CYCLES"];
-  state.counters["INSTRUCTIONS/ CYCLE"] = ipc;
 #endif
 }
 
@@ -87,19 +83,16 @@ ascon_prfs_verify(benchmark::State& state)
 #ifdef CYCLES_PER_BYTE
   state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / bytes_processed;
 #endif
-
-#ifdef INSTRUCTIONS_PER_CYCLE
-  const double ipc = state.counters["INSTRUCTIONS"] / state.counters["CYCLES"];
-  state.counters["INSTRUCTIONS/ CYCLE"] = ipc;
-#endif
 }
 
 // Register for benchmarking Ascon-PRFShort.
 BENCHMARK(ascon_prfs_authenticate)
-  ->RangeMultiplier(2)
+  ->RangeMultiplier(4)
   ->Range(1, ascon_prfs::MAX_MSG_LEN) // input, to be authenticated
-  ;
+  ->ComputeStatistics("min", compute_min)
+  ->ComputeStatistics("max", compute_max);
 BENCHMARK(ascon_prfs_verify)
-  ->RangeMultiplier(2)
+  ->RangeMultiplier(4)
   ->Range(1, ascon_prfs::MAX_MSG_LEN) // input, to be authenticated
-  ;
+  ->ComputeStatistics("min", compute_min)
+  ->ComputeStatistics("max", compute_max);
