@@ -13,12 +13,10 @@ constexpr size_t MAX_ROUNDS = 12;
 
 // Ascon  permutation round constants; taken from table 4 in Ascon specification
 // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
-constexpr uint64_t RC[MAX_ROUNDS]{ 0x00000000000000f0ul, 0x00000000000000e1ul,
-                                   0x00000000000000d2ul, 0x00000000000000c3ul,
-                                   0x00000000000000b4ul, 0x00000000000000a5ul,
-                                   0x0000000000000096ul, 0x0000000000000087ul,
-                                   0x0000000000000078ul, 0x0000000000000069ul,
-                                   0x000000000000005aul, 0x000000000000004bul };
+constexpr uint64_t RC[MAX_ROUNDS]{ 0x00000000000000f0ul, 0x00000000000000e1ul, 0x00000000000000d2ul,
+                                   0x00000000000000c3ul, 0x00000000000000b4ul, 0x00000000000000a5ul,
+                                   0x0000000000000096ul, 0x0000000000000087ul, 0x0000000000000078ul,
+                                   0x0000000000000069ul, 0x000000000000005aul, 0x000000000000004bul };
 
 // 320 -bit Ascon permutation state, on which we can apply n (<=12) -rounds
 // permutation instance.
@@ -112,10 +110,7 @@ public:
 
   // Returns const reference to 64 -bit row of Ascon permutation state, given
   // idx ∈ [0, 5).
-  inline constexpr const uint64_t& operator[](const size_t idx) const
-  {
-    return state[idx];
-  }
+  inline constexpr const uint64_t& operator[](const size_t idx) const { return state[idx]; }
 
   // Returns 320 -bit whole state of Ascon permutation.
   inline constexpr std::array<uint64_t, 5> reveal() const { return state; }

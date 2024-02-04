@@ -29,8 +29,7 @@ bswap(const T a)
 #elif defined _MSC_VER
     return _byteswap_uint32(a);
 #else
-    return ((a & 0x000000ffu) << 24) | ((a & 0x0000ff00u) << 8) |
-           ((a & 0x00ff0000u) >> 8) | ((a & 0xff000000u) >> 24);
+    return ((a & 0x000000ffu) << 24) | ((a & 0x0000ff00u) << 8) | ((a & 0x00ff0000u) >> 8) | ((a & 0xff000000u) >> 24);
 #endif
   } else {
 #if defined __GNUG__ || defined __MINGW64__
@@ -56,14 +55,13 @@ from_be_bytes(std::span<const uint8_t> bytes)
   T res = 0;
 
   if constexpr (sizeof(T) == 4) {
-    res = (static_cast<T>(bytes[0]) << 24) | (static_cast<T>(bytes[1]) << 16) |
-          (static_cast<T>(bytes[2]) << 8) | static_cast<T>(bytes[3]);
+    res = (static_cast<T>(bytes[0]) << 24) | (static_cast<T>(bytes[1]) << 16) | (static_cast<T>(bytes[2]) << 8) |
+          static_cast<T>(bytes[3]);
   } else {
     static_assert(sizeof(T) == 8, "T must be either 4 or 8 -bytes !");
 
-    res = (static_cast<T>(bytes[0]) << 56) | (static_cast<T>(bytes[1]) << 48) |
-          (static_cast<T>(bytes[2]) << 40) | (static_cast<T>(bytes[3]) << 32) |
-          (static_cast<T>(bytes[4]) << 24) | (static_cast<T>(bytes[5]) << 16) |
+    res = (static_cast<T>(bytes[0]) << 56) | (static_cast<T>(bytes[1]) << 48) | (static_cast<T>(bytes[2]) << 40) |
+          (static_cast<T>(bytes[3]) << 32) | (static_cast<T>(bytes[4]) << 24) | (static_cast<T>(bytes[5]) << 16) |
           (static_cast<T>(bytes[6]) << 8) | static_cast<T>(bytes[7]);
   }
 
@@ -110,10 +108,9 @@ to_be_bytes(T num, std::span<uint8_t> bytes)
 // bytes from previous iteration.
 template<const size_t len>
 inline constexpr size_t
-get_ith_msg_blk(
-  std::span<const uint8_t> msg,   // chunk(s) to be read from this message
-  const size_t i,                 // index of message chunk, to be read
-  std::span<uint8_t, len> msg_blk // len -bytes chunk to be (partially) filled
+get_ith_msg_blk(std::span<const uint8_t> msg,   // chunk(s) to be read from this message
+                const size_t i,                 // index of message chunk, to be read
+                std::span<uint8_t, len> msg_blk // len -bytes chunk to be (partially) filled
 )
 {
   // This routine makes an assumption that function caller invokes it with such
@@ -187,8 +184,7 @@ from_hex(std::string_view hex)
 // content of two byte arrays.
 template<const size_t len>
 inline constexpr uint32_t
-ct_eq_byte_array(std::span<const uint8_t, len> byte_arr_a,
-                 std::span<const uint8_t, len> byte_arr_b)
+ct_eq_byte_array(std::span<const uint8_t, len> byte_arr_a, std::span<const uint8_t, len> byte_arr_b)
 {
   uint32_t flag = -1u;
   for (size_t i = 0; i < len; i++) {
@@ -204,9 +200,7 @@ ct_eq_byte_array(std::span<const uint8_t, len> byte_arr_a,
 // constant-time, only if `cond` holds truth value ( = 0xffffffff ). Otherwise,
 // it shouldn't mutate bytes.
 inline constexpr void
-ct_conditional_memset(const uint32_t cond,
-                      std::span<uint8_t> byte_arr,
-                      const uint8_t val)
+ct_conditional_memset(const uint32_t cond, std::span<uint8_t> byte_arr, const uint8_t val)
 {
   for (size_t i = 0; i < byte_arr.size(); i++) {
     byte_arr[i] = subtle::ct_select(cond, val, byte_arr[i]);

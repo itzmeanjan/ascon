@@ -33,15 +33,12 @@ TEST(AsconHashing, CompileTimeEvalAsconHash)
   // "2a4f6f2b6b3ec2a6c47ba08d18c8ea561b493c13ccb35803fa8b9fb00a0f1f35"
   constexpr auto md = eval_ascon_hash();
   constexpr auto flg = md == std::array<char, ascon_hash::DIGEST_LEN * 2>{
-    '2', 'a', '4', 'f', '6', 'f', '2', 'b', '6', 'b', '3', 'e', 'c', '2', 'a', '6',
-    'c', '4', '7', 'b', 'a', '0', '8', 'd', '1', '8', 'c', '8', 'e', 'a', '5', '6',
-    '1', 'b', '4', '9', '3', 'c', '1', '3', 'c', 'c', 'b', '3', '5', '8', '0', '3',
-    'f', 'a', '8', 'b', '9', 'f', 'b', '0', '0', 'a', '0', 'f', '1', 'f', '3', '5'
+    '2', 'a', '4', 'f', '6', 'f', '2', 'b', '6', 'b', '3', 'e', 'c', '2', 'a', '6', 'c', '4', '7', 'b', 'a', '0',
+    '8', 'd', '1', '8', 'c', '8', 'e', 'a', '5', '6', '1', 'b', '4', '9', '3', 'c', '1', '3', 'c', 'c', 'b', '3',
+    '5', '8', '0', '3', 'f', 'a', '8', 'b', '9', 'f', 'b', '0', '0', 'a', '0', 'f', '1', 'f', '3', '5'
   };
 
-  static_assert(
-    flg,
-    "Must be able to evaluate Ascon-Hash during program compilation time itself !");
+  static_assert(flg, "Must be able to evaluate Ascon-Hash during program compilation time itself !");
   EXPECT_TRUE(flg);
 }
 
