@@ -4,8 +4,7 @@
 
 // Compile with
 //
-// g++ -std=c++20 -Wall -O3 -march=native -mtune=native -I ./include -I ./subtle/include
-// example/ascon_mac.cpp
+// g++ -std=c++20 -Wall -O3 -march=native -mtune=native -I ./include -I ./subtle/include examples/ascon_mac.cpp
 int
 main()
 {
