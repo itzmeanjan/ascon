@@ -9,17 +9,22 @@ UBSAN_FLAGS = -g -O1 -fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanit
 
 SRC_DIR = include
 SUBTLE_INC_DIR = ./subtle/include
+DUDECT_INC_DIR = ./dudect/src
 I_FLAGS = -I $(SRC_DIR)
 DEP_IFLAGS = -I $(SUBTLE_INC_DIR)
+DUDECT_DEP_IFLAGS = $(DEP_IFLAGS) -I $(DUDECT_INC_DIR)
 ASCON_SOURCES := $(wildcard $(SRC_DIR)/*.hpp)
 BUILD_DIR = build
 
 TEST_DIR = tests
+DUDECT_TEST_DIR = $(TEST_DIR)/dudect
 TEST_BUILD_DIR := $(BUILD_DIR)/$(TEST_DIR)
 ASAN_BUILD_DIR = $(TEST_BUILD_DIR)/asan
 UBSAN_BUILD_DIR = $(TEST_BUILD_DIR)/ubsan
+DUDECT_BUILD_DIR = $(BUILD_DIR)/dudect
 TEST_SOURCES := $(wildcard $(TEST_DIR)/*.cpp)
 TEST_HEADERS := $(wildcard $(TEST_DIR)/*.hpp)
+DUDECT_TEST_SOURCES := $(wildcard $(DUDECT_TEST_DIR)/*.cpp)
 TEST_OBJECTS := $(addprefix $(TEST_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(TEST_SOURCES))))
 ASAN_TEST_OBJECTS := $(addprefix $(ASAN_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(TEST_SOURCES))))
 UBSAN_TEST_OBJECTS := $(addprefix $(UBSAN_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(TEST_SOURCES))))
@@ -27,6 +32,7 @@ TEST_LINK_FLAGS = -lgtest -lgtest_main
 TEST_BINARY = $(TEST_BUILD_DIR)/test.out
 ASAN_TEST_BINARY = $(ASAN_BUILD_DIR)/test.out
 UBSAN_TEST_BINARY = $(UBSAN_BUILD_DIR)/test.out
+DUDECT_TEST_BINARIES := $(addprefix $(DUDECT_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.out,$(DUDECT_TEST_SOURCES))))
 GTEST_PARALLEL = ./gtest-parallel/gtest-parallel
 
 BENCHMARK_DIR = benchmarks
@@ -55,6 +61,9 @@ $(ASAN_BUILD_DIR): $(TEST_BUILD_DIR)
 $(UBSAN_BUILD_DIR): $(TEST_BUILD_DIR)
 	mkdir -p $@
 
+$(DUDECT_BUILD_DIR): $(TEST_BUILD_DIR)
+	mkdir -p $@
+
 $(BENCHMARK_BUILD_DIR): $(BUILD_DIR)
 	mkdir -p $@
 
@@ -65,6 +74,9 @@ $(SUBTLE_INC_DIR):
 	git submodule update --init
 
 $(GTEST_PARALLEL): $(SUBTLE_INC_DIR)
+	git submodule update --init
+
+$(DUDECT_INC_DIR): $(GTEST_PARALLEL)
 	git submodule update --init
 
 $(TEST_BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp $(TEST_BUILD_DIR) $(SUBTLE_INC_DIR)
@@ -85,6 +97,9 @@ $(ASAN_TEST_BINARY): $(ASAN_TEST_OBJECTS)
 $(UBSAN_TEST_BINARY): $(UBSAN_TEST_OBJECTS)
 	$(CXX) $(UBSAN_FLAGS) $^ $(TEST_LINK_FLAGS) -o $@
 
+$(DUDECT_BUILD_DIR)/%.out: $(DUDECT_TEST_DIR)/%.cpp $(DUDECT_BUILD_DIR) $(SUBTLE_INC_DIR) $(DUDECT_INC_DIR)
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) $(DUDECT_DEP_IFLAGS) -lm $(LINK_FLAGS) $< -o $@
+
 test: $(TEST_BINARY) $(GTEST_PARALLEL)
 	$(GTEST_PARALLEL) $< --print_test_times
 
@@ -93,6 +108,8 @@ asan_test: $(ASAN_TEST_BINARY) $(GTEST_PARALLEL)
 
 ubsan_test: $(UBSAN_TEST_BINARY) $(GTEST_PARALLEL)
 	$(GTEST_PARALLEL) $< --print_test_times
+
+dudect_test_build: $(DUDECT_TEST_BINARIES)
 
 $(BENCHMARK_BUILD_DIR)/%.o: $(BENCHMARK_DIR)/%.cpp $(BENCHMARK_BUILD_DIR)
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) $(DEP_IFLAGS) -c $< -o $@
@@ -119,5 +136,5 @@ perf: $(PERF_BINARY)
 clean:
 	rm -rf $(BUILD_DIR)
 
-format: $(ASCON_SOURCES) $(TEST_SOURCES) $(TEST_HEADERS) $(BENCHMARK_SOURCES) $(BENCHMARK_HEADERS)
+format: $(ASCON_SOURCES) $(TEST_SOURCES) $(TEST_HEADERS) $(DUDECT_TEST_SOURCES) $(BENCHMARK_SOURCES) $(BENCHMARK_HEADERS)
 	clang-format -i $^
