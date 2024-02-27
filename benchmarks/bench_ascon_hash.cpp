@@ -1,5 +1,5 @@
+#include "ascon/hashing/ascon_hash.hpp"
 #include "bench_helper.hpp"
-#include "hashing/ascon_hash.hpp"
 #include <benchmark/benchmark.h>
 #include <span>
 #include <vector>

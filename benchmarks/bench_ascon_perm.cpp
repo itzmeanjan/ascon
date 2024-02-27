@@ -1,6 +1,6 @@
-#include "ascon_perm.hpp"
+#include "ascon/ascon_perm.hpp"
+#include "ascon/utils.hpp"
 #include "bench_helper.hpp"
-#include "utils.hpp"
 #include <benchmark/benchmark.h>
 
 // Benchmarking Ascon permutation routine, while applying `ROUNDS` -many

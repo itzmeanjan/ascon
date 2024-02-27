@@ -1,4 +1,4 @@
-#include "aead/ascon128a.hpp"
+#include "ascon/aead/ascon128a.hpp"
 #include <cstdio>
 
 #define DUDECT_IMPLEMENTATION

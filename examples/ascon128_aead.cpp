@@ -1,4 +1,4 @@
-#include "aead/ascon128.hpp"
+#include "ascon/aead/ascon128.hpp"
 #include <cassert>
 #include <iostream>
 

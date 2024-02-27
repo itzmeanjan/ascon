@@ -1,4 +1,4 @@
-#include "hashing/ascon_hasha.hpp"
+#include "ascon/hashing/ascon_hasha.hpp"
 #include <iostream>
 
 // Compile with

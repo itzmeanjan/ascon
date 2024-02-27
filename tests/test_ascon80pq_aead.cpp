@@ -1,4 +1,4 @@
-#include "aead/ascon80pq.hpp"
+#include "ascon/aead/ascon80pq.hpp"
 #include "test_common.hpp"
 #include <fstream>
 #include <gtest/gtest.h>

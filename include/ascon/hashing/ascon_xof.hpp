@@ -1,5 +1,5 @@
 #pragma once
-#include "ascon_perm.hpp"
+#include "ascon/ascon_perm.hpp"
 #include "sponge.hpp"
 
 // Ascon-Xof
