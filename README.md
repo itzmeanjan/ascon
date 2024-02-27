@@ -1380,16 +1380,16 @@ ascon128a_aead_decrypt/4096/32_max          8268 ns         8228 ns           10
 
 Scheme | Header to include | Namespace of interest | Example
 :-: | :-- | :-- | :-:
-Ascon-128 AEAD | `include/aead/ascon128.hpp` | `ascon128_aead::` | [examples/ascon128_aead.cpp](./examples/ascon128_aead.cpp)
-Ascon-128a AEAD | `include/aead/ascon128a.hpp` | `ascon128a_aead::`  | [examples/ascon128a_aead.cpp](./examples/ascon128a_aead.cpp)
-Ascon-80pq AEAD | `include/aead/ascon80pq.hpp` | `ascon80pq_aead::`  | [examples/ascon80pq_aead.cpp](./examples/ascon80pq_aead.cpp)
-Ascon Hash | `include/hashing/ascon_hash.hpp` | `ascon_hash::` | [examples/ascon_hash.cpp](./examples/ascon_hash.cpp)
-Ascon HashA | `include/hashing/ascon_hasha.hpp` | `ascon_hasha::` | [examples/ascon_hasha.cpp](./examples/ascon_hasha.cpp)
-Ascon Xof | `include/hashing/ascon_xof.hpp` | `ascon_xof::` | [examples/ascon_xof.cpp](./examples/ascon_xof.cpp)
-Ascon XofA | `include/hashing/ascon_xofa.hpp` | `ascon_xofa::` | [examples/ascon_xofa.cpp](./examples/ascon_xofa.cpp)
-Ascon-PRF | `include/auth/ascon_prf.hpp` | `ascon_prf::` | [examples/ascon_prf.cpp](./examples/ascon_prf.cpp)
-Ascon-MAC | `include/auth/ascon_mac.hpp` | `ascon_mac::` | [examples/ascon_mac.cpp](./examples/ascon_mac.cpp)
-Ascon-MAC | `include/auth/ascon_prfs.hpp` | `ascon_prfs::` | [examples/ascon_prfs.cpp](./examples/ascon_prfs.cpp)
+Ascon-128 AEAD | `include/ascon/aead/ascon128.hpp` | `ascon128_aead::` | [examples/ascon128_aead.cpp](./examples/ascon128_aead.cpp)
+Ascon-128a AEAD | `include/ascon/aead/ascon128a.hpp` | `ascon128a_aead::`  | [examples/ascon128a_aead.cpp](./examples/ascon128a_aead.cpp)
+Ascon-80pq AEAD | `include/ascon/aead/ascon80pq.hpp` | `ascon80pq_aead::`  | [examples/ascon80pq_aead.cpp](./examples/ascon80pq_aead.cpp)
+Ascon Hash | `include/ascon/hashing/ascon_hash.hpp` | `ascon_hash::` | [examples/ascon_hash.cpp](./examples/ascon_hash.cpp)
+Ascon HashA | `include/ascon/hashing/ascon_hasha.hpp` | `ascon_hasha::` | [examples/ascon_hasha.cpp](./examples/ascon_hasha.cpp)
+Ascon Xof | `include/ascon/hashing/ascon_xof.hpp` | `ascon_xof::` | [examples/ascon_xof.cpp](./examples/ascon_xof.cpp)
+Ascon XofA | `include/ascon/hashing/ascon_xofa.hpp` | `ascon_xofa::` | [examples/ascon_xofa.cpp](./examples/ascon_xofa.cpp)
+Ascon-PRF | `include/ascon/auth/ascon_prf.hpp` | `ascon_prf::` | [examples/ascon_prf.cpp](./examples/ascon_prf.cpp)
+Ascon-MAC | `include/ascon/auth/ascon_mac.hpp` | `ascon_mac::` | [examples/ascon_mac.cpp](./examples/ascon_mac.cpp)
+Ascon-MAC | `include/ascon/auth/ascon_prfs.hpp` | `ascon_prfs::` | [examples/ascon_prfs.cpp](./examples/ascon_prfs.cpp)
 
 > [!TIP]
 > Don't forget to also include path ( `-I ./subtle/include` ) to dependency library `subtle`, when compiling your translation units.
@@ -1404,7 +1404,7 @@ Ascon permutation -based hashing schemes such as Ascon-{Hash, HashA, Xof, XofA} 
 // Compile: g++ -std=c++20 -Wall -O3 -I include/ -I subtle/include/ main.cpp
 // Execute: ./a.out
 
-#include "hashing/ascon_hash.hpp"
+#include "ascon/hashing/ascon_hash.hpp"
 #include <array>
 
 // Returns a statically defined input message =
