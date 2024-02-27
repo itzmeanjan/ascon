@@ -1,4 +1,4 @@
-#include "auth/ascon_prf.hpp"
+#include "ascon/auth/ascon_prf.hpp"
 #include <fstream>
 #include <gtest/gtest.h>
 

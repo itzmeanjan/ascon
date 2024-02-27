@@ -1,6 +1,6 @@
 #pragma once
-#include "ascon_perm.hpp"
-#include "utils.hpp"
+#include "ascon/ascon_perm.hpp"
+#include "ascon/utils.hpp"
 #include <array>
 
 // Common functions required for implementing Ascon-{128, 128a, 80pq}

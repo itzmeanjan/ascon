@@ -1,8 +1,8 @@
-#include "ascon_perm.hpp"
-#include "hashing/ascon_hash.hpp"
-#include "hashing/ascon_hasha.hpp"
-#include "hashing/ascon_xof.hpp"
-#include "hashing/ascon_xofa.hpp"
+#include "ascon/ascon_perm.hpp"
+#include "ascon/hashing/ascon_hash.hpp"
+#include "ascon/hashing/ascon_hasha.hpp"
+#include "ascon/hashing/ascon_xof.hpp"
+#include "ascon/hashing/ascon_xofa.hpp"
 #include <array>
 #include <gtest/gtest.h>
 

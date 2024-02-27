@@ -1,4 +1,4 @@
-#include "hashing/ascon_hasha.hpp"
+#include "ascon/hashing/ascon_hasha.hpp"
 #include "test_common.hpp"
 #include <array>
 #include <fstream>

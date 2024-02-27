@@ -1,4 +1,4 @@
-#include "hashing/ascon_xofa.hpp"
+#include "ascon/hashing/ascon_xofa.hpp"
 #include <iostream>
 
 // Compile with

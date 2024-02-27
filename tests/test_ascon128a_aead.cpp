@@ -1,4 +1,4 @@
-#include "aead/ascon128a.hpp"
+#include "ascon/aead/ascon128a.hpp"
 #include "test_common.hpp"
 #include <fstream>
 #include <gtest/gtest.h>

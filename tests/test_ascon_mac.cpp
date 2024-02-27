@@ -1,4 +1,4 @@
-#include "auth/ascon_mac.hpp"
+#include "ascon/auth/ascon_mac.hpp"
 #include <fstream>
 #include <gtest/gtest.h>
 

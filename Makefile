@@ -71,13 +71,13 @@ $(PERF_BUILD_DIR): $(BUILD_DIR)
 	mkdir -p $@
 
 $(SUBTLE_INC_DIR):
-	git submodule update --init
+	git submodule update --init subtle
 
 $(GTEST_PARALLEL): $(SUBTLE_INC_DIR)
-	git submodule update --init
+	git submodule update --init gtest-parallel
 
 $(DUDECT_INC_DIR): $(GTEST_PARALLEL)
-	git submodule update --init
+	git submodule update --init dudect
 
 $(TEST_BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp $(TEST_BUILD_DIR) $(SUBTLE_INC_DIR)
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) $(DEP_IFLAGS) -c $< -o $@

@@ -1,4 +1,4 @@
-#include "aead/ascon80pq.hpp"
+#include "ascon/aead/ascon80pq.hpp"
 #include "bench_helper.hpp"
 #include <benchmark/benchmark.h>
 #include <cassert>

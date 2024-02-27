@@ -1,6 +1,6 @@
 #pragma once
-#include "ascon_perm.hpp"
-#include "utils.hpp"
+#include "ascon/ascon_perm.hpp"
+#include "ascon/utils.hpp"
 #include <algorithm>
 #include <array>
 #include <cstdint>

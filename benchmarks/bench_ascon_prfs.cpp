@@ -1,4 +1,4 @@
-#include "auth/ascon_prfs.hpp"
+#include "ascon/auth/ascon_prfs.hpp"
 #include "bench_helper.hpp"
 #include <benchmark/benchmark.h>
 
