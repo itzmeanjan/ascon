@@ -70,7 +70,7 @@ initialize(ascon_perm::ascon_perm_t& state,
     state[3] = nonce0;
     state[4] = nonce1;
 
-    state.permute<ascon_perm::MAX_ROUNDS>();
+    state.permute<ascon_perm::ASCON_PERMUTATION_MAX_ROUNDS>();
 
     state[2] ^= (key0 >> 32);
     state[3] ^= (key0 << 32) | (key1 >> 32);
@@ -155,9 +155,7 @@ process_associated_data(ascon_perm::ascon_perm_t& state, std::span<const uint8_t
 // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 template<const size_t rounds_b, const size_t rate>
 static inline void
-process_plaintext(ascon_perm::ascon_perm_t& state,
-                  std::span<const uint8_t> text,
-                  std::span<uint8_t> cipher)
+process_plaintext(ascon_perm::ascon_perm_t& state, std::span<const uint8_t> text, std::span<uint8_t> cipher)
   requires((rate == 64) || (rate == 128))
 {
   const size_t ctlen = text.size();
@@ -243,9 +241,7 @@ process_plaintext(ascon_perm::ascon_perm_t& state,
 // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 template<const size_t rounds_b, const size_t rate>
 static inline void
-process_ciphertext(ascon_perm::ascon_perm_t& state,
-                   std::span<const uint8_t> cipher,
-                   std::span<uint8_t> text)
+process_ciphertext(ascon_perm::ascon_perm_t& state, std::span<const uint8_t> cipher, std::span<uint8_t> text)
   requires((rate == 64) || (rate == 128))
 {
   const size_t ctlen = cipher.size();
@@ -347,11 +343,8 @@ process_ciphertext(ascon_perm::ascon_perm_t& state,
 // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 template<const size_t rounds_a, const size_t rate, const size_t klen>
 static inline void
-finalize(ascon_perm::ascon_perm_t& state,
-         std::span<const uint8_t, klen / 8> key,
-         std::span<uint8_t, TAG_LEN> tag)
-  requires(((klen == 128) && ((rate == 64) || (rate == 128))) ||
-           ((klen == 160) && (rate == 64)))
+finalize(ascon_perm::ascon_perm_t& state, std::span<const uint8_t, klen / 8> key, std::span<uint8_t, TAG_LEN> tag)
+  requires(((klen == 128) && ((rate == 64) || (rate == 128))) || ((klen == 160) && (rate == 64)))
 {
   if constexpr (klen == 128) {
     const auto _key0 = key.template subspan<0, 8>();

@@ -8,8 +8,8 @@
 constexpr size_t FIXED_AD_BYTE_LEN = 64;
 constexpr size_t FIXED_PT_BYTE_LEN = 512;
 constexpr size_t FIXED_CT_BYTE_LEN = FIXED_PT_BYTE_LEN;
-constexpr size_t CHUNK_BYTE_LEN = ascon128a_aead::KEY_LEN + ascon128a_aead::NONCE_LEN + FIXED_AD_BYTE_LEN +
-                                  FIXED_PT_BYTE_LEN + FIXED_CT_BYTE_LEN + ascon128a_aead::TAG_LEN;
+constexpr size_t CHUNK_BYTE_LEN =
+  ascon128a_aead::KEY_LEN + ascon128a_aead::NONCE_LEN + FIXED_AD_BYTE_LEN + FIXED_PT_BYTE_LEN + FIXED_CT_BYTE_LEN + ascon128a_aead::TAG_LEN;
 
 uint8_t
 do_one_computation(uint8_t* const data)

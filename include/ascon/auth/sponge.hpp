@@ -21,14 +21,14 @@ template<const size_t rounds_a,     // a -rounds permutation p^a | a <= 12
          >
 static inline constexpr void
 initialize(ascon_perm::ascon_perm_t& state, std::span<const uint8_t, klen / 8> key)
-  requires((klen == 128) && (rounds_a == ascon_perm::MAX_ROUNDS))
+  requires((klen == 128) && (rounds_a == ascon_perm::ASCON_PERMUTATION_MAX_ROUNDS))
 {
   // Compile-time compute initialization value
-  constexpr uint64_t iv = (klen << 56) |     // 8 -bit wide bit length of secret key
-                          (out_rate << 48) | // 8 -bit wide bit length of output rate
+  constexpr uint64_t iv = (klen << 56) |                    // 8 -bit wide bit length of secret key
+                          (out_rate << 48) |                // 8 -bit wide bit length of output rate
                           (((1ul << 7) ^ rounds_a) << 40) | // 8 -bit wide, 2^7 ⊕ a
-                          (0b00000000ull << 32) |            // 8 zero bits
-                          max_out_len // 32 -bit wide max. output bit length
+                          (0b00000000ull << 32) |           // 8 zero bits
+                          max_out_len                       // 32 -bit wide max. output bit length
     ;
 
   state[0] = iv;
@@ -54,7 +54,7 @@ static inline void
 absorb(ascon_perm::ascon_perm_t& state,
        size_t& offset, // ∈ [0, rbytes)
        std::span<const uint8_t> msg)
-  requires((rounds_a == ascon_perm::MAX_ROUNDS) && (rate == 256))
+  requires((rounds_a == ascon_perm::ASCON_PERMUTATION_MAX_ROUNDS) && (rate == 256))
 {
   constexpr size_t rbytes = rate / 8;
   const size_t mlen = msg.size();
@@ -127,7 +127,7 @@ static inline void
 finalize(ascon_perm::ascon_perm_t& state,
          size_t& offset // ∈ [0, rbytes)
          )
-  requires((rounds_a == ascon_perm::MAX_ROUNDS) && (rate == 256))
+  requires((rounds_a == ascon_perm::ASCON_PERMUTATION_MAX_ROUNDS) && (rate == 256))
 {
   constexpr size_t rbytes = rate / 8;
 
@@ -164,7 +164,7 @@ static inline void
 squeeze(ascon_perm::ascon_perm_t& state,
         size_t& readable, // ∈ [0, rbytes)
         std::span<uint8_t> out)
-  requires((rounds_a == ascon_perm::MAX_ROUNDS) && (rate == 128))
+  requires((rounds_a == ascon_perm::ASCON_PERMUTATION_MAX_ROUNDS) && (rate == 128))
 {
   constexpr size_t rbytes = rate / 8;
 

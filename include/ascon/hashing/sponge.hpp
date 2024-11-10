@@ -18,7 +18,7 @@ constexpr ascon_perm::ascon_perm_t
 compute_init_state(const uint64_t iv)
 {
   ascon_perm::ascon_perm_t state({ iv, 0, 0, 0, 0 });
-  state.permute<ascon_perm::MAX_ROUNDS>();
+  state.permute<ascon_perm::ASCON_PERMUTATION_MAX_ROUNDS>();
   return state;
 }
 

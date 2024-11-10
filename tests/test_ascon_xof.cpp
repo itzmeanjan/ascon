@@ -33,11 +33,9 @@ TEST(AsconHashing, CompileTimeEvalAsconXof)
   // AsconXof("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f") =
   // "0b8e325b9bbf1bb43e77aa1eed93bee62b4ea1e4b0c5a696b2f5c5b09c968918"
   constexpr auto md = eval_ascon_xof();
-  constexpr auto flg =
-    md == std::array<char, 64>{ '0', 'b', '8', 'e', '3', '2', '5', 'b', '9', 'b', 'b', 'f', '1', 'b', 'b', '4',
-                                '3', 'e', '7', '7', 'a', 'a', '1', 'e', 'e', 'd', '9', '3', 'b', 'e', 'e', '6',
-                                '2', 'b', '4', 'e', 'a', '1', 'e', '4', 'b', '0', 'c', '5', 'a', '6', '9', '6',
-                                'b', '2', 'f', '5', 'c', '5', 'b', '0', '9', 'c', '9', '6', '8', '9', '1', '8' };
+  constexpr auto flg = md == std::array<char, 64>{ '0', 'b', '8', 'e', '3', '2', '5', 'b', '9', 'b', 'b', 'f', '1', 'b', 'b', '4', '3', 'e', '7', '7', 'a', 'a',
+                                                   '1', 'e', 'e', 'd', '9', '3', 'b', 'e', 'e', '6', '2', 'b', '4', 'e', 'a', '1', 'e', '4', 'b', '0', 'c', '5',
+                                                   'a', '6', '9', '6', 'b', '2', 'f', '5', 'c', '5', 'b', '0', '9', 'c', '9', '6', '8', '9', '1', '8' };
 
   static_assert(flg, "Must be able to evaluate Ascon-Xof during program compilation time itself !");
   EXPECT_TRUE(flg);

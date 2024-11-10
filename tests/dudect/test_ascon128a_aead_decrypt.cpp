@@ -10,8 +10,8 @@ constexpr size_t FIXED_PT_BYTE_LEN = 512;               // Plain Text
 constexpr size_t FIXED_CT_BYTE_LEN = FIXED_PT_BYTE_LEN; // Cipher Text
 constexpr size_t FIXED_DT_BYTE_LEN = FIXED_CT_BYTE_LEN; // Deciphered Text
 
-constexpr size_t CHUNK_BYTE_LEN = ascon128a_aead::KEY_LEN + ascon128a_aead::NONCE_LEN + FIXED_AD_BYTE_LEN +
-                                  FIXED_PT_BYTE_LEN + FIXED_CT_BYTE_LEN + ascon128a_aead::TAG_LEN + FIXED_DT_BYTE_LEN;
+constexpr size_t CHUNK_BYTE_LEN =
+  ascon128a_aead::KEY_LEN + ascon128a_aead::NONCE_LEN + FIXED_AD_BYTE_LEN + FIXED_PT_BYTE_LEN + FIXED_CT_BYTE_LEN + ascon128a_aead::TAG_LEN + FIXED_DT_BYTE_LEN;
 
 constexpr size_t KEY_BEGIN = 0;
 constexpr size_t NONCE_BEGIN = KEY_BEGIN + ascon128a_aead::KEY_LEN;
