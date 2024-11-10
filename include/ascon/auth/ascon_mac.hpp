@@ -36,8 +36,7 @@ public:
   // that we can start authenticating arbitrary many message bytes.
   inline constexpr ascon_mac_t(std::span<const uint8_t, KEY_LEN> key)
   {
-    ascon_auth::initialize<ROUNDS_A, IN_RATE, OUT_RATE, KEY_LEN * 8, TAG_LEN * 8>(state,
-                                                                                  key);
+    ascon_auth::initialize<ROUNDS_A, IN_RATE, OUT_RATE, KEY_LEN * 8, TAG_LEN * 8>(state, key);
 
     offset = 0;
     absorbed = false;

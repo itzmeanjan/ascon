@@ -37,10 +37,8 @@ bswap(const T a)
 #elif defined _MSC_VER
     return _byteswap_uint64(a);
 #else
-    return ((a & 0x00000000000000fful) << 56) | ((a & 0x000000000000ff00ul) << 40) |
-           ((a & 0x0000000000ff0000ul) << 24) | ((a & 0x00000000ff000000ul) << 0x8) |
-           ((a & 0x000000ff00000000ul) >> 0x8) | ((a & 0x0000ff0000000000ul) >> 24) |
-           ((a & 0x00ff000000000000ul) >> 40) | ((a & 0xff00000000000000ul) >> 56);
+    return ((a & 0x00000000000000fful) << 56) | ((a & 0x000000000000ff00ul) << 40) | ((a & 0x0000000000ff0000ul) << 24) | ((a & 0x00000000ff000000ul) << 0x8) |
+           ((a & 0x000000ff00000000ul) >> 0x8) | ((a & 0x0000ff0000000000ul) >> 24) | ((a & 0x00ff000000000000ul) >> 40) | ((a & 0xff00000000000000ul) >> 56);
 #endif
   }
 }
@@ -55,14 +53,12 @@ from_be_bytes(std::span<const uint8_t> bytes)
   T res = 0;
 
   if constexpr (sizeof(T) == 4) {
-    res = (static_cast<T>(bytes[0]) << 24) | (static_cast<T>(bytes[1]) << 16) | (static_cast<T>(bytes[2]) << 8) |
-          static_cast<T>(bytes[3]);
+    res = (static_cast<T>(bytes[0]) << 24) | (static_cast<T>(bytes[1]) << 16) | (static_cast<T>(bytes[2]) << 8) | static_cast<T>(bytes[3]);
   } else {
     static_assert(sizeof(T) == 8, "T must be either 4 or 8 -bytes !");
 
-    res = (static_cast<T>(bytes[0]) << 56) | (static_cast<T>(bytes[1]) << 48) | (static_cast<T>(bytes[2]) << 40) |
-          (static_cast<T>(bytes[3]) << 32) | (static_cast<T>(bytes[4]) << 24) | (static_cast<T>(bytes[5]) << 16) |
-          (static_cast<T>(bytes[6]) << 8) | static_cast<T>(bytes[7]);
+    res = (static_cast<T>(bytes[0]) << 56) | (static_cast<T>(bytes[1]) << 48) | (static_cast<T>(bytes[2]) << 40) | (static_cast<T>(bytes[3]) << 32) |
+          (static_cast<T>(bytes[4]) << 24) | (static_cast<T>(bytes[5]) << 16) | (static_cast<T>(bytes[6]) << 8) | static_cast<T>(bytes[7]);
   }
 
   return res;

@@ -25,11 +25,10 @@ constexpr size_t KEY_LEN = 16;
 
 // Compile-time compute initialization value for Ascon-PRFShort, following
 // section 2.6 ( page 7 ) of spec. https://eprint.iacr.org/2021/1574.pdf.
-constexpr uint64_t IV =
-  ((KEY_LEN * 8) << 56) |           // 8 -bit wide, bit length of secret key
-  (0b00000000ul << 48) |            // 8 -bit wide, message bit length, not yet filled
-  (((1ul << 6) ^ ROUNDS_A) << 40) | // 8 -bit wide, round number as 2^6 ⊕ a
-  (OUT_RATE << 32)                  // 8 -bit wide, bit width of output block
+constexpr uint64_t IV = ((KEY_LEN * 8) << 56) |           // 8 -bit wide, bit length of secret key
+                        (0b00000000ul << 48) |            // 8 -bit wide, message bit length, not yet filled
+                        (((1ul << 6) ^ ROUNDS_A) << 40) | // 8 -bit wide, round number as 2^6 ⊕ a
+                        (OUT_RATE << 32)                  // 8 -bit wide, bit width of output block
   // 32 zero bits
   ;
 
@@ -82,8 +81,8 @@ prf_short(std::span<const uint8_t, KEY_LEN> key, // 16 -bytes secret key
 // authentication tag, when a 16 -bytes secret key is provided as input.
 inline void
 prfs_authenticate(std::span<const uint8_t, KEY_LEN> key, // 16 -bytes key
-                  std::span<const uint8_t> msg, // Input message, to be authenticated
-                  std::span<uint8_t, MAX_TAG_LEN> tag // 16 -bytes tag, to be computed
+                  std::span<const uint8_t> msg,          // Input message, to be authenticated
+                  std::span<uint8_t, MAX_TAG_LEN> tag    // 16 -bytes tag, to be computed
 )
 {
   prf_short(key, msg, tag);
@@ -94,8 +93,8 @@ prfs_authenticate(std::span<const uint8_t, KEY_LEN> key, // 16 -bytes key
 // computed tag, given 16 -bytes secret key. Returns boolean truth value,
 // denoting successful tag comparison, while false value is returned, otherwise.
 inline bool
-prfs_verify(std::span<const uint8_t, KEY_LEN> key, // 16 -bytes key
-            std::span<const uint8_t> msg,          // Input message, to be authenticated
+prfs_verify(std::span<const uint8_t, KEY_LEN> key,    // 16 -bytes key
+            std::span<const uint8_t> msg,             // Input message, to be authenticated
             std::span<const uint8_t, MAX_TAG_LEN> tag // 16 -bytes tag, to be verified
 )
 {
