@@ -8,7 +8,7 @@
 template<const size_t ROUNDS>
 void
 ascon_permutation(benchmark::State& state)
-  requires(ROUNDS <= ascon_perm::MAX_ROUNDS)
+  requires(ROUNDS <= ascon_perm::ASCON_PERMUTATION_MAX_ROUNDS)
 {
   // Generate initial random permutation state.
   std::array<uint64_t, 5> data;
@@ -36,3 +36,5 @@ BENCHMARK(ascon_permutation<1>)->ComputeStatistics("min", compute_min)->ComputeS
 BENCHMARK(ascon_permutation<6>)->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
 BENCHMARK(ascon_permutation<8>)->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
 BENCHMARK(ascon_permutation<12>)->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
+BENCHMARK(ascon_permutation<14>)->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
+BENCHMARK(ascon_permutation<16>)->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
