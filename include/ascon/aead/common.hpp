@@ -18,9 +18,7 @@ constexpr size_t TAG_LEN = 16;
 // https://ascon.iaik.tugraz.at/files/asconv12-nist.pdf
 template<const size_t rounds_a, const uint64_t IV, const size_t klen>
 static inline void
-initialize(ascon_perm::ascon_perm_t& state,
-           std::span<const uint8_t, klen / 8> key,
-           std::span<const uint8_t, NONCE_LEN> nonce)
+initialize(ascon_perm::ascon_perm_t& state, std::span<const uint8_t, klen / 8> key, std::span<const uint8_t, NONCE_LEN> nonce)
 {
   if constexpr (klen == 128) {
     // For Ascon-128{a}
@@ -70,7 +68,7 @@ initialize(ascon_perm::ascon_perm_t& state,
     state[3] = nonce0;
     state[4] = nonce1;
 
-    state.permute<ascon_perm::ASCON_PERMUTATION_MAX_ROUNDS>();
+    state.permute<12>();
 
     state[2] ^= (key0 >> 32);
     state[3] ^= (key0 << 32) | (key1 >> 32);

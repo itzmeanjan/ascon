@@ -16,7 +16,7 @@ inline constexpr ascon_perm::ascon_perm_t
 apply_permutation(const uint64_t row0)
 {
   ascon_perm::ascon_perm_t state({ row0, 0, 0, 0, 0 });
-  state.permute<ascon_perm::ASCON_PERMUTATION_MAX_ROUNDS>();
+  state.permute<12>();
   return state;
 }
 
