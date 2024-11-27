@@ -14,10 +14,8 @@
 // Utility functions for Ascon Light Weight Cipher Suite Implementation
 namespace ascon_utils {
 
-// Given a 32/ 64 -bit unsigned integer word, this routine swaps byte order and
-// returns byte swapped 32/ 64 -bit word.
-//
-// Collects inspiration from https://stackoverflow.com/a/36552262
+// Given a 32/ 64 -bit unsigned integer word, this routine swaps byte order and returns byte swapped 32/ 64 -bit word.
+// Collects inspiration from https://stackoverflow.com/a/36552262.
 template<typename T>
 static inline constexpr T
 bswap(const T a)
@@ -43,35 +41,35 @@ bswap(const T a)
   }
 }
 
-// Given big-endian byte array of length 4/ 8, this function interprets it as
+// Given little-endian byte array of length 4/ 8, this function interprets it as
 // 32/ 64 -bit unsigned integer.
 template<typename T>
 inline constexpr T
-from_be_bytes(std::span<const uint8_t, sizeof(T)> bytes)
+from_le_bytes(std::span<const uint8_t, sizeof(T)> bytes)
   requires(std::unsigned_integral<T> && ((sizeof(T) == 4) || (sizeof(T) == 8)))
 {
   T res = 0;
 
   if constexpr (sizeof(T) == 4) {
-    res = (static_cast<T>(bytes[0]) << 24) | (static_cast<T>(bytes[1]) << 16) | (static_cast<T>(bytes[2]) << 8) | static_cast<T>(bytes[3]);
+    res = (static_cast<T>(bytes[3]) << 24) | (static_cast<T>(bytes[2]) << 16) | (static_cast<T>(bytes[1]) << 8) | static_cast<T>(bytes[0]);
   } else {
     static_assert(sizeof(T) == 8, "T must be either 4 or 8 -bytes !");
 
-    res = (static_cast<T>(bytes[0]) << 56) | (static_cast<T>(bytes[1]) << 48) | (static_cast<T>(bytes[2]) << 40) | (static_cast<T>(bytes[3]) << 32) |
-          (static_cast<T>(bytes[4]) << 24) | (static_cast<T>(bytes[5]) << 16) | (static_cast<T>(bytes[6]) << 8) | static_cast<T>(bytes[7]);
+    res = (static_cast<T>(bytes[7]) << 56) | (static_cast<T>(bytes[6]) << 48) | (static_cast<T>(bytes[5]) << 40) | (static_cast<T>(bytes[4]) << 32) |
+          (static_cast<T>(bytes[3]) << 24) | (static_cast<T>(bytes[2]) << 16) | (static_cast<T>(bytes[1]) << 8) | static_cast<T>(bytes[0]);
   }
 
   return res;
 }
 
 // Given a 32/ 64 -bit unsigned integer, this function interprets it as a
-// big-endian byte array of length 4/ 8.
+// little-endian byte array of length 4/ 8.
 template<typename T>
 inline constexpr void
-to_be_bytes(T num, std::span<uint8_t, sizeof(T)> bytes)
+to_le_bytes(T num, std::span<uint8_t, sizeof(T)> bytes)
   requires(std::unsigned_integral<T> && ((sizeof(T) == 4) || (sizeof(T) == 8)))
 {
-  if constexpr (std::endian::native == std::endian::little) {
+  if constexpr (std::endian::native == std::endian::big) {
     num = bswap(num);
   }
 
