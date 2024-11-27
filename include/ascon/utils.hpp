@@ -47,7 +47,7 @@ bswap(const T a)
 // 32/ 64 -bit unsigned integer.
 template<typename T>
 inline constexpr T
-from_be_bytes(std::span<const uint8_t> bytes)
+from_be_bytes(std::span<const uint8_t, sizeof(T)> bytes)
   requires(std::unsigned_integral<T> && ((sizeof(T) == 4) || (sizeof(T) == 8)))
 {
   T res = 0;
@@ -68,7 +68,7 @@ from_be_bytes(std::span<const uint8_t> bytes)
 // big-endian byte array of length 4/ 8.
 template<typename T>
 inline constexpr void
-to_be_bytes(T num, std::span<uint8_t> bytes)
+to_be_bytes(T num, std::span<uint8_t, sizeof(T)> bytes)
   requires(std::unsigned_integral<T> && ((sizeof(T) == 4) || (sizeof(T) == 8)))
 {
   if constexpr (std::endian::native == std::endian::little) {
