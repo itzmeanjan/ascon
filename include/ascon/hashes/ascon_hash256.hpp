@@ -3,15 +3,15 @@
 
 namespace ascon_hash256 {
 
-static constexpr size_t DIGEST_BYTE_LEN = sizeof(ascon_perm::ascon_perm_t) - ascon_sponge_mode::RATE_BYTES;
+static constexpr size_t DIGEST_BYTE_LEN = (ascon_perm::PERMUTATION_STATE_BITWIDTH - ascon_sponge_mode::RATE_BITS) / std::numeric_limits<uint8_t>::digits;
 
 // See table 12 of Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
 static constexpr uint8_t UNIQUE_ALGORITHM_ID = 2;
-static constexpr auto INITIAL_PERM_STATE = ascon_sponge_mode::compute_init_state(ascon_utils::compute_iv(UNIQUE_ALGORITHM_ID,
-                                                                                                         ascon_sponge_mode::ASCON_PERM_NUM_ROUNDS,
-                                                                                                         ascon_sponge_mode::ASCON_PERM_NUM_ROUNDS,
-                                                                                                         DIGEST_BYTE_LEN * 8,
-                                                                                                         ascon_sponge_mode::RATE_BYTES));
+static constexpr auto INITIAL_PERMUTATION_STATE = ascon_sponge_mode::compute_init_state(ascon_utils::compute_iv(UNIQUE_ALGORITHM_ID,
+                                                                                                                ascon_sponge_mode::ASCON_PERM_NUM_ROUNDS,
+                                                                                                                ascon_sponge_mode::ASCON_PERM_NUM_ROUNDS,
+                                                                                                                DIGEST_BYTE_LEN * 8,
+                                                                                                                ascon_sponge_mode::RATE_BYTES));
 
 /**
  * @brief Represents the Ascon-Hash256 hashing algorithm.
@@ -22,7 +22,7 @@ static constexpr auto INITIAL_PERM_STATE = ascon_sponge_mode::compute_init_state
 struct ascon_hash256_t
 {
 private:
-  ascon_perm::ascon_perm_t state = INITIAL_PERM_STATE;
+  ascon_perm::ascon_perm_t state = INITIAL_PERMUTATION_STATE;
   size_t offset = 0;
   alignas(4) bool finished_absorbing = false;
   alignas(4) bool finished_squeezing = false;
@@ -113,7 +113,7 @@ public:
    */
   forceinline void constexpr reset()
   {
-    this->state = INITIAL_PERM_STATE;
+    this->state = INITIAL_PERMUTATION_STATE;
     this->offset = 0;
     this->finished_absorbing = false;
     this->finished_squeezing = false;
