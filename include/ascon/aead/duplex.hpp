@@ -6,7 +6,7 @@
 #include <array>
 #include <limits>
 
-namespace ascon_aead_mode {
+namespace ascon_duplex_mode {
 
 // See table 12 of Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
 static constexpr uint8_t UNIQUE_ALGORITHM_ID = 1;

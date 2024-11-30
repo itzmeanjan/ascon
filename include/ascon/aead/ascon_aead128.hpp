@@ -1,11 +1,11 @@
 #pragma once
-#include "ascon/aead/mode.hpp"
+#include "ascon/aead/duplex.hpp"
 
 namespace ascon_aead128 {
 
-static constexpr size_t KEY_BYTE_LEN = ascon_aead_mode::KEY_BYTE_LEN;
-static constexpr size_t NONCE_BYTE_LEN = ascon_aead_mode::NONCE_BYTE_LEN;
-static constexpr size_t TAG_BYTE_LEN = ascon_aead_mode::TAG_BYTE_LEN;
+static constexpr size_t KEY_BYTE_LEN = ascon_duplex_mode::KEY_BYTE_LEN;
+static constexpr size_t NONCE_BYTE_LEN = ascon_duplex_mode::NONCE_BYTE_LEN;
+static constexpr size_t TAG_BYTE_LEN = ascon_duplex_mode::TAG_BYTE_LEN;
 
 // Given a 16 -bytes key, a 16 -bytes nonce, an arbitrary length associated data and an arbitrary length plain text,
 // this routine encrypts plain text, producing equal length cipher text. It also produces a 16 -bytes authentication tag,
@@ -22,10 +22,10 @@ encrypt(std::span<const uint8_t, KEY_BYTE_LEN> key,
 {
   ascon_perm::ascon_perm_t state{};
 
-  ascon_aead_mode::initialize(state, key, nonce);
-  ascon_aead_mode::process_associated_data(state, associated_data);
-  ascon_aead_mode::process_plaintext(state, plaintext, ciphertext);
-  ascon_aead_mode::finalize(state, key, tag);
+  ascon_duplex_mode::initialize(state, key, nonce);
+  ascon_duplex_mode::process_associated_data(state, associated_data);
+  ascon_duplex_mode::process_plaintext(state, plaintext, ciphertext);
+  ascon_duplex_mode::finalize(state, key, tag);
 }
 
 // Given a 16 -bytes key, a 16 -bytes nonce, a 16 -bytes authentication tag, an arbitrary length associated data and
@@ -44,10 +44,10 @@ decrypt(std::span<const uint8_t, KEY_BYTE_LEN> key,
   ascon_perm::ascon_perm_t state{};
   std::array<uint8_t, TAG_BYTE_LEN> computed_tag{};
 
-  ascon_aead_mode::initialize(state, key, nonce);
-  ascon_aead_mode::process_associated_data(state, associated_data);
-  ascon_aead_mode::process_ciphertext(state, cipher, text);
-  ascon_aead_mode::finalize(state, key, computed_tag);
+  ascon_duplex_mode::initialize(state, key, nonce);
+  ascon_duplex_mode::process_associated_data(state, associated_data);
+  ascon_duplex_mode::process_ciphertext(state, cipher, text);
+  ascon_duplex_mode::finalize(state, key, computed_tag);
 
   const uint32_t flg = ascon_common_utils::ct_eq_byte_array<TAG_BYTE_LEN>(tag, computed_tag);
   ascon_common_utils::ct_conditional_memset(~flg, text, 0);
