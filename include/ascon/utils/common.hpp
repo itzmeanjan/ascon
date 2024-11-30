@@ -15,6 +15,26 @@
 // Utility functions for Ascon Light Weight Cipher Suite Implementation
 namespace ascon_utils {
 
+// Compile-time evaluated function for computing initial values for Ascon variants.
+// See appendix B of Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
+consteval forceinline uint64_t
+compute_iv(const uint8_t unique_algo_id,
+           const uint8_t perm_num_rounds_a,
+           const uint8_t perm_num_rounds_b,
+           const uint16_t tag_bit_len,
+           const uint8_t rate_byte_len)
+{
+  constexpr uint8_t mask4 = 0b1111u;
+
+  return ((static_cast<uint64_t>(rate_byte_len) << 40) |             // 8 -bits
+          (static_cast<uint64_t>(tag_bit_len) << 24) |               // 16 -bits
+          (static_cast<uint64_t>(perm_num_rounds_b & mask4) << 20) | // 4 -bits
+          (static_cast<uint64_t>(perm_num_rounds_a & mask4) << 16) | // 4 -bits
+          (0ul << 8) |                                               // 8 -bits
+          static_cast<uint64_t>(unique_algo_id)                      // 8 -bits
+  );
+}
+
 // Given a 32/ 64 -bit unsigned integer word, this routine swaps byte order and returns byte swapped 32/ 64 -bit word.
 // Collects inspiration from https://stackoverflow.com/a/36552262.
 template<typename T>
