@@ -40,7 +40,7 @@ absorb(ascon_perm::ascon_perm_t& state,
     const size_t readable = RATE_BYTES - block_offset;
 
     std::copy_n(msg.subspan(msg_offset).begin(), readable, block_span.subspan(block_offset).begin());
-    state[0] ^= ascon_utils::from_le_bytes<uint64_t>(block_span);
+    state[0] ^= ascon_common_utils::from_le_bytes(block_span);
 
     state.permute<ASCON_PERM_NUM_ROUNDS>();
 
@@ -53,7 +53,7 @@ absorb(ascon_perm::ascon_perm_t& state,
   std::fill(block_span.begin(), block_span.end(), 0x00);
   std::copy_n(msg.subspan(msg_offset).begin(), remaining_num_bytes, block_span.subspan(block_offset).begin());
 
-  state[0] ^= ascon_utils::from_le_bytes<uint64_t>(block_span);
+  state[0] ^= ascon_common_utils::from_le_bytes(block_span);
   block_offset += remaining_num_bytes;
 }
 
@@ -85,7 +85,7 @@ squeeze(ascon_perm::ascon_perm_t& state, size_t& num_squeezable_bytes, std::span
     const size_t to_be_squeezed_num_bytes = std::min(num_squeezable_bytes, olen - out_offset);
     const size_t block_offset = RATE_BYTES - num_squeezable_bytes;
 
-    ascon_utils::to_le_bytes(state[0], block_span);
+    ascon_common_utils::to_le_bytes(state[0], block_span);
     std::copy_n(block_span.subspan(block_offset).begin(), to_be_squeezed_num_bytes, out.subspan(out_offset).begin());
 
     num_squeezable_bytes -= to_be_squeezed_num_bytes;

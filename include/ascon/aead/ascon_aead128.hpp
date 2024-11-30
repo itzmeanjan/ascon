@@ -49,8 +49,8 @@ decrypt(std::span<const uint8_t, KEY_BYTE_LEN> key,
   ascon_aead_mode::process_ciphertext(state, cipher, text);
   ascon_aead_mode::finalize(state, key, computed_tag);
 
-  const uint32_t flg = ascon_utils::ct_eq_byte_array<TAG_BYTE_LEN>(tag, computed_tag);
-  ascon_utils::ct_conditional_memset(~flg, text, 0);
+  const uint32_t flg = ascon_common_utils::ct_eq_byte_array<TAG_BYTE_LEN>(tag, computed_tag);
+  ascon_common_utils::ct_conditional_memset(~flg, text, 0);
 
   return static_cast<bool>(flg);
 }

@@ -7,11 +7,11 @@ static constexpr size_t DIGEST_BYTE_LEN = (ascon_perm::PERMUTATION_STATE_BITWIDT
 
 // See table 12 of Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
 static constexpr uint8_t UNIQUE_ALGORITHM_ID = 2;
-static constexpr auto INITIAL_PERMUTATION_STATE = ascon_sponge_mode::compute_init_state(ascon_utils::compute_iv(UNIQUE_ALGORITHM_ID,
-                                                                                                                ascon_sponge_mode::ASCON_PERM_NUM_ROUNDS,
-                                                                                                                ascon_sponge_mode::ASCON_PERM_NUM_ROUNDS,
-                                                                                                                DIGEST_BYTE_LEN * 8,
-                                                                                                                ascon_sponge_mode::RATE_BYTES));
+static constexpr auto INITIAL_PERMUTATION_STATE = ascon_sponge_mode::compute_init_state(ascon_common_utils::compute_iv(UNIQUE_ALGORITHM_ID,
+                                                                                                                       ascon_sponge_mode::ASCON_PERM_NUM_ROUNDS,
+                                                                                                                       ascon_sponge_mode::ASCON_PERM_NUM_ROUNDS,
+                                                                                                                       DIGEST_BYTE_LEN * 8,
+                                                                                                                       ascon_sponge_mode::RATE_BYTES));
 
 /**
  * @brief Represents the Ascon-Hash256 hashing algorithm.
