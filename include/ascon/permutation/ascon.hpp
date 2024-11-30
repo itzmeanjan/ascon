@@ -4,12 +4,15 @@
 #include <bit>
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 
 // Ascon Permutation.
 namespace ascon_perm {
 
-// Maximum number of Ascon permutation rounds.
 static constexpr size_t ASCON_PERMUTATION_MAX_ROUNDS = 16;
+static constexpr size_t PERMUTATION_STATE_BITWIDTH = 320;
+static constexpr size_t PERMUTATION_STATE_WORD_BITWIDTH = std::numeric_limits<uint64_t>::digits;
+static constexpr size_t PERMUTATION_STATE_WORD_COUNT = PERMUTATION_STATE_BITWIDTH / PERMUTATION_STATE_WORD_BITWIDTH;
 
 // Ascon permutation round constants; taken from table 5 in Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
 static constexpr std::array<uint8_t, ASCON_PERMUTATION_MAX_ROUNDS> ASCON_PERMUTATION_ROUND_CONSTANTS{ 0x3c, 0x2d, 0x1e, 0x0f, 0xf0, 0xe1, 0xd2, 0xc3,
@@ -20,7 +23,8 @@ struct ascon_perm_t
 {
 private:
   // 320 -bit Ascon permutation state.
-  std::array<uint64_t, 5> state{};
+  std::array<uint64_t, PERMUTATION_STATE_WORD_COUNT> state{};
+  static_assert(sizeof(state) * std::numeric_limits<uint8_t>::digits == PERMUTATION_STATE_BITWIDTH);
 
   // Addition of constants step; see section 3.2 of Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
   forceinline constexpr void p_c(const uint64_t rc) { state[2] ^= rc; }
