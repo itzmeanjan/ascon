@@ -1,5 +1,5 @@
 #pragma once
-#include "ascon/force_inline.hpp"
+#include "ascon/utils/force_inline.hpp"
 #include <array>
 #include <bit>
 #include <cstddef>

@@ -1,4 +1,5 @@
 #pragma once
+#include "ascon/utils/force_inline.hpp"
 #include "subtle.hpp"
 #include <algorithm>
 #include <bit>
@@ -17,7 +18,7 @@ namespace ascon_utils {
 // Given a 32/ 64 -bit unsigned integer word, this routine swaps byte order and returns byte swapped 32/ 64 -bit word.
 // Collects inspiration from https://stackoverflow.com/a/36552262.
 template<typename T>
-static inline constexpr T
+forceinline constexpr T
 bswap(const T a)
   requires(std::unsigned_integral<T> && ((sizeof(T) == 4) || (sizeof(T) == 8)))
 {
@@ -44,7 +45,7 @@ bswap(const T a)
 // Given little-endian byte array of length 4/ 8, this function interprets it as
 // 32/ 64 -bit unsigned integer.
 template<typename T>
-inline constexpr T
+forceinline constexpr T
 from_le_bytes(std::span<const uint8_t, sizeof(T)> bytes)
   requires(std::unsigned_integral<T> && ((sizeof(T) == 4) || (sizeof(T) == 8)))
 {
@@ -65,7 +66,7 @@ from_le_bytes(std::span<const uint8_t, sizeof(T)> bytes)
 // Given a 32/ 64 -bit unsigned integer, this function interprets it as a
 // little-endian byte array of length 4/ 8.
 template<typename T>
-inline constexpr void
+forceinline constexpr void
 to_le_bytes(T num, std::span<uint8_t, sizeof(T)> bytes)
   requires(std::unsigned_integral<T> && ((sizeof(T) == 4) || (sizeof(T) == 8)))
 {
@@ -101,7 +102,7 @@ to_le_bytes(T num, std::span<uint8_t, sizeof(T)> bytes)
 // take proper care of them, before using the message chunk, as it may be some garbage
 // bytes from previous iteration.
 template<const size_t len>
-inline constexpr size_t
+forceinline constexpr size_t
 get_ith_msg_blk(std::span<const uint8_t> msg,   // chunk(s) to be read from this message
                 const size_t i,                 // index of message chunk, to be read
                 std::span<uint8_t, len> msg_blk // len -bytes chunk to be (partially) filled
@@ -123,7 +124,7 @@ get_ith_msg_blk(std::span<const uint8_t> msg,   // chunk(s) to be read from this
 // whenever this function is called `used` must be < `len` - and that's why the last
 // line of this function is correct, it may not be in case this assumption changes.
 template<const size_t len>
-inline constexpr void
+forceinline constexpr void
 pad_msg_blk(std::span<uint8_t, len> msg_blk, const size_t used)
 {
   auto _msg_blk0 = msg_blk.subspan(used, len - used);
@@ -133,7 +134,7 @@ pad_msg_blk(std::span<uint8_t, len> msg_blk, const size_t used)
 }
 
 // Converts byte array into hex string; see https://stackoverflow.com/a/14051107
-inline const std::string
+forceinline const std::string
 to_hex(std::span<const uint8_t> bytes)
 {
   std::stringstream ss;
@@ -150,7 +151,7 @@ to_hex(std::span<const uint8_t> bytes)
 //
 // Taken from
 // https://github.com/itzmeanjan/dilithium/blob/c69d524625375959d4573bb83953da89ec8b829c/include/utils.hpp#L72-L94
-inline std::vector<uint8_t>
+forceinline std::vector<uint8_t>
 from_hex(std::string_view hex)
 {
   const size_t hlen = hex.length();
@@ -177,7 +178,7 @@ from_hex(std::string_view hex)
 // case they are equal. Otherwise it returns 0x00000000, denoting inequality of
 // content of two byte arrays.
 template<const size_t len>
-inline constexpr uint32_t
+forceinline constexpr uint32_t
 ct_eq_byte_array(std::span<const uint8_t, len> byte_arr_a, std::span<const uint8_t, len> byte_arr_b)
 {
   uint32_t flag = -1u;
@@ -193,7 +194,7 @@ ct_eq_byte_array(std::span<const uint8_t, len> byte_arr_a, std::span<const uint8
 // pointed to by `byte_arr` ) to some provided value ( `val` ), in
 // constant-time, only if `cond` holds truth value ( = 0xffffffff ). Otherwise,
 // it shouldn't mutate bytes.
-inline constexpr void
+forceinline constexpr void
 ct_conditional_memset(const uint32_t cond, std::span<uint8_t> byte_arr, const uint8_t val)
 {
   for (size_t i = 0; i < byte_arr.size(); i++) {
@@ -205,7 +206,7 @@ ct_conditional_memset(const uint32_t cond, std::span<uint8_t> byte_arr, const ui
 //
 // **Not cryptographically secure !**
 template<typename T>
-inline void
+forceinline void
 random_data(std::span<T> data)
   requires(std::is_unsigned_v<T>)
 {
