@@ -1,6 +1,5 @@
 #pragma once
 #include "ascon/aead/mode.hpp"
-#include "ascon/utils/force_inline.hpp"
 
 namespace ascon_aead128 {
 
