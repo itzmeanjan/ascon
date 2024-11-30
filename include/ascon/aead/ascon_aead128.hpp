@@ -7,11 +7,20 @@ static constexpr size_t KEY_BYTE_LEN = ascon_duplex_mode::KEY_BYTE_LEN;
 static constexpr size_t NONCE_BYTE_LEN = ascon_duplex_mode::NONCE_BYTE_LEN;
 static constexpr size_t TAG_BYTE_LEN = ascon_duplex_mode::TAG_BYTE_LEN;
 
-// Given a 16 -bytes key, a 16 -bytes nonce, an arbitrary length associated data and an arbitrary length plain text,
-// this routine encrypts plain text, producing equal length cipher text. It also produces a 16 -bytes authentication tag,
-// which authenticates both associated data and cipher text.
-//
-// Note, associated data doesn't ever get encrypted, it only gets authenticated.
+/**
+ * @brief Encrypts plaintext using the Ascon-AEAD128 algorithm.
+ *
+ * @param key The 128-bit encryption key.
+ * @param nonce The 128-bit nonce (must be unique for each encryption with the same key).
+ * @param associated_data Arbitrary-length associated data to be authenticated (but not encrypted).
+ * @param plaintext The plaintext to be encrypted.
+ * @param ciphertext Output buffer for the ciphertext (must be the same length as plaintext).
+ * @param tag Output buffer for the 128-bit authentication tag.
+ *
+ * This function encrypts the plaintext, producing ciphertext of the same length.
+ * It also generates a 128-bit authentication tag that authenticates both the associated data and the ciphertext.
+ * The associated data is authenticated but not encrypted.
+ */
 forceinline void
 encrypt(std::span<const uint8_t, KEY_BYTE_LEN> key,
         std::span<const uint8_t, NONCE_BYTE_LEN> nonce,
@@ -28,11 +37,20 @@ encrypt(std::span<const uint8_t, KEY_BYTE_LEN> key,
   ascon_duplex_mode::finalize(state, key, tag);
 }
 
-// Given a 16 -bytes key, a 16 -bytes nonce, a 16 -bytes authentication tag, an arbitrary length associated data and
-// an arbitrary length cipher text, this routine decrypts cipher text, producing equal length plain text, while also checking
-// authenticity of both cipher text and associated data, using 16 -bytes tag.
-//
-// It returns truth value, only when authentication passes, otherwise it returns false, while also zeroing out plain text.
+/**
+ * @brief Decrypts ciphertext using the Ascon-AEAD128 algorithm and verifies its authenticity.
+ *
+ * @param key The 128-bit encryption key.
+ * @param nonce The 128-bit nonce used during encryption.
+ * @param associated_data Arbitrary-length associated data used during encryption.
+ * @param cipher The ciphertext to be decrypted.
+ * @param text Output buffer for the plaintext (must be the same length as cipher).  Will be zeroed if authentication fails.
+ * @param tag The 128-bit authentication tag generated during encryption.
+ * @return True if the authentication tag is valid and decryption was successful; False otherwise.  If false, the output text will be zeroed.
+ *
+ * This function decrypts the ciphertext, producing plaintext of the same length.  It also verifies the authenticity of both the ciphertext and associated data
+ * using the provided authentication tag. If authentication fails, the function returns false and the plaintext buffer is zeroed.
+ */
 forceinline bool
 decrypt(std::span<const uint8_t, KEY_BYTE_LEN> key,
         std::span<const uint8_t, NONCE_BYTE_LEN> nonce,
