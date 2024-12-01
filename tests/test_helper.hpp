@@ -47,16 +47,16 @@ constexpr void
 do_bitflip(std::span<uint8_t> msg)
 {
   const size_t target_byte_idx = msg.size() - 1;
-  const size_t target_bit_idx = target_byte_idx % 8;
+  const size_t target_bit_idx = 3;
 
-  const uint8_t hi_bit_mask = 0xffu << (target_bit_idx + 1);
-  const uint8_t lo_bit_mask = 0xffu >> (std::numeric_limits<uint8_t>::digits - target_bit_idx);
+  const auto hi_bit_mask = static_cast<uint8_t>(0xffu << (target_bit_idx + 1));
+  const auto lo_bit_mask = static_cast<uint8_t>(0xffu >> (std::numeric_limits<uint8_t>::digits - target_bit_idx));
 
   const uint8_t selected_byte = msg[target_byte_idx];
   const uint8_t selected_bit = (selected_byte >> target_bit_idx) & 0b1u;
   const uint8_t selected_bit_flipped = (~selected_bit) & 0b1;
 
-  msg[target_bit_idx] = (selected_byte & hi_bit_mask) ^ (selected_bit_flipped << target_bit_idx) ^ (selected_byte & lo_bit_mask);
+  msg[target_byte_idx] = (selected_byte & hi_bit_mask) ^ (selected_bit_flipped << target_bit_idx) ^ (selected_byte & lo_bit_mask);
 }
 
 // Given a byte array of length L, this routine can be used for interpreting those bytes as a hex-encoded string of length 2*L.
