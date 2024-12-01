@@ -13,7 +13,7 @@ static constexpr auto INITIAL_PERMUTATION_STATE = ascon_sponge_mode::compute_ini
 
 /**
  * @brief Ascon-based extendable-output function (XOF) offering 128-bit security. Provides methods for absorbing arbitrary long data, finalizing the internal
- * state, and squeezing arbitrarily long output sequences. The state is reset using the reset() method.
+ * state, and squeezing arbitrarily long output sequences.
  */
 struct ascon_xof128_t
 {
@@ -87,17 +87,6 @@ public:
 
     ascon_sponge_mode::squeeze(state, readable, out);
     return true;
-  }
-
-  /**
-   * @brief Resets the XOF to its initial state, allowing it to be reused for a new hashing operation.
-   */
-  forceinline constexpr void reset()
-  {
-    this->state = INITIAL_PERMUTATION_STATE;
-    this->offset = 0;
-    this->readable = 0;
-    this->finished_absorbing = false;
   }
 };
 
