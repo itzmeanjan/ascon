@@ -2,7 +2,7 @@
 #include "test_helper.hpp"
 #include <gtest/gtest.h>
 
-TEST(AsconAEAD, Ascon_AEAD128EncryptThenDecrypt)
+TEST(AsconAEAD128, EncryptThenDecrypt)
 {
   for (size_t associated_data_len = MIN_AD_LEN; associated_data_len <= MAX_AD_LEN; associated_data_len++) {
     for (size_t plaintext_len = MIN_PT_LEN; plaintext_len <= MAX_PT_LEN; plaintext_len++) {
@@ -37,10 +37,10 @@ test_decryption_failure_for_ascon_aead128(const size_t associated_data_len, cons
   std::array<uint8_t, ascon_aead128::KEY_BYTE_LEN> key{};
   std::array<uint8_t, ascon_aead128::NONCE_BYTE_LEN> nonce{};
   std::array<uint8_t, ascon_aead128::TAG_BYTE_LEN> tag{};
-  std::vector<uint8_t> associated_data(associated_data_len);
-  std::vector<uint8_t> plaintext(plaintext_len);
-  std::vector<uint8_t> ciphertext(plaintext_len);
-  std::vector<uint8_t> decipheredtext(plaintext_len);
+  std::vector<uint8_t> associated_data(associated_data_len, 0);
+  std::vector<uint8_t> plaintext(plaintext_len, 0);
+  std::vector<uint8_t> ciphertext(plaintext_len, 0);
+  std::vector<uint8_t> decipheredtext(plaintext_len, 0xff);
 
   generate_random_data<uint8_t>(key);
   generate_random_data<uint8_t>(nonce);
@@ -76,14 +76,46 @@ test_decryption_failure_for_ascon_aead128(const size_t associated_data_len, cons
   EXPECT_EQ(decipheredtext, zeros);
 }
 
-TEST(AsconAEAD, Ascon_AEAD128DecryptionFailure)
+TEST(AsconAEAD128, DecryptionFailureDueToBitFlippingInKey)
 {
   for (size_t associated_data_len = 1; associated_data_len <= MAX_AD_LEN; associated_data_len++) {
     for (size_t plaintext_len = 1; plaintext_len <= MAX_PT_LEN; plaintext_len++) {
       test_decryption_failure_for_ascon_aead128(associated_data_len, plaintext_len, aead_mutation_kind_t::mutate_key);
+    }
+  }
+}
+
+TEST(AsconAEAD128, DecryptionFailureDueToBitFlippingInNonce)
+{
+  for (size_t associated_data_len = 1; associated_data_len <= MAX_AD_LEN; associated_data_len++) {
+    for (size_t plaintext_len = 1; plaintext_len <= MAX_PT_LEN; plaintext_len++) {
       test_decryption_failure_for_ascon_aead128(associated_data_len, plaintext_len, aead_mutation_kind_t::mutate_nonce);
+    }
+  }
+}
+
+TEST(AsconAEAD128, DecryptionFailureDueToBitFlippingInTag)
+{
+  for (size_t associated_data_len = 1; associated_data_len <= MAX_AD_LEN; associated_data_len++) {
+    for (size_t plaintext_len = 1; plaintext_len <= MAX_PT_LEN; plaintext_len++) {
       test_decryption_failure_for_ascon_aead128(associated_data_len, plaintext_len, aead_mutation_kind_t::mutate_tag);
+    }
+  }
+}
+
+TEST(AsconAEAD128, DecryptionFailureDueToBitFlippingInAssociatedData)
+{
+  for (size_t associated_data_len = 1; associated_data_len <= MAX_AD_LEN; associated_data_len++) {
+    for (size_t plaintext_len = 1; plaintext_len <= MAX_PT_LEN; plaintext_len++) {
       test_decryption_failure_for_ascon_aead128(associated_data_len, plaintext_len, aead_mutation_kind_t::mutate_associated_data);
+    }
+  }
+}
+
+TEST(AsconAEAD128, DecryptionFailureDueToBitFlippingInCipherText)
+{
+  for (size_t associated_data_len = 1; associated_data_len <= MAX_AD_LEN; associated_data_len++) {
+    for (size_t plaintext_len = 1; plaintext_len <= MAX_PT_LEN; plaintext_len++) {
       test_decryption_failure_for_ascon_aead128(associated_data_len, plaintext_len, aead_mutation_kind_t::mutate_cipher_text);
     }
   }
