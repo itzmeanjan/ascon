@@ -17,7 +17,7 @@ static constexpr auto INITIAL_PERMUTATION_STATE = ascon_sponge_mode::compute_ini
  * @brief Represents the Ascon-Hash256 hashing algorithm.
  *
  * This struct encapsulates the state and methods for computing the Ascon-Hash256 hash of a message. It uses the Ascon permutation and a sponge construction.
- * The hash function produces a 32-byte digest. The object can be reused after calling the `reset()` method.
+ * The hash function produces a 32-byte digest.
  */
 struct ascon_hash256_t
 {
@@ -103,20 +103,6 @@ public:
     }
 
     return false;
-  }
-
-  /**
-   * @brief Resets the hash state to its initial values.
-   *
-   * This function resets the internal state of the Ascon-Hash256 object, allowing it to be reused for hashing a new message.  After calling `reset()`, the
-   * object is in the same state as a newly constructed object.
-   */
-  forceinline void constexpr reset()
-  {
-    this->state = INITIAL_PERMUTATION_STATE;
-    this->offset = 0;
-    this->finished_absorbing = false;
-    this->finished_squeezing = false;
   }
 };
 
