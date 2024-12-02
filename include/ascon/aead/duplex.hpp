@@ -24,7 +24,7 @@ static constexpr size_t TAG_BYTE_LEN = BIT_SECURITY_LEVEL / std::numeric_limits<
 
 // Initialize Ascon permutation state with 16 -bytes key and nonce.
 // See point 1 of section 4.1.1 in Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
-forceinline void
+forceinline constexpr void
 initialize(ascon_perm::ascon_perm_t& state, std::span<const uint8_t, KEY_BYTE_LEN> key, std::span<const uint8_t, NONCE_BYTE_LEN> nonce)
 {
   const auto key_first = ascon_common_utils::from_le_bytes(key.first<8>());
@@ -44,7 +44,7 @@ initialize(ascon_perm::ascon_perm_t& state, std::span<const uint8_t, KEY_BYTE_LE
 
 // Absorbs arbitrary length associated data into Ascon permutation state; also adds the domain separation bit.
 // See point 2 of section 4.1.1 in Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
-forceinline void
+forceinline constexpr void
 process_associated_data(ascon_perm::ascon_perm_t& state, std::span<const uint8_t> data)
 {
   const size_t dlen = data.size();
@@ -57,7 +57,7 @@ process_associated_data(ascon_perm::ascon_perm_t& state, std::span<const uint8_t
 
     // Process full message blocks, expect the last one, which is padded.
     for (size_t block_index = 0; block_index < total_num_blocks - 1; block_index++) {
-      ascon_common_utils::get_ith_msg_blk(data, block_index, chunk_span);
+      (void)ascon_common_utils::get_ith_msg_blk(data, block_index, chunk_span);
 
       state[0] ^= ascon_common_utils::from_le_bytes(chunk_span.first<8>());
       state[1] ^= ascon_common_utils::from_le_bytes(chunk_span.last<8>());
@@ -83,7 +83,7 @@ process_associated_data(ascon_perm::ascon_perm_t& state, std::span<const uint8_t
 
 // Encrypts arbitrary length plain text, producing equal length cipher text.
 // See point 3 of section 4.1.1 in Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
-forceinline void
+forceinline constexpr void
 process_plaintext(ascon_perm::ascon_perm_t& state, std::span<const uint8_t> text, std::span<uint8_t> cipher)
 {
   const size_t ctlen = text.size();
@@ -97,7 +97,7 @@ process_plaintext(ascon_perm::ascon_perm_t& state, std::span<const uint8_t> text
 
   // Process full message blocks, expect the last one, which is padded.
   for (size_t block_index = 0; block_index < total_num_blocks - 1; block_index++) {
-    ascon_common_utils::get_ith_msg_blk(text, block_index, chunk_span);
+    (void)ascon_common_utils::get_ith_msg_blk(text, block_index, chunk_span);
 
     state[0] ^= ascon_common_utils::from_le_bytes(chunk_span.first<8>());
     state[1] ^= ascon_common_utils::from_le_bytes(chunk_span.last<8>());
@@ -126,7 +126,7 @@ process_plaintext(ascon_perm::ascon_perm_t& state, std::span<const uint8_t> text
 
 // Decrypts arbitrary length cipher text, producing equal length plain text.
 // See point 3 of section 4.1.2 in Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
-forceinline void
+forceinline constexpr void
 process_ciphertext(ascon_perm::ascon_perm_t& state, std::span<const uint8_t> cipher, std::span<uint8_t> text)
 {
   const size_t ctlen = cipher.size();
@@ -140,7 +140,7 @@ process_ciphertext(ascon_perm::ascon_perm_t& state, std::span<const uint8_t> cip
 
   // Process full message blocks, expect the last one, which is padded.
   for (size_t block_index = 0; block_index < total_num_blocks - 1; block_index++) {
-    ascon_common_utils::get_ith_msg_blk(cipher, block_index, chunk_span);
+    (void)ascon_common_utils::get_ith_msg_blk(cipher, block_index, chunk_span);
 
     const auto ct_first_word = ascon_common_utils::from_le_bytes(chunk_span.first<8>());
     const auto ct_last_word = ascon_common_utils::from_le_bytes(chunk_span.last<8>());
@@ -182,7 +182,7 @@ process_ciphertext(ascon_perm::ascon_perm_t& state, std::span<const uint8_t> cip
 
 // Finalizes the Ascon permutation state, producing 16 -bytes authentication tag.
 // See point 4 of section 4.1.1 in Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
-forceinline void
+forceinline constexpr void
 finalize(ascon_perm::ascon_perm_t& state, std::span<const uint8_t, KEY_BYTE_LEN> key, std::span<uint8_t, TAG_BYTE_LEN> tag)
 {
   const auto key_first = ascon_common_utils::from_le_bytes(key.first<8>());
