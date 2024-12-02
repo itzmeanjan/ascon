@@ -76,19 +76,31 @@ private:
 
 public:
   // Constructor(s)/ Destructor(s)
-  constexpr ascon_perm_t() = default;
-  constexpr ~ascon_perm_t() { reset(); }
+  forceinline constexpr ascon_perm_t() = default;
+  forceinline constexpr ~ascon_perm_t() { reset(); }
 
-  constexpr ascon_perm_t(std::array<uint64_t, 5>& words) { state = words; }
-  constexpr ascon_perm_t(std::array<uint64_t, 5>&& words) { state = words; }
-  constexpr ascon_perm_t(const std::array<uint64_t, 5>& words) { state = words; }
-  constexpr ascon_perm_t(const std::array<uint64_t, 5>&& words) { state = words; }
+  forceinline constexpr ascon_perm_t(std::array<uint64_t, 5>& words) { state = words; }
+  forceinline constexpr ascon_perm_t(std::array<uint64_t, 5>&& words) { state = words; }
+  forceinline constexpr ascon_perm_t(const std::array<uint64_t, 5>& words) { state = words; }
+  forceinline constexpr ascon_perm_t(const std::array<uint64_t, 5>&& words) { state = words; }
 
   // Accessor(s)
-  forceinline constexpr uint64_t& operator[](const size_t idx) { return state[idx]; }
-  forceinline constexpr const uint64_t& operator[](const size_t idx) const { return state[idx]; }
+  [[nodiscard]]
+  forceinline constexpr uint64_t& operator[](const size_t idx)
+  {
+    return state[idx];
+  }
+  [[nodiscard]]
+  forceinline constexpr const uint64_t& operator[](const size_t idx) const
+  {
+    return state[idx];
+  }
 
-  forceinline constexpr std::array<uint64_t, 5> reveal() const { return state; }
+  [[nodiscard]]
+  forceinline constexpr std::array<uint64_t, 5> reveal() const
+  {
+    return state;
+  }
   forceinline constexpr void reset() { state.fill(0); }
 
   // Applies Ascon permutation round for R -many times | R <= 16; taken from section 3 of Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.

@@ -52,6 +52,7 @@ public:
    * @param msg A span of bytes representing the data to absorb.
    * @return `true` if the data was successfully absorbed, `false` if the hash state has already been finalized.
    */
+  [[nodiscard]]
   forceinline constexpr bool absorb(std::span<const uint8_t> msg)
   {
     if (!finished_absorbing) [[likely]] {
@@ -71,7 +72,8 @@ public:
    *
    * @return `true` if the function successfully finalized the hash computation (meaning it was called before and not after `digest`), `false` otherwise.
    */
-  forceinline bool constexpr finalize()
+  [[nodiscard]]
+  forceinline constexpr bool finalize()
   {
     if (!finished_absorbing) [[likely]] {
       ascon_sponge_mode::finalize(state, offset);
@@ -92,7 +94,8 @@ public:
    * @param out A span of bytes where the resulting digest will be written.  The span must be large enough to hold a digest of `DIGEST_BYTE_LEN` bytes.
    * @return `true` if the digest was successfully extracted (this is the first call after `finalize()`), `false` otherwise.
    */
-  forceinline bool constexpr digest(std::span<uint8_t, DIGEST_BYTE_LEN> out)
+  [[nodiscard]]
+  forceinline constexpr bool digest(std::span<uint8_t, DIGEST_BYTE_LEN> out)
   {
     if (finished_absorbing && !finished_squeezing) [[likely]] {
       size_t readable = ascon_sponge_mode::RATE_BYTES;

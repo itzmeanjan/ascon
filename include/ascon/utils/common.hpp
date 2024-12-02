@@ -10,6 +10,7 @@ namespace ascon_common_utils {
 
 // Compile-time evaluated function for computing initial values for Ascon variants.
 // See appendix B of Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
+[[nodiscard]]
 forceinline consteval uint64_t
 compute_iv(const uint8_t unique_algo_id,
            const uint8_t perm_num_rounds_a,
@@ -29,6 +30,7 @@ compute_iv(const uint8_t unique_algo_id,
 }
 
 // Converts a little-endian byte array to a 64-bit unsigned integer.
+[[nodiscard]]
 forceinline constexpr uint64_t
 from_le_bytes(std::span<const uint8_t, 8> bytes)
 {
@@ -53,6 +55,7 @@ to_le_bytes(const uint64_t num, std::span<uint8_t, sizeof(num)> bytes)
 
 // Safely reads the requested message block, handling message blocks shorter than `block_len`.
 template<size_t block_len>
+[[nodiscard]]
 forceinline constexpr size_t
 get_ith_msg_blk(std::span<const uint8_t> msg, const size_t i, std::span<uint8_t, block_len> msg_block)
 {
@@ -76,6 +79,7 @@ pad_msg_blk(std::span<uint8_t, block_len> msg_blk, const size_t used)
 
 // Performs a constant-time comparison of two byte arrays of length `len`. Returns all bits set (0xFFFFFFFF) if equal, otherwise all bits clear (0x00000000).
 template<const size_t len>
+[[nodiscard]]
 forceinline constexpr uint32_t
 ct_eq_byte_array(std::span<const uint8_t, len> byte_arr_a, std::span<const uint8_t, len> byte_arr_b)
 {

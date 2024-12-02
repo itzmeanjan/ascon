@@ -14,6 +14,7 @@ static constexpr size_t RATE_BYTES = RATE_BITS / std::numeric_limits<uint8_t>::d
 static constexpr size_t ASCON_PERM_NUM_ROUNDS = 12;
 
 // Compile-time compute initial 320 -bit Ascon permutation state, used for Ascon -based hashing schemes.
+[[nodiscard]]
 consteval ascon_perm::ascon_perm_t
 compute_init_state(const uint64_t iv)
 {

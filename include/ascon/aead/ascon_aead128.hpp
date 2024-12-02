@@ -21,7 +21,7 @@ static constexpr size_t TAG_BYTE_LEN = ascon_duplex_mode::TAG_BYTE_LEN;
  * It also generates a 128-bit authentication tag that authenticates both the associated data and the ciphertext.
  * The associated data is authenticated but not encrypted.
  */
-forceinline void
+forceinline constexpr void
 encrypt(std::span<const uint8_t, KEY_BYTE_LEN> key,
         std::span<const uint8_t, NONCE_BYTE_LEN> nonce,
         std::span<const uint8_t> associated_data,
@@ -51,7 +51,8 @@ encrypt(std::span<const uint8_t, KEY_BYTE_LEN> key,
  * This function decrypts the ciphertext, producing plaintext of the same length.  It also verifies the authenticity of both the ciphertext and associated data
  * using the provided authentication tag. If authentication fails, the function returns false and the plaintext buffer is zeroed.
  */
-forceinline bool
+[[nodiscard]]
+forceinline constexpr bool
 decrypt(std::span<const uint8_t, KEY_BYTE_LEN> key,
         std::span<const uint8_t, NONCE_BYTE_LEN> nonce,
         std::span<const uint8_t> associated_data,

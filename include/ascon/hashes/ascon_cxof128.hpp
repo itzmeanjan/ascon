@@ -49,6 +49,7 @@ public:
    * @param cust_str The customization string.
    * @return True if customization was successful, false otherwise (e.g., if already customized or string too long).
    */
+  [[nodiscard]]
   forceinline constexpr bool customize(std::span<const uint8_t> cust_str)
   {
     if (!has_customized && (cust_str.size() <= CUSTOMIZATION_STRING_MAX_BYTE_LEN)) [[likely]] {
@@ -75,6 +76,7 @@ public:
    * @param msg The data to absorb.
    * @return True if absorption was successful, false otherwise (e.g., if not yet customized or already finalized).
    */
+  [[nodiscard]]
   forceinline constexpr bool absorb(std::span<const uint8_t> msg)
   {
     if (has_customized && !finished_absorbing) [[likely]] {
@@ -93,6 +95,7 @@ public:
    *
    * @return True if finalization was successful (and it was not already finalized), false otherwise.
    */
+  [[nodiscard]]
   forceinline constexpr bool finalize()
   {
     if (has_customized && !finished_absorbing) [[likely]] {
@@ -116,6 +119,7 @@ public:
    * @param out The buffer to write the squeezed output to.
    * @return True if squeezing was successful, false otherwise (e.g., if `finalize` has not been called).
    */
+  [[nodiscard]]
   forceinline constexpr bool squeeze(std::span<uint8_t> out)
   {
     if (!finished_absorbing) [[unlikely]] {

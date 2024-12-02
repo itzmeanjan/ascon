@@ -44,6 +44,7 @@ public:
    * @param msg The data to absorb.
    * @return True if the data was successfully absorbed (the XOF has not been finalized), false otherwise.
    */
+  [[nodiscard]]
   forceinline constexpr bool absorb(std::span<const uint8_t> msg)
   {
     if (!finished_absorbing) [[likely]] {
@@ -59,6 +60,7 @@ public:
    * internal state for the squeezing operation.
    * @return True if the XOF was successfully finalized, false if it was already finalized.
    */
+  [[nodiscard]]
   forceinline constexpr bool finalize()
   {
     if (!finished_absorbing) [[likely]] {
@@ -79,6 +81,7 @@ public:
    * @param out The buffer to write the squeezed data to.
    * @return True if output was successfully squeezed (XOF is finalized), false otherwise.
    */
+  [[nodiscard]]
   forceinline constexpr bool squeeze(std::span<uint8_t> out)
   {
     if (!finished_absorbing) [[unlikely]] {
