@@ -17,6 +17,9 @@ static constexpr size_t MAX_MSG_LEN = 256;
 static constexpr size_t MIN_OUT_LEN = 0;
 static constexpr size_t MAX_OUT_LEN = 256;
 
+static constexpr size_t MIN_CUST_STR_LEN = 0;
+static constexpr size_t MAX_CUST_STR_LEN = 8;
+
 enum class aead_mutation_kind_t : uint8_t
 {
   mutate_key,
