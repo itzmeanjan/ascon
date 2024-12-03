@@ -28,6 +28,7 @@ BUILD_DIR := build
 
 include tests/test.mk
 include benches/bench.mk
+include examples/example.mk
 
 $(SUBTLE_INC_DIR):
 	git submodule update --init subtle
