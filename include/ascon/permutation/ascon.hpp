@@ -110,8 +110,15 @@ public:
   {
     constexpr size_t BEG = ASCON_PERMUTATION_MAX_ROUNDS - R;
 
-    for (size_t i = BEG; i < ASCON_PERMUTATION_MAX_ROUNDS; i++) {
-      round(ASCON_PERMUTATION_ROUND_CONSTANTS[i]);
+    if constexpr (R % 2 == 0) {
+      for (size_t i = BEG; i < ASCON_PERMUTATION_MAX_ROUNDS; i += 2) {
+        round(ASCON_PERMUTATION_ROUND_CONSTANTS[i]);
+        round(ASCON_PERMUTATION_ROUND_CONSTANTS[i + 1]);
+      }
+    } else {
+      for (size_t i = BEG; i < ASCON_PERMUTATION_MAX_ROUNDS; i++) {
+        round(ASCON_PERMUTATION_ROUND_CONSTANTS[i]);
+      }
     }
   }
 };
