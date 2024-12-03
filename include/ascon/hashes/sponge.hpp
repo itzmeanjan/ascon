@@ -62,9 +62,7 @@ absorb(ascon_perm::ascon_perm_t& state,
 forceinline constexpr void
 finalize(ascon_perm::ascon_perm_t& state, size_t& block_offset)
 {
-  const size_t pad_bytes = RATE_BYTES - block_offset;
-  const size_t pad_bits = pad_bytes * std::numeric_limits<uint8_t>::digits;
-  const uint64_t pad_mask = 1ul << (pad_bits - 1ul);
+  const auto pad_mask = 0x01ul << (block_offset * std::numeric_limits<uint8_t>::digits);
 
   state[0] ^= pad_mask;
   state.permute<ASCON_PERM_NUM_ROUNDS>();
