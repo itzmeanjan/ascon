@@ -1,5 +1,7 @@
 #pragma once
 #include <array>
+#include <cassert>
+#include <charconv>
 #include <cstddef>
 #include <cstdint>
 #include <random>
@@ -77,4 +79,29 @@ bytes_to_hex(std::array<uint8_t, L> bytes)
   }
 
   return hex;
+}
+
+// Given a hex encoded string of length 2*L, this routine can be used for parsing it as a byte array of length L.
+//
+// Taken from https://github.com/itzmeanjan/dilithium/blob/c69d524625375959d4573bb83953da89ec8b829c/include/utils.hpp#L72-L94
+inline std::vector<uint8_t>
+hex_to_bytes(std::string_view hex)
+{
+  const size_t hlen = hex.length();
+  assert(hlen % 2 == 0);
+
+  const size_t blen = hlen / 2;
+  std::vector<uint8_t> res(blen, 0);
+
+  for (size_t i = 0; i < blen; i++) {
+    const size_t off = i * 2;
+
+    uint8_t byte = 0;
+    auto sstr = hex.substr(off, 2);
+    std::from_chars(sstr.data(), sstr.data() + 2, byte, 16);
+
+    res[i] = byte;
+  }
+
+  return res;
 }
