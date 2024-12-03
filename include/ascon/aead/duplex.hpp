@@ -77,8 +77,8 @@ process_associated_data(ascon_perm::ascon_perm_t& state, std::span<const uint8_t
     state.permute<ASCON_PERM_NUM_ROUNDS_B>();
   }
 
-  // final 1 -bit domain seperator constant mixing is mandatory
-  state[4] ^= 0b1ul;
+  // final 1 -bit domain separator constant mixing is mandatory
+  state[4] ^= (0b1ul << 63u);
 }
 
 // Encrypts arbitrary length plain text, producing equal length cipher text.
