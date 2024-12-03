@@ -74,7 +74,7 @@ forceinline constexpr void
 pad_msg_blk(std::span<uint8_t, block_len> msg_blk, const size_t used)
 {
   std::fill_n(msg_blk.subspan(used).begin(), block_len - used, 0);
-  msg_blk[used] = 0x80;
+  msg_blk[used] = 0x01;
 }
 
 // Performs a constant-time comparison of two byte arrays of length `len`. Returns all bits set (0xFFFFFFFF) if equal, otherwise all bits clear (0x00000000).
