@@ -1,9 +1,10 @@
 #include "ascon/aead/ascon_aead128.hpp"
 #include "test_helper.hpp"
 #include <array>
+#include <cassert>
 #include <gtest/gtest.h>
 
-constexpr bool
+constexpr std::array<char, 2 * ascon_aead128::TAG_BYTE_LEN>
 eval_encrypt_decrypt()
 {
   constexpr size_t ASSOCIATED_DATA_BYTE_LEN = 32;
@@ -26,12 +27,24 @@ eval_encrypt_decrypt()
   ascon_aead128::encrypt(key, nonce, associated_data, plain_text, cipher_text, tag);
   const bool is_decrypted = ascon_aead128::decrypt(key, nonce, associated_data, cipher_text, deciphered_text, tag);
 
-  return is_decrypted;
+  assert(is_decrypted);
+  return bytes_to_hex(tag);
 }
 
 TEST(AsconAEAD128, CompileTimeEncryptAndThenDecrypt)
 {
-  static_assert(eval_encrypt_decrypt(), "Must be able to encrypt and then decrypt using Ascon-AEAD128 during program compilation time itself !");
+  // Key = 000102030405060708090A0B0C0D0E0F
+  // Nonce = 000102030405060708090A0B0C0D0E0F
+  // PT = 000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F
+  // AD = 000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F
+  // TAG = 68915D3F9422289F2349D6A3B4160397
+  constexpr auto expected_tag = std::array<char, 2 * ascon_aead128::TAG_BYTE_LEN>{
+    '6', '8', '9', '1', '5', 'D', '3', 'F', '9', '4', '2', '2', '2', '8', '9', 'F',
+    '2', '3', '4', '9', 'D', '6', 'A', '3', 'B', '4', '1', '6', '0', '3', '9', '7',
+  };
+  constexpr auto computed_tag = eval_encrypt_decrypt();
+
+  static_assert(expected_tag == computed_tag, "Must be able to encrypt and then decrypt using Ascon-AEAD128 during program compilation time itself !");
 }
 
 TEST(AsconAEAD128, EncryptThenDecrypt)
