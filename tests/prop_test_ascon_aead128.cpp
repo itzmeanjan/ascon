@@ -1,6 +1,38 @@
 #include "ascon/aead/ascon_aead128.hpp"
 #include "test_helper.hpp"
+#include <array>
 #include <gtest/gtest.h>
+
+constexpr bool
+eval_encrypt_decrypt()
+{
+  constexpr size_t ASSOCIATED_DATA_BYTE_LEN = 32;
+  constexpr size_t PLAIN_TEXT_BYTE_LEN = 32;
+
+  std::array<uint8_t, ascon_aead128::KEY_BYTE_LEN> key;
+  std::array<uint8_t, ascon_aead128::NONCE_BYTE_LEN> nonce;
+  std::array<uint8_t, ASSOCIATED_DATA_BYTE_LEN> associated_data;
+  std::array<uint8_t, PLAIN_TEXT_BYTE_LEN> plain_text;
+
+  std::iota(key.begin(), key.end(), 0);
+  std::iota(nonce.begin(), nonce.end(), 0);
+  std::iota(associated_data.begin(), associated_data.end(), 0);
+  std::iota(plain_text.begin(), plain_text.end(), 0);
+
+  std::array<uint8_t, PLAIN_TEXT_BYTE_LEN> cipher_text;
+  std::array<uint8_t, PLAIN_TEXT_BYTE_LEN> deciphered_text;
+  std::array<uint8_t, ascon_aead128::TAG_BYTE_LEN> tag;
+
+  ascon_aead128::encrypt(key, nonce, associated_data, plain_text, cipher_text, tag);
+  const bool is_decrypted = ascon_aead128::decrypt(key, nonce, associated_data, cipher_text, deciphered_text, tag);
+
+  return is_decrypted;
+}
+
+TEST(AsconAEAD128, CompileTimeEncryptAndThenDecrypt)
+{
+  static_assert(eval_encrypt_decrypt(), "Must be able to encrypt and then decrypt using Ascon-AEAD128 during program compilation time itself !");
+}
 
 TEST(AsconAEAD128, EncryptThenDecrypt)
 {

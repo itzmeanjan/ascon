@@ -10,7 +10,7 @@ constexpr std::array<char, 2 * olen>
 eval_ascon_xof128()
 {
   // Statically defined input.
-  // Message = 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+  // Message = 000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F
   std::array<uint8_t, 32> data{};
   std::iota(data.begin(), data.end(), 0);
 
@@ -28,15 +28,18 @@ eval_ascon_xof128()
 
 TEST(AsconXof128, CompileTimeComputeXofOutput)
 {
-  // AsconXof128("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f") =
-  // "0b8e325b9bbf1bb43e77aa1eed93bee62b4ea1e4b0c5a696b2f5c5b09c968918"
-  constexpr auto md = eval_ascon_xof128();
-  constexpr auto flg = md == std::array<char, 64>{ '0', 'b', '8', 'e', '3', '2', '5', 'b', '9', 'b', 'b', 'f', '1', 'b', 'b', '4', '3', 'e', '7', '7', 'a', 'a',
-                                                   '1', 'e', 'e', 'd', '9', '3', 'b', 'e', 'e', '6', '2', 'b', '4', 'e', 'a', '1', 'e', '4', 'b', '0', 'c', '5',
-                                                   'a', '6', '9', '6', 'b', '2', 'f', '5', 'c', '5', 'b', '0', '9', 'c', '9', '6', '8', '9', '1', '8' };
+  constexpr auto expected_output = std::array<char, 64>{
+    '2', 'E', '5', 'F', '3', '4', '0', '3', 'F', '4', '1', '7', '1', '4', '7', '1', 'C', 'C', '7', '9', '3', '4',
+    'B', '5', '1', '9', '8', '2', 'C', 'E', 'C', 'E', '8', 'D', '6', '6', '2', '8', '4', '3', '5', 'D', 'B', '7',
+    '0', 'E', '8', '9', '8', '8', '0', 'F', '3', 'B', 'E', '4', 'E', '0', 'B', '7', 'B', '0', '5', '2',
+  };
 
-  static_assert(!flg, "Must not be able to evaluate Ascon-Xof128 correctly, as expected output is wrong. I'll update it !");
-  EXPECT_FALSE(flg);
+  // AsconXof128("000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F") = "2E5F3403F4171471CC7934B51982CECE8D6628435DB70E89880F3BE4E0B7B052"
+  constexpr auto output = eval_ascon_xof128();
+  constexpr auto is_matching = output == expected_output;
+
+  static_assert(is_matching, "Must be able to evaluate Ascon-Xof128 during program compilation time itself !");
+  EXPECT_TRUE(is_matching);
 }
 
 TEST(AsconXof128, ForSameMessageOneshotHashingAndIncrementalHashingProducesSameOutput)

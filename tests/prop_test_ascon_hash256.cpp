@@ -9,7 +9,7 @@ constexpr std::array<char, 2 * ascon_hash256::DIGEST_BYTE_LEN>
 eval_ascon_hash256()
 {
   // Statically defined input.
-  // Message = 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+  // Message = 000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F
   std::array<uint8_t, 32> data{};
   std::iota(data.begin(), data.end(), 0);
 
@@ -27,17 +27,18 @@ eval_ascon_hash256()
 
 TEST(AsconHash256, CompileTimeComputeMessageDigest)
 {
-  // AsconHash256("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f") =
-  // "2a4f6f2b6b3ec2a6c47ba08d18c8ea561b493c13ccb35803fa8b9fb00a0f1f35"
-  constexpr auto md = eval_ascon_hash256();
-  constexpr auto is_match =
-    md == std::array<char, ascon_hash256::DIGEST_BYTE_LEN * 2>{ '2', 'a', '4', 'f', '6', 'f', '2', 'b', '6', 'b', '3', 'e', 'c', '2', 'a', '6',
-                                                                'c', '4', '7', 'b', 'a', '0', '8', 'd', '1', '8', 'c', '8', 'e', 'a', '5', '6',
-                                                                '1', 'b', '4', '9', '3', 'c', '1', '3', 'c', 'c', 'b', '3', '5', '8', '0', '3',
-                                                                'f', 'a', '8', 'b', '9', 'f', 'b', '0', '0', 'a', '0', 'f', '1', 'f', '3', '5' };
+  constexpr auto expected_md = std::array<char, ascon_hash256::DIGEST_BYTE_LEN * 2>{
+    'B', 'D', '9', 'D', '3', 'D', '6', '0', 'A', '6', '6', 'B', '5', '3', '8', '6', '8', 'E', 'A', 'B', '2', 'A',
+    '5', 'C', '7', '4', '5', '3', '9', 'A', '5', '1', '8', 'A', '1', 'F', '6', '0', 'F', '0', '1', 'E', 'B', '1',
+    '7', '6', 'C', '6', '0', 'E', '4', '3', 'D', 'E', 'E', '8', '1', '6', '8', '0', 'B', '3', '3', 'E',
+  };
 
-  static_assert(!is_match, "Must not be able to evaluate Ascon-Hash256 correctly, as expected output is wrong. I'll update it !");
-  EXPECT_FALSE(is_match);
+  // AsconHash256("000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F") = "BD9D3D60A66B53868EAB2A5C74539A518A1F60F01EB176C60E43DEE81680B33E"
+  constexpr auto md = eval_ascon_hash256();
+  constexpr auto is_matching = md == expected_md;
+
+  static_assert(is_matching, "Must be able to evaluate Ascon-Hash256 during program compilation time itself !");
+  EXPECT_TRUE(is_matching);
 }
 
 TEST(AsconHash256, ForSameMessageOneshotHashingAndIncrementalHashingProducesSameDigest)
