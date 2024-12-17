@@ -32,7 +32,11 @@ encrypt(std::span<const uint8_t, KEY_BYTE_LEN> key,
   ascon_perm::ascon_perm_t state{};
 
   ascon_duplex_mode::initialize(state, key, nonce);
-  ascon_duplex_mode::process_associated_data(state, associated_data);
+
+  size_t block_offset = 0;
+  ascon_duplex_mode::absorb_associated_data(state, block_offset, associated_data);
+  ascon_duplex_mode::finalize_associated_data(state, block_offset, associated_data.size());
+
   ascon_duplex_mode::process_plaintext(state, plaintext, ciphertext);
   ascon_duplex_mode::finalize(state, key, tag);
 }
@@ -64,7 +68,11 @@ decrypt(std::span<const uint8_t, KEY_BYTE_LEN> key,
   std::array<uint8_t, TAG_BYTE_LEN> computed_tag{};
 
   ascon_duplex_mode::initialize(state, key, nonce);
-  ascon_duplex_mode::process_associated_data(state, associated_data);
+
+  size_t block_offset = 0;
+  ascon_duplex_mode::absorb_associated_data(state, block_offset, associated_data);
+  ascon_duplex_mode::finalize_associated_data(state, block_offset, associated_data.size());
+
   ascon_duplex_mode::process_ciphertext(state, cipher, text);
   ascon_duplex_mode::finalize(state, key, computed_tag);
 

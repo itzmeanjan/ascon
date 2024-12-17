@@ -42,39 +42,64 @@ initialize(ascon_perm::ascon_perm_t& state, std::span<const uint8_t, KEY_BYTE_LE
   state[4] ^= key_last;
 }
 
-// Absorbs arbitrary length associated data into Ascon permutation state; also adds the domain separation bit.
+// Absorbs arbitrary-length associated data into the Ascon permutation state. This function can be called
+// multiple times with different spans of associated data before calling `finalize_associated_data`.
 // See point 2 of section 4.1.1 in Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
 forceinline constexpr void
-process_associated_data(ascon_perm::ascon_perm_t& state, std::span<const uint8_t> data)
+absorb_associated_data(ascon_perm::ascon_perm_t& state, size_t& block_offset, std::span<const uint8_t> data)
 {
   const size_t dlen = data.size();
 
-  if (dlen > 0) {
-    const size_t total_num_blocks = (dlen + 1 + (RATE_BYTES - 1)) / RATE_BYTES;
+  if (dlen > 0) [[likely]] {
+    std::array<uint8_t, RATE_BYTES> block{};
+    auto block_span = std::span(block);
 
-    std::array<uint8_t, RATE_BYTES> chunk{};
-    auto chunk_span = std::span(chunk);
+    const size_t total_num_blocks = (block_offset + dlen) / RATE_BYTES;
+    size_t data_offset = 0;
 
-    // Process full message blocks, expect the last one, which is padded.
-    for (size_t block_index = 0; block_index < total_num_blocks - 1; block_index++) {
-      (void)ascon_common_utils::get_ith_msg_blk(data, block_index, chunk_span);
+    for (size_t block_index = 0; block_index < total_num_blocks; block_index++) {
+      const size_t readable = RATE_BYTES - block_offset;
 
-      state[0] ^= ascon_common_utils::from_le_bytes(chunk_span.first<8>());
-      state[1] ^= ascon_common_utils::from_le_bytes(chunk_span.last<8>());
+      std::copy_n(data.subspan(data_offset).begin(), readable, block_span.subspan(block_offset).begin());
+
+      state[0] ^= ascon_common_utils::from_le_bytes(block_span.first<8>());
+      state[1] ^= ascon_common_utils::from_le_bytes(block_span.last<8>());
 
       state.permute<ASCON_PERM_NUM_ROUNDS_B>();
+
+      data_offset += readable;
+      block_offset = 0;
     }
 
-    // Process last message block, which is padded.
-    const size_t final_block_index = total_num_blocks - 1;
+    const size_t remaining_num_bytes = dlen - data_offset;
 
-    const size_t read = ascon_common_utils::get_ith_msg_blk(data, final_block_index, chunk_span);
-    ascon_common_utils::pad_msg_blk(chunk_span, read);
+    std::fill(block_span.begin(), block_span.end(), 0);
+    std::copy_n(data.subspan(data_offset).begin(), remaining_num_bytes, block_span.subspan(block_offset).begin());
 
-    state[0] ^= ascon_common_utils::from_le_bytes(chunk_span.first<8>());
-    state[1] ^= ascon_common_utils::from_le_bytes(chunk_span.last<8>());
+    state[0] ^= ascon_common_utils::from_le_bytes(block_span.first<8>());
+    state[1] ^= ascon_common_utils::from_le_bytes(block_span.last<8>());
+
+    block_offset += remaining_num_bytes;
+  }
+}
+
+// Finalizes the associated data absorption process by adding a 1-bit domain separator.
+// No more associated data can be absorbed after calling this function.
+// See point 2 of section 4.1.1 in Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
+forceinline constexpr void
+finalize_associated_data(ascon_perm::ascon_perm_t& state, size_t& block_offset, const size_t absorbed_data_byte_len)
+{
+  if (absorbed_data_byte_len > 0) {
+    std::array<uint8_t, RATE_BYTES> block{};
+    auto block_span = std::span(block);
+
+    block_span[block_offset] = 0x01;
+
+    state[0] ^= ascon_common_utils::from_le_bytes(block_span.first<8>());
+    state[1] ^= ascon_common_utils::from_le_bytes(block_span.last<8>());
 
     state.permute<ASCON_PERM_NUM_ROUNDS_B>();
+    block_offset = 0;
   }
 
   // final 1 -bit domain separator constant mixing is mandatory
