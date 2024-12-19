@@ -42,50 +42,54 @@ initialize(ascon_perm::ascon_perm_t& state, std::span<const uint8_t, KEY_BYTE_LE
   state[4] ^= key_last;
 }
 
-// Absorbs arbitrary-length associated data into the Ascon permutation state. This function can be called
-// multiple times with different spans of associated data before calling `finalize_associated_data`.
-// See point 2 of section 4.1.1 in Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
+/**
+ * @brief Absorbs arbitrary-length associated data into the Ascon permutation state.
+ * This function can be called multiple times with different spans of associated data before calling `finalize_associated_data`.
+ * See point 2 of section 4.1.1 in Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
+ *
+ * @param state Ascon permutation state.
+ * @param block_offset Offset within the current block, must be <= `RATE_BYTES`.
+ * @param data Associated data to be absorbed.
+ */
 forceinline constexpr void
 absorb_associated_data(ascon_perm::ascon_perm_t& state, size_t& block_offset, std::span<const uint8_t> data)
 {
+  std::array<uint8_t, RATE_BYTES> block{};
+  auto block_span = std::span(block);
+
   const size_t dlen = data.size();
+  size_t data_offset = 0;
 
-  if (dlen > 0) [[likely]] {
-    std::array<uint8_t, RATE_BYTES> block{};
-    auto block_span = std::span(block);
+  while (data_offset < dlen) {
+    const size_t absorbable_num_bytes = RATE_BYTES - block_offset;
+    const size_t available_num_bytes = dlen - data_offset;
+    const size_t to_be_absorbed_num_bytes = std::min(absorbable_num_bytes, available_num_bytes);
 
-    const size_t total_num_blocks = (block_offset + dlen) / RATE_BYTES;
-    size_t data_offset = 0;
-
-    for (size_t block_index = 0; block_index < total_num_blocks; block_index++) {
-      const size_t readable = RATE_BYTES - block_offset;
-
-      std::copy_n(data.subspan(data_offset).begin(), readable, block_span.subspan(block_offset).begin());
-
-      state[0] ^= ascon_common_utils::from_le_bytes(block_span.first<8>());
-      state[1] ^= ascon_common_utils::from_le_bytes(block_span.last<8>());
-
-      state.permute<ASCON_PERM_NUM_ROUNDS_B>();
-
-      data_offset += readable;
-      block_offset = 0;
-    }
-
-    const size_t remaining_num_bytes = dlen - data_offset;
-
-    std::fill(block_span.begin(), block_span.end(), 0);
-    std::copy_n(data.subspan(data_offset).begin(), remaining_num_bytes, block_span.subspan(block_offset).begin());
+    std::copy_n(data.subspan(data_offset).begin(), to_be_absorbed_num_bytes, block_span.subspan(block_offset).begin());
+    std::fill_n(block_span.subspan(block_offset + to_be_absorbed_num_bytes).begin(), block_span.size() - (block_offset + to_be_absorbed_num_bytes), 0);
 
     state[0] ^= ascon_common_utils::from_le_bytes(block_span.first<8>());
     state[1] ^= ascon_common_utils::from_le_bytes(block_span.last<8>());
 
-    block_offset += remaining_num_bytes;
+    data_offset += to_be_absorbed_num_bytes;
+    block_offset += to_be_absorbed_num_bytes;
+
+    if (block_offset == RATE_BYTES) {
+      state.permute<ASCON_PERM_NUM_ROUNDS_B>();
+      block_offset = 0;
+    }
   }
 }
 
-// Finalizes the associated data absorption process by adding a 1-bit domain separator.
-// No more associated data can be absorbed after calling this function.
-// See point 2 of section 4.1.1 in Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
+/**
+ * @brief Finalizes the associated data absorption process by adding a 1-bit domain separator.
+ * No more associated data can be absorbed after calling this function.
+ * See point 2 of section 4.1.1 in Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
+ *
+ * @param state Ascon permutation state.
+ * @param block_offset Offset within the current block, must be <= `RATE_BYTES`.
+ * @param absorbed_data_byte_len The total number of bytes of associated data absorbed.
+ */
 forceinline constexpr void
 finalize_associated_data(ascon_perm::ascon_perm_t& state, size_t& block_offset, const size_t absorbed_data_byte_len)
 {
@@ -102,7 +106,7 @@ finalize_associated_data(ascon_perm::ascon_perm_t& state, size_t& block_offset, 
     block_offset = 0;
   }
 
-  // final 1 -bit domain separator constant mixing is mandatory
+  // Final 1 -bit domain separator constant mixing is mandatory
   state[4] ^= (0b1ul << 63u);
 }
 
