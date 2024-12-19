@@ -1,7 +1,6 @@
 #pragma once
 #include "ascon/utils/force_inline.hpp"
 #include "subtle.hpp"
-#include <algorithm>
 #include <cstdint>
 #include <cstring>
 #include <span>
@@ -51,30 +50,6 @@ to_le_bytes(const uint64_t num, std::span<uint8_t, sizeof(num)> bytes)
   bytes[5] = static_cast<uint8_t>(num >> 40);
   bytes[6] = static_cast<uint8_t>(num >> 48);
   bytes[7] = static_cast<uint8_t>(num >> 56);
-}
-
-// Safely reads the requested message block, handling message blocks shorter than `block_len`.
-template<size_t block_len>
-[[nodiscard]]
-forceinline constexpr size_t
-get_ith_msg_blk(std::span<const uint8_t> msg, const size_t i, std::span<uint8_t, block_len> msg_block)
-{
-  // This routine makes an assumption that function caller invokes it with such `i` value that off <= msg.size().
-  const size_t msg_offset = i * block_len;
-  const size_t remaining_num_msg_bytes = msg.size() - msg_offset;
-  const size_t readable = std::min(block_len, remaining_num_msg_bytes);
-
-  std::copy_n(msg.subspan(msg_offset).begin(), readable, msg_block.begin());
-  return readable;
-}
-
-// Pads a message block with a single 0x80 byte, and all subsequent bytes are set to zero.
-template<size_t block_len>
-forceinline constexpr void
-pad_msg_blk(std::span<uint8_t, block_len> msg_blk, const size_t used)
-{
-  std::fill_n(msg_blk.subspan(used).begin(), block_len - used, 0);
-  msg_blk[used] = 0x01;
 }
 
 // Performs a constant-time comparison of two byte arrays of length `len`. Returns all bits set (0xFFFFFFFF) if equal, otherwise all bits clear (0x00000000).
