@@ -22,8 +22,14 @@ static constexpr size_t KEY_BYTE_LEN = BIT_SECURITY_LEVEL / std::numeric_limits<
 static constexpr size_t NONCE_BYTE_LEN = BIT_SECURITY_LEVEL / std::numeric_limits<uint8_t>::digits;
 static constexpr size_t TAG_BYTE_LEN = BIT_SECURITY_LEVEL / std::numeric_limits<uint8_t>::digits;
 
-// Initialize Ascon permutation state with 16 -bytes key and nonce.
-// See point 1 of section 4.1.1 in Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
+/**
+ * @brief Initializes the Ascon permutation state with the given key and nonce.
+ * See point 1 of section 4.1.1 in Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
+ *
+ * @param state Ascon permutation state.
+ * @param key Encryption key.
+ * @param nonce Nonce - don't repeat it, for the same key !
+ */
 forceinline constexpr void
 initialize(ascon_perm::ascon_perm_t& state, std::span<const uint8_t, KEY_BYTE_LEN> key, std::span<const uint8_t, NONCE_BYTE_LEN> nonce)
 {
@@ -223,8 +229,14 @@ finalize_ciphering(ascon_perm::ascon_perm_t& state, size_t& block_offset)
   block_offset = 0;
 }
 
-// Finalizes the Ascon permutation state, producing 16 -bytes authentication tag.
-// See point 4 of section 4.1.1 in Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
+/**
+ * @brief Finalizes the Ascon permutation state and produces a tag.
+ * See point 4 of section 4.1.1 in Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
+ *
+ * @param state Ascon permutation state.
+ * @param key Key used for encryption/decryption.
+ * @param tag Authentication tag produced.
+ */
 forceinline constexpr void
 finalize(ascon_perm::ascon_perm_t& state, std::span<const uint8_t, KEY_BYTE_LEN> key, std::span<uint8_t, TAG_BYTE_LEN> tag)
 {
