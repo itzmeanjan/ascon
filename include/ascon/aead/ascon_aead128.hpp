@@ -37,7 +37,7 @@ encrypt(std::span<const uint8_t, KEY_BYTE_LEN> key,
   ascon_duplex_mode::absorb_associated_data(state, block_offset, associated_data);
   ascon_duplex_mode::finalize_associated_data(state, block_offset, associated_data.size());
 
-  ascon_duplex_mode::absorb_plaintext(state, block_offset, plaintext, ciphertext);
+  ascon_duplex_mode::encrypt_plaintext(state, block_offset, plaintext, ciphertext);
   ascon_duplex_mode::finalize_plaintext(state, block_offset);
 
   ascon_duplex_mode::finalize(state, key, tag);

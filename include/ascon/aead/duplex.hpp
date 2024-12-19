@@ -121,7 +121,7 @@ finalize_associated_data(ascon_perm::ascon_perm_t& state, size_t& block_offset, 
  * @param ciphertext Ciphertext produced.
  */
 forceinline constexpr void
-absorb_plaintext(ascon_perm::ascon_perm_t& state, size_t& block_offset, std::span<const uint8_t> plaintext, std::span<uint8_t> ciphertext)
+encrypt_plaintext(ascon_perm::ascon_perm_t& state, size_t& block_offset, std::span<const uint8_t> plaintext, std::span<uint8_t> ciphertext)
 {
   std::array<uint8_t, RATE_BYTES> block{};
   auto block_span = std::span(block);
