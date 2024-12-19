@@ -112,7 +112,7 @@ finalize_associated_data(ascon_perm::ascon_perm_t& state, size_t& block_offset, 
 
 /**
  * @brief Absorbs arbitrary-length plaintext into the Ascon permutation state and produces ciphertext.
- * This function can be called multiple times with different spans of plaintext before calling `finalize_plaintext`.
+ * This function can be called multiple times with different spans of plaintext before calling `finalize_ciphering`.
  * See point 3 of section 4.1.1 in Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
  *
  * @param state Ascon permutation state.
@@ -131,8 +131,8 @@ encrypt_plaintext(ascon_perm::ascon_perm_t& state, size_t& block_offset, std::sp
 
   while (pt_offset < ptlen) {
     const size_t absorbable_num_bytes = RATE_BYTES - block_offset;
-    const size_t available_num_bytes = ptlen - pt_offset;
-    const size_t to_be_absorbed_num_bytes = std::min(absorbable_num_bytes, available_num_bytes);
+    const size_t remaining_num_bytes = ptlen - pt_offset;
+    const size_t to_be_absorbed_num_bytes = std::min(absorbable_num_bytes, remaining_num_bytes);
 
     std::copy_n(plaintext.subspan(pt_offset).begin(), to_be_absorbed_num_bytes, block_span.subspan(block_offset).begin());
     std::fill_n(block_span.subspan(block_offset + to_be_absorbed_num_bytes).begin(), block_span.size() - (block_offset + to_be_absorbed_num_bytes), 0);
@@ -156,15 +156,61 @@ encrypt_plaintext(ascon_perm::ascon_perm_t& state, size_t& block_offset, std::sp
 }
 
 /**
- * @brief Finalizes the plaintext absorption process by adding a 1-bit domain separator.
- * No more plaintext can be encrypted after calling this function.
+ * @brief Absorbs arbitrary-length ciphertext into the Ascon permutation state and produces decrypted plaintext.
+ * This function can be called multiple times with different spans of ciphertext before calling `finalize_ciphering`.
+ * See point 3 of section 4.1.2 in Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
+ *
+ * @param state Ascon permutation state.
+ * @param block_offset Offset within the current block, must be <= `RATE_BYTES`.
+ * @param ciphertext Ciphertext to be decrypted.
+ * @param plaintext Plaintext produced.
+ */
+forceinline constexpr void
+decrypt_ciphertext(ascon_perm::ascon_perm_t& state, size_t& block_offset, std::span<const uint8_t> ciphertext, std::span<uint8_t> plaintext)
+{
+  std::array<uint8_t, RATE_BYTES> block{};
+  auto block_span = std::span(block);
+
+  const size_t ctlen = ciphertext.size();
+  size_t ct_offset = 0;
+
+  while (ct_offset < ctlen) {
+    const size_t absorbable_num_bytes = RATE_BYTES - block_offset;
+    const size_t remaining_num_bytes = ctlen - ct_offset;
+    const size_t to_be_absorbed_num_bytes = std::min(absorbable_num_bytes, remaining_num_bytes);
+
+    std::copy_n(ciphertext.subspan(ct_offset).begin(), to_be_absorbed_num_bytes, block_span.subspan(block_offset).begin());
+    std::fill_n(block_span.subspan(block_offset + to_be_absorbed_num_bytes).begin(), block_span.size() - (block_offset + to_be_absorbed_num_bytes), 0);
+
+    ascon_common_utils::to_le_bytes(state[0] ^ ascon_common_utils::from_le_bytes(block_span.first<8>()), block_span.first<8>());
+    ascon_common_utils::to_le_bytes(state[1] ^ ascon_common_utils::from_le_bytes(block_span.last<8>()), block_span.last<8>());
+
+    std::copy_n(block_span.subspan(block_offset).begin(), to_be_absorbed_num_bytes, plaintext.subspan(ct_offset).begin());
+    std::fill_n(block_span.subspan(block_offset + to_be_absorbed_num_bytes).begin(), block_span.size() - (block_offset + to_be_absorbed_num_bytes), 0);
+
+    state[0] ^= ascon_common_utils::from_le_bytes(block_span.first<8>());
+    state[1] ^= ascon_common_utils::from_le_bytes(block_span.last<8>());
+
+    ct_offset += to_be_absorbed_num_bytes;
+    block_offset += to_be_absorbed_num_bytes;
+
+    if (block_offset == RATE_BYTES) {
+      state.permute<ASCON_PERM_NUM_ROUNDS_B>();
+      block_offset = 0;
+    }
+  }
+}
+
+/**
+ * @brief Finalizes the plaintext/ciphertext absorption process by adding a 1-bit domain separator to be permutation state.
+ * No more plaintext/ciphertext can be encrypted/decrypted after calling this function.
  * See point 3 of section 4.1.1 in Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
  *
  * @param state Ascon permutation state.
  * @param block_offset Offset within the current block, must be <= `RATE_BYTES`.
  */
 forceinline constexpr void
-finalize_plaintext(ascon_perm::ascon_perm_t& state, size_t& block_offset)
+finalize_ciphering(ascon_perm::ascon_perm_t& state, size_t& block_offset)
 {
   std::array<uint8_t, RATE_BYTES> block{};
   auto block_span = std::span(block);
@@ -175,62 +221,6 @@ finalize_plaintext(ascon_perm::ascon_perm_t& state, size_t& block_offset)
   state[1] ^= ascon_common_utils::from_le_bytes(block_span.last<8>());
 
   block_offset = 0;
-}
-
-// Decrypts arbitrary length cipher text, producing equal length plain text.
-// See point 3 of section 4.1.2 in Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
-forceinline constexpr void
-process_ciphertext(ascon_perm::ascon_perm_t& state, std::span<const uint8_t> cipher, std::span<uint8_t> text)
-{
-  const size_t ctlen = cipher.size();
-  const size_t total_num_blocks = (ctlen + 1 + (RATE_BYTES - 1)) / RATE_BYTES;
-
-  std::array<uint8_t, RATE_BYTES> chunk{};
-  auto chunk_span = std::span(chunk);
-
-  using span_8bytes_t = std::span<uint8_t, 8>;
-  size_t off = 0;
-
-  // Process full message blocks, expect the last one, which is padded.
-  for (size_t block_index = 0; block_index < total_num_blocks - 1; block_index++) {
-    (void)ascon_common_utils::get_ith_msg_blk(cipher, block_index, chunk_span);
-
-    const auto ct_first_word = ascon_common_utils::from_le_bytes(chunk_span.first<8>());
-    const auto ct_last_word = ascon_common_utils::from_le_bytes(chunk_span.last<8>());
-
-    const uint64_t pt_first_word = state[0] ^ ct_first_word;
-    const uint64_t pt_last_word = state[1] ^ ct_last_word;
-
-    state[0] = ct_first_word;
-    state[1] = ct_last_word;
-
-    ascon_common_utils::to_le_bytes(pt_first_word, span_8bytes_t(text.subspan(off, 8)));
-    ascon_common_utils::to_le_bytes(pt_last_word, span_8bytes_t(text.subspan(off + 8, 8)));
-
-    state.permute<ASCON_PERM_NUM_ROUNDS_B>();
-    off += RATE_BYTES;
-  }
-
-  // Process last message block, which is padded.
-  const size_t final_block_index = total_num_blocks - 1;
-
-  const size_t read = ascon_common_utils::get_ith_msg_blk(cipher, final_block_index, chunk_span);
-  std::fill_n(chunk_span.subspan(read).begin(), RATE_BYTES - read, 0);
-
-  const uint64_t ct_first_word = ascon_common_utils::from_le_bytes(chunk_span.first<8>());
-  const uint64_t ct_last_word = ascon_common_utils::from_le_bytes(chunk_span.last<8>());
-
-  const uint64_t pt_first_word = state[0] ^ ct_first_word;
-  const uint64_t pt_last_word = state[1] ^ ct_last_word;
-
-  ascon_common_utils::to_le_bytes(pt_first_word, chunk_span.first<8>());
-  ascon_common_utils::to_le_bytes(pt_last_word, chunk_span.last<8>());
-  std::copy_n(chunk_span.begin(), read, text.subspan(off).begin());
-
-  ascon_common_utils::pad_msg_blk(chunk_span, read);
-
-  state[0] ^= ascon_common_utils::from_le_bytes(chunk_span.first<8>());
-  state[1] ^= ascon_common_utils::from_le_bytes(chunk_span.last<8>());
 }
 
 // Finalizes the Ascon permutation state, producing 16 -bytes authentication tag.

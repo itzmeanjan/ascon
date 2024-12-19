@@ -38,7 +38,7 @@ encrypt(std::span<const uint8_t, KEY_BYTE_LEN> key,
   ascon_duplex_mode::finalize_associated_data(state, block_offset, associated_data.size());
 
   ascon_duplex_mode::encrypt_plaintext(state, block_offset, plaintext, ciphertext);
-  ascon_duplex_mode::finalize_plaintext(state, block_offset);
+  ascon_duplex_mode::finalize_ciphering(state, block_offset);
 
   ascon_duplex_mode::finalize(state, key, tag);
 }
@@ -62,8 +62,8 @@ forceinline constexpr bool
 decrypt(std::span<const uint8_t, KEY_BYTE_LEN> key,
         std::span<const uint8_t, NONCE_BYTE_LEN> nonce,
         std::span<const uint8_t> associated_data,
-        std::span<const uint8_t> cipher,
-        std::span<uint8_t> text,
+        std::span<const uint8_t> ciphertext,
+        std::span<uint8_t> plaintext,
         std::span<const uint8_t, TAG_BYTE_LEN> tag)
 {
   ascon_perm::ascon_perm_t state{};
@@ -75,11 +75,13 @@ decrypt(std::span<const uint8_t, KEY_BYTE_LEN> key,
   ascon_duplex_mode::absorb_associated_data(state, block_offset, associated_data);
   ascon_duplex_mode::finalize_associated_data(state, block_offset, associated_data.size());
 
-  ascon_duplex_mode::process_ciphertext(state, cipher, text);
+  ascon_duplex_mode::decrypt_ciphertext(state, block_offset, ciphertext, plaintext);
+  ascon_duplex_mode::finalize_ciphering(state, block_offset);
+
   ascon_duplex_mode::finalize(state, key, computed_tag);
 
   const uint32_t flg = ascon_common_utils::ct_eq_byte_array<TAG_BYTE_LEN>(tag, computed_tag);
-  ascon_common_utils::ct_conditional_memset(~flg, text, 0);
+  ascon_common_utils::ct_conditional_memset(~flg, plaintext, 0);
 
   return static_cast<bool>(flg);
 }
