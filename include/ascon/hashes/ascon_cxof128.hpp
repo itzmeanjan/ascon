@@ -53,10 +53,12 @@ public:
   forceinline constexpr bool customize(std::span<const uint8_t> cust_str)
   {
     if (!has_customized && (cust_str.size() <= CUSTOMIZATION_STRING_MAX_BYTE_LEN)) [[likely]] {
-      std::array<uint8_t, ascon_sponge_mode::RATE_BYTES> cust_str_len_as_bytes{};
-      ascon_common_utils::to_le_bytes(cust_str.size(), cust_str_len_as_bytes);
+      const size_t cust_str_bit_len = cust_str.size() * std::numeric_limits<uint8_t>::digits;
 
-      ascon_sponge_mode::absorb(state, offset, cust_str_len_as_bytes);
+      std::array<uint8_t, ascon_sponge_mode::RATE_BYTES> cust_str_bit_len_as_bytes{};
+      ascon_common_utils::to_le_bytes(cust_str_bit_len, cust_str_bit_len_as_bytes);
+
+      ascon_sponge_mode::absorb(state, offset, cust_str_bit_len_as_bytes);
       ascon_sponge_mode::absorb(state, offset, cust_str);
       ascon_sponge_mode::finalize(state, offset);
 
