@@ -25,10 +25,9 @@ enum class ascon_aead128_error_t : uint8_t
   encryption_phase_already_finalized,
 
   decrypted_ciphertext,
-  finalized_decryption_phase,
-  decryption_phase_already_finalized,
   decryption_success_as_tag_matches,
   decryption_failure_due_to_tag_mismatch,
+  decryption_phase_already_finalized,
 };
 
 struct ascon_aead128_t
