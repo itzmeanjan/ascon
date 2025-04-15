@@ -3,6 +3,7 @@
 #include "ascon/permutation/ascon.hpp"
 #include "ascon/utils/common.hpp"
 #include "ascon/utils/force_inline.hpp"
+#include <algorithm>
 #include <array>
 #include <cstdint>
 #include <limits>
@@ -47,7 +48,10 @@ private:
 public:
   forceinline constexpr ascon_aead128_t(std::span<const uint8_t, KEY_BYTE_LEN> key, std::span<const uint8_t, NONCE_BYTE_LEN> nonce)
   {
-    ascon_duplex_mode::initialize(state, key, nonce);
+    std::copy(key.begin(), key.end(), this->key.begin());
+    std::copy(nonce.begin(), nonce.end(), this->nonce.begin());
+
+    ascon_duplex_mode::initialize(state, this->key, this->nonce);
   }
   forceinline constexpr ~ascon_aead128_t() { this->reset(); }
 
