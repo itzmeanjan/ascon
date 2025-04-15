@@ -5,12 +5,31 @@
 #include "ascon/utils/force_inline.hpp"
 #include <array>
 #include <cstdint>
+#include <limits>
 
 namespace ascon_aead128 {
 
 static constexpr size_t KEY_BYTE_LEN = ascon_duplex_mode::KEY_BYTE_LEN;
 static constexpr size_t NONCE_BYTE_LEN = ascon_duplex_mode::NONCE_BYTE_LEN;
 static constexpr size_t TAG_BYTE_LEN = ascon_duplex_mode::TAG_BYTE_LEN;
+
+enum class ascon_aead128_error_t : uint8_t
+{
+  absorbed_data = 0x01,
+  finalized_data_absorption_phase,
+  data_absorption_phase_already_finalized,
+  still_absorbing_data,
+
+  encrypted_plaintext,
+  finalized_encryption_phase,
+  encryption_phase_already_finalized,
+
+  decrypted_ciphertext,
+  finalized_decryption_phase,
+  decryption_phase_already_finalized,
+  decryption_success_as_tag_matches,
+  decryption_failure_due_to_tag_mismatch,
+};
 
 struct ascon_aead128_t
 {
@@ -23,8 +42,8 @@ private:
   size_t total_absorbed_data_byte_len = 0;
 
   alignas(4) bool finished_absorbing_data = false;
-  alignas(4) bool finished_ciphering = false;
-  alignas(4) bool finished_squeezing_tag = false;
+  alignas(4) bool finished_encrypting_plaintext = false;
+  alignas(8) bool finished_decrypting_ciphertext = false;
 
 public:
   forceinline constexpr ascon_aead128_t(std::span<const uint8_t, KEY_BYTE_LEN> key, std::span<const uint8_t, NONCE_BYTE_LEN> nonce)
@@ -34,89 +53,110 @@ public:
   forceinline constexpr ~ascon_aead128_t() { this->reset(); }
 
   [[nodiscard]]
-  forceinline constexpr bool absorb_data(std::span<const uint8_t> data)
+  forceinline constexpr ascon_aead128_error_t absorb_data(std::span<const uint8_t> data)
   {
     if (finished_absorbing_data) {
-      return false;
+      return ascon_aead128_error_t::data_absorption_phase_already_finalized;
     }
 
     ascon_duplex_mode::absorb_associated_data(state, offset, data);
     total_absorbed_data_byte_len += data.size();
 
-    return true;
+    return ascon_aead128_error_t::absorbed_data;
   }
 
   [[nodiscard]]
-  forceinline constexpr bool finalize_data()
+  forceinline constexpr ascon_aead128_error_t finalize_data()
   {
     if (finished_absorbing_data) {
-      return false;
+      return ascon_aead128_error_t::data_absorption_phase_already_finalized;
     }
 
     ascon_duplex_mode::finalize_associated_data(state, offset, total_absorbed_data_byte_len);
     finished_absorbing_data = true;
 
-    return true;
+    return ascon_aead128_error_t::finalized_data_absorption_phase;
   }
 
   [[nodiscard]]
-  forceinline constexpr bool encrypt_plaintext(std::span<const uint8_t> plaintext, std::span<uint8_t> ciphertext)
+  forceinline constexpr ascon_aead128_error_t encrypt_plaintext(std::span<const uint8_t> plaintext, std::span<uint8_t> ciphertext)
   {
-    if (!finished_absorbing_data || finished_ciphering) {
-      return false;
+    if (!finished_absorbing_data) {
+      return ascon_aead128_error_t::still_absorbing_data;
+    }
+    if (finished_encrypting_plaintext) {
+      return ascon_aead128_error_t::encryption_phase_already_finalized;
     }
 
     ascon_duplex_mode::encrypt_plaintext(state, offset, plaintext, ciphertext);
-    return true;
+    return ascon_aead128_error_t::encrypted_plaintext;
   }
 
   [[nodiscard]]
-  forceinline constexpr bool decrypt_plaintext(std::span<const uint8_t> ciphertext, std::span<uint8_t> plaintext)
+  forceinline constexpr ascon_aead128_error_t finalize_encrypt(std::span<uint8_t, TAG_BYTE_LEN> tag)
   {
-    if (!finished_absorbing_data || finished_ciphering) {
-      return false;
+    if (!finished_absorbing_data) {
+      return ascon_aead128_error_t::still_absorbing_data;
     }
-
-    ascon_duplex_mode::decrypt_ciphertext(state, offset, ciphertext, plaintext);
-    return true;
-  }
-
-  [[nodiscard]]
-  forceinline constexpr bool finalize_ciphering()
-  {
-    if (!finished_absorbing_data || finished_ciphering) {
-      return false;
+    if (finished_encrypting_plaintext) {
+      return ascon_aead128_error_t::encryption_phase_already_finalized;
     }
 
     ascon_duplex_mode::finalize_ciphering(state, offset);
-    finished_ciphering = true;
+    finished_encrypting_plaintext = true;
+    ascon_duplex_mode::finalize(state, key, tag);
 
-    return true;
+    return ascon_aead128_error_t::finalized_encryption_phase;
   }
 
   [[nodiscard]]
-  forceinline constexpr bool squeeze_tag(std::span<uint8_t, TAG_BYTE_LEN> tag)
+  forceinline constexpr ascon_aead128_error_t decrypt_ciphertext(std::span<const uint8_t> ciphertext, std::span<uint8_t> plaintext)
   {
-    if (!finished_absorbing_data || !finished_ciphering || finished_squeezing_tag) {
-      return false;
+    if (!finished_absorbing_data) {
+      return ascon_aead128_error_t::still_absorbing_data;
+    }
+    if (finished_decrypting_ciphertext) {
+      return ascon_aead128_error_t::decryption_phase_already_finalized;
     }
 
-    ascon_duplex_mode::finalize(state, key, tag);
-    finished_squeezing_tag = true;
+    ascon_duplex_mode::decrypt_ciphertext(state, offset, ciphertext, plaintext);
+    return ascon_aead128_error_t::decrypted_ciphertext;
+  }
 
-    return true;
+  [[nodiscard]]
+  forceinline constexpr ascon_aead128_error_t finalize_decrypt(std::span<const uint8_t, TAG_BYTE_LEN> tag)
+  {
+    if (!finished_absorbing_data) {
+      return ascon_aead128_error_t::still_absorbing_data;
+    }
+    if (finished_decrypting_ciphertext) {
+      return ascon_aead128_error_t::decryption_phase_already_finalized;
+    }
+
+    ascon_duplex_mode::finalize_ciphering(state, offset);
+    finished_decrypting_ciphertext = true;
+
+    std::array<uint8_t, TAG_BYTE_LEN> computed_tag{};
+
+    ascon_duplex_mode::finalize(state, key, computed_tag);
+    const uint32_t flag = ascon_common_utils::ct_eq_byte_array<TAG_BYTE_LEN>(tag, computed_tag);
+
+    return flag == std::numeric_limits<uint32_t>::max() ? ascon_aead128_error_t::decryption_success_as_tag_matches
+                                                        : ascon_aead128_error_t::decryption_failure_due_to_tag_mismatch;
   }
 
   forceinline constexpr void reset()
   {
     this->key.fill(0);
     this->nonce.fill(0);
+
     this->state.reset();
     this->offset = 0;
     this->total_absorbed_data_byte_len = 0;
+
     this->finished_absorbing_data = false;
-    this->finished_ciphering = false;
-    this->finished_squeezing_tag = false;
+    this->finished_encrypting_plaintext = false;
+    this->finished_decrypting_ciphertext = false;
   }
 };
 
