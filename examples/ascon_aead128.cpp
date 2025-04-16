@@ -23,10 +23,18 @@ main()
   generate_random_data<uint8_t>(associated_data);
   generate_random_data<uint8_t>(plain_text);
 
-  ascon_aead128::encrypt(key, nonce, associated_data, plain_text, cipher_text, tag);
-  const bool is_decrypted = ascon_aead128::decrypt(key, nonce, associated_data, cipher_text, deciphered_text, tag);
+  ascon_aead128::ascon_aead128_t enc_handle(key, nonce);
+  assert(enc_handle.absorb_data(associated_data) == ascon_aead128::ascon_aead128_status_t::absorbed_data);
+  assert(enc_handle.finalize_data() == ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
+  assert(enc_handle.encrypt_plaintext(plain_text, cipher_text) == ascon_aead128::ascon_aead128_status_t::encrypted_plaintext);
+  assert(enc_handle.finalize_encrypt(tag) == ascon_aead128::ascon_aead128_status_t::finalized_encryption_phase);
 
-  assert(is_decrypted);
+  ascon_aead128::ascon_aead128_t dec_handle(key, nonce);
+  assert(dec_handle.absorb_data(associated_data) == ascon_aead128::ascon_aead128_status_t::absorbed_data);
+  assert(dec_handle.finalize_data() == ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
+  assert(dec_handle.decrypt_ciphertext(cipher_text, deciphered_text) == ascon_aead128::ascon_aead128_status_t::decrypted_ciphertext);
+  assert(dec_handle.finalize_decrypt(tag) == ascon_aead128::ascon_aead128_status_t::decryption_success_as_tag_matches);
+
   assert(std::ranges::equal(plain_text, deciphered_text));
 
   std::cout << "Ascon-AEAD128\n\n";
