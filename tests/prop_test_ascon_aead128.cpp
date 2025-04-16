@@ -73,10 +73,18 @@ TEST(AsconAEAD128, EncryptThenDecrypt)
       generate_random_data<uint8_t>(associated_data);
       generate_random_data<uint8_t>(plaintext);
 
-      ascon_aead128::encrypt(key, nonce, associated_data, plaintext, ciphertext, tag);
-      const auto is_decrypted = ascon_aead128::decrypt(key, nonce, associated_data, ciphertext, decipheredtext, tag);
+      ascon_aead128::ascon_aead128_t enc_handle(key, nonce);
+      EXPECT_EQ(enc_handle.absorb_data(associated_data), ascon_aead128::ascon_aead128_status_t::absorbed_data);
+      EXPECT_EQ(enc_handle.finalize_data(), ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
+      EXPECT_EQ(enc_handle.encrypt_plaintext(plaintext, ciphertext), ascon_aead128::ascon_aead128_status_t::encrypted_plaintext);
+      EXPECT_EQ(enc_handle.finalize_encrypt(tag), ascon_aead128::ascon_aead128_status_t::finalized_encryption_phase);
 
-      EXPECT_TRUE(is_decrypted);
+      ascon_aead128::ascon_aead128_t dec_handle(key, nonce);
+      EXPECT_EQ(dec_handle.absorb_data(associated_data), ascon_aead128::ascon_aead128_status_t::absorbed_data);
+      EXPECT_EQ(dec_handle.finalize_data(), ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
+      EXPECT_EQ(dec_handle.decrypt_ciphertext(ciphertext, decipheredtext), ascon_aead128::ascon_aead128_status_t::decrypted_ciphertext);
+      EXPECT_EQ(dec_handle.finalize_decrypt(tag), ascon_aead128::ascon_aead128_status_t::decryption_success_as_tag_matches);
+
       EXPECT_EQ(plaintext, decipheredtext);
     }
   }
@@ -101,7 +109,11 @@ test_decryption_failure_for_ascon_aead128(const size_t associated_data_len, cons
   generate_random_data<uint8_t>(associated_data);
   generate_random_data<uint8_t>(plaintext);
 
-  ascon_aead128::encrypt(key, nonce, associated_data, plaintext, ciphertext, tag);
+  ascon_aead128::ascon_aead128_t enc_handle(key, nonce);
+  EXPECT_EQ(enc_handle.absorb_data(associated_data), ascon_aead128::ascon_aead128_status_t::absorbed_data);
+  EXPECT_EQ(enc_handle.finalize_data(), ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(enc_handle.encrypt_plaintext(plaintext, ciphertext), ascon_aead128::ascon_aead128_status_t::encrypted_plaintext);
+  EXPECT_EQ(enc_handle.finalize_encrypt(tag), ascon_aead128::ascon_aead128_status_t::finalized_encryption_phase);
 
   switch (mutation_kind) {
     case aead_mutation_kind_t::mutate_key:
@@ -123,11 +135,11 @@ test_decryption_failure_for_ascon_aead128(const size_t associated_data_len, cons
       EXPECT_TRUE(false);
   }
 
-  const auto is_decrypted = ascon_aead128::decrypt(key, nonce, associated_data, ciphertext, decipheredtext, tag);
-  EXPECT_FALSE(is_decrypted);
-
-  std::vector<uint8_t> zeros(plaintext_len, 0);
-  EXPECT_EQ(decipheredtext, zeros);
+  ascon_aead128::ascon_aead128_t dec_handle(key, nonce);
+  EXPECT_EQ(dec_handle.absorb_data(associated_data), ascon_aead128::ascon_aead128_status_t::absorbed_data);
+  EXPECT_EQ(dec_handle.finalize_data(), ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(dec_handle.decrypt_ciphertext(ciphertext, decipheredtext), ascon_aead128::ascon_aead128_status_t::decrypted_ciphertext);
+  EXPECT_EQ(dec_handle.finalize_decrypt(tag), ascon_aead128::ascon_aead128_status_t::decryption_failure_due_to_tag_mismatch);
 }
 
 TEST(AsconAEAD128, DecryptionFailureDueToBitFlippingInKey)
