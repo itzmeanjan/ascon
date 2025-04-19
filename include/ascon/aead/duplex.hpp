@@ -192,6 +192,7 @@ decrypt_ciphertext(ascon_perm::ascon_perm_t& state, size_t& block_offset, std::s
     ascon_common_utils::to_le_bytes(state[1] ^ ascon_common_utils::from_le_bytes(block_span.last<8>()), block_span.last<8>());
 
     std::copy_n(block_span.subspan(block_offset).begin(), to_be_absorbed_num_bytes, plaintext.subspan(ct_offset).begin());
+    std::fill_n(block_span.begin(), block_offset, 0);
     std::fill_n(block_span.subspan(block_offset + to_be_absorbed_num_bytes).begin(), block_span.size() - (block_offset + to_be_absorbed_num_bytes), 0);
 
     state[0] ^= ascon_common_utils::from_le_bytes(block_span.first<8>());
