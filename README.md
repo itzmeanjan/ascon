@@ -50,23 +50,44 @@ make release_ubsan_test -j # Run release tests with UndefinedBehaviorSanitizer
 Test results (pass/fail) are printed to the console.
 
 ```bash
-PASSED TESTS (16/16):
-       1 ms: build/test/test.out AsconCXOF128.CompileTimeComputeXofOutput
-       1 ms: build/test/test.out AsconAEAD128.CompileTimeEncryptAndThenDecrypt
+PASSED TESTS (37/37):
+       1 ms: build/test/test.out AsconAEAD128.ValidEncryptionSequence
+       1 ms: build/test/test.out AsconAEAD128.FinalizeDataCalledTwice
+       1 ms: build/test/test.out AsconAEAD128.DecryptCiphertextAfterFinalizeDecrypt
        1 ms: build/test/test.out AsconXof128.CompileTimeComputeXofOutput
-       2 ms: build/test/test.out AsconHash256.CompileTimeComputeMessageDigest
+       1 ms: build/test/test.out AsconAEAD128.AbsorbDataAfterFinalizeData
+       1 ms: build/test/test.out AsconAEAD128.DecryptCiphertextBeforeFinalizeData
+       1 ms: build/test/test.out AsconAEAD128.FinalizeDecryptBeforeFinalizeData
+       1 ms: build/test/test.out AsconAEAD128.EncryptPlaintextAfterFinalizeEncrypt
+       1 ms: build/test/test.out AsconAEAD128.FinalizeDecryptCalledTwice
+       1 ms: build/test/test.out AsconAEAD128.AbsorbDataAfterEncrypt
+       1 ms: build/test/test.out AsconAEAD128.AbsorbDataAfterDecrypt
+       1 ms: build/test/test.out AsconHash256.CompileTimeComputeMessageDigest
+       2 ms: build/test/test.out AsconAEAD128.MultipleDecryptCiphertextCalls
+       2 ms: build/test/test.out AsconAEAD128.MultipleAbsorbDataCalls
+       2 ms: build/test/test.out AsconAEAD128.MultipleEncryptPlaintextCalls
+       2 ms: build/test/test.out AsconAEAD128.FinalizeDataWithoutAbsorb
+       2 ms: build/test/test.out AsconAEAD128.EncryptPlaintextBeforeFinalizeData
+       2 ms: build/test/test.out AsconCXOF128.CompileTimeComputeXofOutput
+       2 ms: build/test/test.out AsconAEAD128.CompileTimeEncryptAndThenDecrypt
+       2 ms: build/test/test.out AsconAEAD128.FinalizeEncryptBeforeFinalizeData
+       2 ms: build/test/test.out AsconAEAD128.FinalizeEncryptCalledTwice
+       3 ms: build/test/test.out AsconAEAD128.ValidDecryptionSequence
        4 ms: build/test/test.out AsconAEAD128.KnownAnswerTests
-       6 ms: build/test/test.out AsconHash256.ForSameMessageOneshotHashingAndIncrementalHashingProducesSameDigest
-       7 ms: build/test/test.out AsconXof128.KnownAnswerTests
-       8 ms: build/test/test.out AsconHash256.KnownAnswerTests
-     449 ms: build/test/test.out AsconAEAD128.DecryptionFailureDueToBitFlippingInAssociatedData
-     451 ms: build/test/test.out AsconAEAD128.DecryptionFailureDueToBitFlippingInCipherText
-     452 ms: build/test/test.out AsconAEAD128.DecryptionFailureDueToBitFlippingInNonce
-     452 ms: build/test/test.out AsconAEAD128.DecryptionFailureDueToBitFlippingInKey
-     453 ms: build/test/test.out AsconAEAD128.DecryptionFailureDueToBitFlippingInTag
-     457 ms: build/test/test.out AsconAEAD128.EncryptThenDecrypt
-     638 ms: build/test/test.out AsconXof128.ForSameMessageOneshotHashingAndIncrementalHashingProducesSameOutput
-    3126 ms: build/test/test.out AsconCXOF128.ForSameMessageOneshotHashingAndIncrementalHashingProducesSameOutput
+       4 ms: build/test/test.out AsconCXOF128.KnownAnswerTests
+       7 ms: build/test/test.out AsconHash256.ForSameMessageOneshotHashingAndIncrementalHashingProducesSameDigest
+       9 ms: build/test/test.out AsconHash256.KnownAnswerTests
+      10 ms: build/test/test.out AsconXof128.KnownAnswerTests
+     557 ms: build/test/test.out AsconAEAD128.DecryptionFailureDueToBitFlippingInCipherText
+     557 ms: build/test/test.out AsconAEAD128.DecryptionFailureDueToBitFlippingInNonce
+     558 ms: build/test/test.out AsconAEAD128.DecryptionFailureDueToBitFlippingInTag
+     558 ms: build/test/test.out AsconAEAD128.DecryptionFailureDueToBitFlippingInKey
+     559 ms: build/test/test.out AsconAEAD128.DecryptionFailureDueToBitFlippingInAssociatedData
+     565 ms: build/test/test.out AsconAEAD128.ForSameCiphertextOneshotDecryptionAndIncrementalDecryptionProducesSamePlaintext
+     566 ms: build/test/test.out AsconAEAD128.EncryptThenDecrypt
+     566 ms: build/test/test.out AsconAEAD128.ForSamePlaintextOneshotEncryptionAndIncrementalEncryptionProducesSameTag
+     737 ms: build/test/test.out AsconXof128.ForSameMessageOneshotHashingAndIncrementalHashingProducesSameOutput
+    3203 ms: build/test/test.out AsconCXOF128.ForSameMessageOneshotHashingAndIncrementalHashingProducesSameOutput
 ```
 
 > [!NOTE]
@@ -93,7 +114,7 @@ make perf -j       # Run benchmarks with CPU cycle counting (requires libPFM)
 
 ### On 12th Gen Intel(R) Core(TM) i7-1260P
 
-JSON benchmark result lives in [bench_result_on_Linux_6.11.0-9-generic_x86_64_with_g++_14](./bench_result_on_Linux_6.11.0-9-generic_x86_64_with_g++_14.json).
+JSON benchmark result lives in [bench_result_on_Linux_6.14.0-15-generic_x86_64_with_g++_14](./bench_result_on_Linux_6.14.0-15-generic_x86_64_with_g++_14.json).
 
 ### On ARM Cortex-A72 ( i.e. Raspberry Pi 4B )
 
@@ -108,7 +129,7 @@ This section demonstrates how to use the Ascon header-only library for authentic
 Ascon-AEAD128 provides authenticated encryption with associated data. The associated data is authenticated but not encrypted.
 
 ```cpp
-#include <ascon/aead/ascon_aead128.hpp>
+#include "ascon/aead/ascon_aead128.hpp"
 #include <array>
 #include <iostream>
 
@@ -122,15 +143,25 @@ int main() {
   std::array<uint8_t, 16> tag{};
 
   // Encryption
-  ascon_aead128::encrypt(key, nonce, ad, plaintext, ciphertext, tag);
+  ascon_aead128::ascon_aead128_t enc_handle(key, nonce);
+
+  assert(enc_handle.absorb_data(ad) == ascon_aead128::ascon_aead128_status_t::absorbed_data);
+  assert(enc_handle.finalize_data() == ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
+  assert(enc_handle.encrypt_plaintext(plaintext, ciphertext) == ascon_aead128::ascon_aead128_status_t::encrypted_plaintext);
+  assert(enc_handle.finalize_encrypt(tag) == ascon_aead128::ascon_aead128_status_t::finalized_encryption_phase);
 
   // Decryption
   std::array<uint8_t, 10> decrypted_plaintext{};
-  bool success = ascon_aead128::decrypt(key, nonce, ad, ciphertext, decrypted_plaintext, tag);
+
+  ascon_aead128::ascon_aead128_t dec_handle(key, nonce);
+
+  assert(dec_handle.absorb_data(ad) == ascon_aead128::ascon_aead128_status_t::absorbed_data);
+  assert(dec_handle.finalize_data() == ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
+  assert(dec_handle.decrypt_ciphertext(ciphertext, decrypted_plaintext) == ascon_aead128::ascon_aead128_status_t::decrypted_ciphertext);  
+  const bool success = dec_handle.finalize_decrypt(tag) == ascon_aead128::ascon_aead128_status_t::decryption_success_as_tag_matches;
 
   if (success) {
     std::cout << "Decryption successful!" << std::endl;
-    // Check decrypted_plaintext
   } else {
     std::cout << "Decryption failed!" << std::endl;
   }
@@ -144,7 +175,7 @@ int main() {
 Ascon-Hash256 computes a 256-bit (32-byte) hash.
 
 ```cpp
-#include <ascon/hashes/ascon_hash256.hpp>
+#include "ascon/hashes/ascon_hash256.hpp"
 #include <array>
 #include <cassert>
 
@@ -167,8 +198,8 @@ int main() {
 Ascon-XOF128 and Ascon-CXOF128 are extendable output functions. XOF128 produces a variable-length output, while CXOF128 allows for customization with an application-specific string.
 
 ```cpp
-#include <ascon/hashes/ascon_xof128.hpp>
-#include <ascon/hashes/ascon_cxof128.hpp>
+#include "ascon/hashes/ascon_xof128.hpp"
+#include "ascon/hashes/ascon_cxof128.hpp"
 #include <array>
 #include <cassert>
 
