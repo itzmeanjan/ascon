@@ -102,7 +102,7 @@ test_decryption_failure_for_ascon_aead128(const size_t associated_data_len, cons
   std::vector<uint8_t> associated_data(associated_data_len, 0);
   std::vector<uint8_t> plaintext(plaintext_len, 0);
   std::vector<uint8_t> ciphertext(plaintext_len, 0);
-  std::vector<uint8_t> decipheredtext(plaintext_len, 0xff);
+  std::vector<uint8_t> decipheredtext(plaintext_len, 0);
 
   generate_random_data<uint8_t>(key);
   generate_random_data<uint8_t>(nonce);
@@ -185,4 +185,280 @@ TEST(AsconAEAD128, DecryptionFailureDueToBitFlippingInCipherText)
       test_decryption_failure_for_ascon_aead128(associated_data_len, plaintext_len, aead_mutation_kind_t::mutate_cipher_text);
     }
   }
+}
+
+static ascon_aead128::ascon_aead128_t
+get_new_aead_instance()
+{
+  std::array<uint8_t, ascon_aead128::KEY_BYTE_LEN> key{};
+  std::array<uint8_t, ascon_aead128::NONCE_BYTE_LEN> nonce{};
+
+  generate_random_data<uint8_t>(key);
+  generate_random_data<uint8_t>(nonce);
+
+  ascon_aead128::ascon_aead128_t aead(key, nonce);
+  return aead;
+}
+
+TEST(AsconAEAD128, ValidEncryptionSequence)
+{
+  auto aead = get_new_aead_instance();
+
+  std::array<uint8_t, 16> ad{};
+  std::array<uint8_t, 16> pt{};
+  std::array<uint8_t, 16> ct{};
+  std::array<uint8_t, ascon_aead128::TAG_BYTE_LEN> tag{};
+
+  EXPECT_EQ(aead.absorb_data(ad), ascon_aead128::ascon_aead128_status_t::absorbed_data);
+  EXPECT_EQ(aead.finalize_data(), ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(aead.encrypt_plaintext(pt, ct), ascon_aead128::ascon_aead128_status_t::encrypted_plaintext);
+  EXPECT_EQ(aead.finalize_encrypt(tag), ascon_aead128::ascon_aead128_status_t::finalized_encryption_phase);
+}
+
+TEST(AsconAEAD128, ValidDecryptionSequence)
+{
+  auto aead = get_new_aead_instance();
+
+  std::array<uint8_t, 16> ad{};
+  std::array<uint8_t, 16> ct{};
+  std::array<uint8_t, 16> pt{};
+  std::array<uint8_t, ascon_aead128::TAG_BYTE_LEN> tag{};
+
+  EXPECT_EQ(aead.absorb_data(ad), ascon_aead128::ascon_aead128_status_t::absorbed_data);
+  EXPECT_EQ(aead.finalize_data(), ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(aead.decrypt_ciphertext(ct, pt), ascon_aead128::ascon_aead128_status_t::decrypted_ciphertext);
+  EXPECT_EQ(aead.finalize_decrypt(tag), ascon_aead128::ascon_aead128_status_t::decryption_failure_due_to_tag_mismatch);
+}
+
+TEST(AsconAEAD128, MultipleAbsorbDataCalls)
+{
+  auto aead = get_new_aead_instance();
+
+  std::array<uint8_t, 8> ad1{};
+  std::array<uint8_t, 8> ad2{};
+  std::array<uint8_t, 16> pt{};
+  std::array<uint8_t, 16> ct{};
+  std::array<uint8_t, ascon_aead128::TAG_BYTE_LEN> tag{};
+
+  EXPECT_EQ(aead.absorb_data(ad1), ascon_aead128::ascon_aead128_status_t::absorbed_data);
+  EXPECT_EQ(aead.absorb_data(ad2), ascon_aead128::ascon_aead128_status_t::absorbed_data);
+  EXPECT_EQ(aead.finalize_data(), ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(aead.encrypt_plaintext(pt, ct), ascon_aead128::ascon_aead128_status_t::encrypted_plaintext);
+  EXPECT_EQ(aead.finalize_encrypt(tag), ascon_aead128::ascon_aead128_status_t::finalized_encryption_phase);
+}
+
+TEST(AsconAEAD128, MultipleEncryptPlaintextCalls)
+{
+  auto aead = get_new_aead_instance();
+
+  std::array<uint8_t, 16> ad{};
+  std::array<uint8_t, 8> pt1{};
+  std::array<uint8_t, 8> pt2{};
+  std::array<uint8_t, 8> ct1{};
+  std::array<uint8_t, 8> ct2{};
+  std::array<uint8_t, ascon_aead128::TAG_BYTE_LEN> tag{};
+
+  EXPECT_EQ(aead.absorb_data(ad), ascon_aead128::ascon_aead128_status_t::absorbed_data);
+  EXPECT_EQ(aead.finalize_data(), ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(aead.encrypt_plaintext(pt1, ct1), ascon_aead128::ascon_aead128_status_t::encrypted_plaintext);
+  EXPECT_EQ(aead.encrypt_plaintext(pt2, ct2), ascon_aead128::ascon_aead128_status_t::encrypted_plaintext);
+  EXPECT_EQ(aead.finalize_encrypt(tag), ascon_aead128::ascon_aead128_status_t::finalized_encryption_phase);
+}
+
+TEST(AsconAEAD128, MultipleDecryptCiphertextCalls)
+{
+  auto aead = get_new_aead_instance();
+
+  std::array<uint8_t, 16> ad{};
+  std::array<uint8_t, 8> ct1{};
+  std::array<uint8_t, 8> ct2{};
+  std::array<uint8_t, 8> pt1{};
+  std::array<uint8_t, 8> pt2{};
+  std::array<uint8_t, ascon_aead128::TAG_BYTE_LEN> tag{};
+
+  EXPECT_EQ(aead.absorb_data(ad), ascon_aead128::ascon_aead128_status_t::absorbed_data);
+  EXPECT_EQ(aead.finalize_data(), ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(aead.decrypt_ciphertext(ct1, pt1), ascon_aead128::ascon_aead128_status_t::decrypted_ciphertext);
+  EXPECT_EQ(aead.decrypt_ciphertext(ct2, pt2), ascon_aead128::ascon_aead128_status_t::decrypted_ciphertext);
+  EXPECT_EQ(aead.finalize_decrypt(tag), ascon_aead128::ascon_aead128_status_t::decryption_failure_due_to_tag_mismatch);
+}
+
+TEST(AsconAEAD128, AbsorbDataAfterFinalizeData)
+{
+  auto aead = get_new_aead_instance();
+
+  std::array<uint8_t, 16> ad1{};
+  std::array<uint8_t, 16> ad2{};
+
+  EXPECT_EQ(aead.absorb_data(ad1), ascon_aead128::ascon_aead128_status_t::absorbed_data);
+  EXPECT_EQ(aead.finalize_data(), ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(aead.absorb_data(ad2), ascon_aead128::ascon_aead128_status_t::data_absorption_phase_already_finalized);
+}
+
+TEST(AsconAEAD128, FinalizeDataCalledTwice)
+{
+  auto aead = get_new_aead_instance();
+
+  std::array<uint8_t, 16> ad{};
+
+  EXPECT_EQ(aead.absorb_data(ad), ascon_aead128::ascon_aead128_status_t::absorbed_data);
+  EXPECT_EQ(aead.finalize_data(), ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(aead.finalize_data(), ascon_aead128::ascon_aead128_status_t::data_absorption_phase_already_finalized);
+}
+
+TEST(AsconAEAD128, EncryptPlaintextBeforeFinalizeData)
+{
+  auto aead = get_new_aead_instance();
+
+  std::array<uint8_t, 16> ad{};
+  std::array<uint8_t, 16> pt{};
+  std::array<uint8_t, 16> ct{};
+
+  EXPECT_EQ(aead.absorb_data(ad), ascon_aead128::ascon_aead128_status_t::absorbed_data);
+  EXPECT_EQ(aead.encrypt_plaintext(pt, ct), ascon_aead128::ascon_aead128_status_t::still_in_data_absorption_phase);
+}
+
+TEST(AsconAEAD128, DecryptCiphertextBeforeFinalizeData)
+{
+  auto aead = get_new_aead_instance();
+
+  std::array<uint8_t, 16> ad{};
+  std::array<uint8_t, 16> ct{};
+  std::array<uint8_t, 16> pt{};
+
+  EXPECT_EQ(aead.absorb_data(ad), ascon_aead128::ascon_aead128_status_t::absorbed_data);
+  EXPECT_EQ(aead.decrypt_ciphertext(ct, pt), ascon_aead128::ascon_aead128_status_t::still_in_data_absorption_phase);
+}
+
+TEST(AsconAEAD128, FinalizeEncryptBeforeFinalizeData)
+{
+  auto aead = get_new_aead_instance();
+
+  std::array<uint8_t, 16> ad{};
+  std::array<uint8_t, 16> pt{};
+  std::array<uint8_t, 16> ct{};
+  std::array<uint8_t, ascon_aead128::TAG_BYTE_LEN> tag{};
+
+  EXPECT_EQ(aead.absorb_data(ad), ascon_aead128::ascon_aead128_status_t::absorbed_data);
+  EXPECT_EQ(aead.encrypt_plaintext(pt, ct), ascon_aead128::ascon_aead128_status_t::still_in_data_absorption_phase);
+  EXPECT_EQ(aead.finalize_encrypt(tag), ascon_aead128::ascon_aead128_status_t::still_in_data_absorption_phase);
+}
+
+TEST(AsconAEAD128, FinalizeDecryptBeforeFinalizeData)
+{
+  auto aead = get_new_aead_instance();
+
+  std::array<uint8_t, 16> ad{};
+  std::array<uint8_t, 16> ct{};
+  std::array<uint8_t, 16> pt{};
+  std::array<uint8_t, ascon_aead128::TAG_BYTE_LEN> tag{};
+
+  EXPECT_EQ(aead.absorb_data(ad), ascon_aead128::ascon_aead128_status_t::absorbed_data);
+  EXPECT_EQ(aead.decrypt_ciphertext(ct, pt), ascon_aead128::ascon_aead128_status_t::still_in_data_absorption_phase);
+  EXPECT_EQ(aead.finalize_decrypt(tag), ascon_aead128::ascon_aead128_status_t::still_in_data_absorption_phase);
+}
+
+TEST(AsconAEAD128, EncryptPlaintextAfterFinalizeEncrypt)
+{
+  auto aead = get_new_aead_instance();
+
+  std::array<uint8_t, 16> ad{};
+  std::array<uint8_t, 16> pt1{};
+  std::array<uint8_t, 16> pt2{};
+  std::array<uint8_t, 16> ct1{};
+  std::array<uint8_t, 16> ct2{};
+  std::array<uint8_t, ascon_aead128::TAG_BYTE_LEN> tag{};
+
+  EXPECT_EQ(aead.absorb_data(ad), ascon_aead128::ascon_aead128_status_t::absorbed_data);
+  EXPECT_EQ(aead.finalize_data(), ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(aead.encrypt_plaintext(pt1, ct1), ascon_aead128::ascon_aead128_status_t::encrypted_plaintext);
+  EXPECT_EQ(aead.finalize_encrypt(tag), ascon_aead128::ascon_aead128_status_t::finalized_encryption_phase);
+  EXPECT_EQ(aead.encrypt_plaintext(pt2, ct2), ascon_aead128::ascon_aead128_status_t::encryption_phase_already_finalized);
+}
+
+TEST(AsconAEAD128, DecryptCiphertextAfterFinalizeDecrypt)
+{
+  auto aead = get_new_aead_instance();
+
+  std::array<uint8_t, 16> ad{};
+  std::array<uint8_t, 16> ct1{};
+  std::array<uint8_t, 16> ct2{};
+  std::array<uint8_t, 16> pt1{};
+  std::array<uint8_t, 16> pt2{};
+  std::array<uint8_t, ascon_aead128::TAG_BYTE_LEN> tag{};
+
+  EXPECT_EQ(aead.absorb_data(ad), ascon_aead128::ascon_aead128_status_t::absorbed_data);
+  EXPECT_EQ(aead.finalize_data(), ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(aead.decrypt_ciphertext(ct1, pt1), ascon_aead128::ascon_aead128_status_t::decrypted_ciphertext);
+  EXPECT_EQ(aead.finalize_decrypt(tag), ascon_aead128::ascon_aead128_status_t::decryption_failure_due_to_tag_mismatch);
+  EXPECT_EQ(aead.decrypt_ciphertext(ct2, pt2), ascon_aead128::ascon_aead128_status_t::decryption_phase_already_finalized);
+}
+
+TEST(AsconAEAD128, FinalizeEncryptCalledTwice)
+{
+  auto aead = get_new_aead_instance();
+
+  std::array<uint8_t, 16> ad{};
+  std::array<uint8_t, 16> pt{};
+  std::array<uint8_t, 16> ct{};
+  std::array<uint8_t, ascon_aead128::TAG_BYTE_LEN> tag1{};
+  std::array<uint8_t, ascon_aead128::TAG_BYTE_LEN> tag2{};
+
+  EXPECT_EQ(aead.absorb_data(ad), ascon_aead128::ascon_aead128_status_t::absorbed_data);
+  EXPECT_EQ(aead.finalize_data(), ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(aead.encrypt_plaintext(pt, ct), ascon_aead128::ascon_aead128_status_t::encrypted_plaintext);
+  EXPECT_EQ(aead.finalize_encrypt(tag1), ascon_aead128::ascon_aead128_status_t::finalized_encryption_phase);
+  EXPECT_EQ(aead.finalize_encrypt(tag2), ascon_aead128::ascon_aead128_status_t::encryption_phase_already_finalized);
+}
+
+TEST(AsconAEAD128, FinalizeDecryptCalledTwice)
+{
+  auto aead = get_new_aead_instance();
+
+  std::array<uint8_t, 16> ad{};
+  std::array<uint8_t, 16> ct{};
+  std::array<uint8_t, 16> pt{};
+  std::array<uint8_t, ascon_aead128::TAG_BYTE_LEN> tag1{};
+  std::array<uint8_t, ascon_aead128::TAG_BYTE_LEN> tag2{};
+
+  EXPECT_EQ(aead.absorb_data(ad), ascon_aead128::ascon_aead128_status_t::absorbed_data);
+  EXPECT_EQ(aead.finalize_data(), ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(aead.decrypt_ciphertext(ct, pt), ascon_aead128::ascon_aead128_status_t::decrypted_ciphertext);
+  EXPECT_EQ(aead.finalize_decrypt(tag1), ascon_aead128::ascon_aead128_status_t::decryption_failure_due_to_tag_mismatch);
+  EXPECT_EQ(aead.finalize_decrypt(tag2), ascon_aead128::ascon_aead128_status_t::decryption_phase_already_finalized);
+}
+
+TEST(AsconAEAD128, AbsorbDataAfterEncrypt)
+{
+  auto aead = get_new_aead_instance();
+
+  std::array<uint8_t, 16> ad{};
+  std::array<uint8_t, 16> pt{};
+  std::array<uint8_t, 16> ct{};
+
+  EXPECT_EQ(aead.absorb_data(ad), ascon_aead128::ascon_aead128_status_t::absorbed_data);
+  EXPECT_EQ(aead.finalize_data(), ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(aead.encrypt_plaintext(pt, ct), ascon_aead128::ascon_aead128_status_t::encrypted_plaintext);
+  EXPECT_EQ(aead.absorb_data(ad), ascon_aead128::ascon_aead128_status_t::data_absorption_phase_already_finalized);
+}
+
+TEST(AsconAEAD128, AbsorbDataAfterDecrypt)
+{
+  auto aead = get_new_aead_instance();
+
+  std::array<uint8_t, 16> ad{};
+  std::array<uint8_t, 16> ct{};
+  std::array<uint8_t, 16> pt{};
+
+  EXPECT_EQ(aead.absorb_data(ad), ascon_aead128::ascon_aead128_status_t::absorbed_data);
+  EXPECT_EQ(aead.finalize_data(), ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(aead.decrypt_ciphertext(ct, pt), ascon_aead128::ascon_aead128_status_t::decrypted_ciphertext);
+  EXPECT_EQ(aead.absorb_data(ad), ascon_aead128::ascon_aead128_status_t::data_absorption_phase_already_finalized);
+}
+
+TEST(AsconAEAD128, FinalizeDataWithoutAbsorb)
+{
+  auto aead = get_new_aead_instance();
+
+  EXPECT_EQ(aead.finalize_data(), ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
 }
