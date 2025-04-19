@@ -1,10 +1,10 @@
 {
   "context": {
-    "date": "2024-12-03T20:36:58+04:00",
+    "date": "2025-04-19T16:21:34+04:00",
     "host_name": "linux",
     "executable": "./build/perf/perf.out",
     "num_cpus": 16,
-    "mhz_per_cpu": 1413,
+    "mhz_per_cpu": 644,
     "cpu_scaling_enabled": false,
     "caches": [
       {
@@ -32,8 +32,8 @@
         "num_sharing": 16
       }
     ],
-    "load_avg": [0.0952148,0.281738,0.36377],
-    "library_version": "v1.9.0-8-g3fd1e6a7",
+    "load_avg": [0.206055,0.427246,0.473633],
+    "library_version": "v1.9.1-7-gf4f93b55",
     "library_build_type": "release",
     "json_schema_version": 1
   },
@@ -49,12 +49,12 @@
       "aggregate_name": "mean",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 2.0492247840551340e+02,
-      "cpu_time": 2.0490696879744937e+02,
+      "real_time": 2.1592939886252674e+02,
+      "cpu_time": 2.1583110649829541e+02,
       "time_unit": "ns",
-      "CYCLES": 9.5955847024005857e+02,
-      "CYCLES/ BYTE": 1.4993101097500915e+01,
-      "bytes_per_second": 3.1233692211745095e+08
+      "CYCLES": 1.0102698732266267e+03,
+      "CYCLES/ BYTE": 1.5785466769166042e+01,
+      "bytes_per_second": 2.9652835521482223e+08
     },
     {
       "name": "ascon_aead128_encrypt/32/32_median",
@@ -67,12 +67,12 @@
       "aggregate_name": "median",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 2.0489515233461742e+02,
-      "cpu_time": 2.0488685101160928e+02,
+      "real_time": 2.1586364515006434e+02,
+      "cpu_time": 2.1582200065583098e+02,
       "time_unit": "ns",
-      "CYCLES": 9.5952349179748205e+02,
-      "CYCLES/ BYTE": 1.4992554559335657e+01,
-      "bytes_per_second": 3.1236753210534251e+08
+      "CYCLES": 1.0102987758852172e+03,
+      "CYCLES/ BYTE": 1.5785918373206519e+01,
+      "bytes_per_second": 2.9654067086285740e+08
     },
     {
       "name": "ascon_aead128_encrypt/32/32_stddev",
@@ -85,12 +85,12 @@
       "aggregate_name": "stddev",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 9.8726849550048817e-02,
-      "cpu_time": 9.3353712208144438e-02,
+      "real_time": 2.3465094957970645e-01,
+      "cpu_time": 1.8658338742675104e-01,
       "time_unit": "ns",
-      "CYCLES": 2.3413850825728696e-01,
-      "CYCLES/ BYTE": 3.6584141915201088e-03,
-      "bytes_per_second": 1.4228575160960815e+05
+      "CYCLES": 3.6839145291298953e-01,
+      "CYCLES/ BYTE": 5.7561164517654613e-03,
+      "bytes_per_second": 2.5615094206346382e+05
     },
     {
       "name": "ascon_aead128_encrypt/32/32_cv",
@@ -103,12 +103,12 @@
       "aggregate_name": "cv",
       "aggregate_unit": "percentage",
       "iterations": 10,
-      "real_time": 4.8177657384507107e-04,
-      "cpu_time": 4.5559071395187453e-04,
+      "real_time": 1.0867021851392220e-03,
+      "cpu_time": 8.6448793435724993e-04,
       "time_unit": "ns",
-      "CYCLES": 2.4400650457362031e-04,
-      "CYCLES/ BYTE": 2.4400650457362031e-04,
-      "bytes_per_second": 4.5555213467879125e-04
+      "CYCLES": 3.6464657877643243e-04,
+      "CYCLES/ BYTE": 3.6464657877643243e-04,
+      "bytes_per_second": 8.6383287654866366e-04
     },
     {
       "name": "ascon_aead128_encrypt/32/32_min",
@@ -121,12 +121,12 @@
       "aggregate_name": "min",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 2.0479799015270390e+02,
-      "cpu_time": 2.0478328475113145e+02,
+      "real_time": 2.1559764767224942e+02,
+      "cpu_time": 2.1558540033534001e+02,
       "time_unit": "ns",
-      "CYCLES": 9.5921245576345370e+02,
-      "CYCLES/ BYTE": 1.4987694621303964e+01,
-      "bytes_per_second": 3.1212109469905668e+08
+      "CYCLES": 1.0095033688678253e+03,
+      "CYCLES/ BYTE": 1.5773490138559771e+01,
+      "bytes_per_second": 2.9595846098154330e+08
     },
     {
       "name": "ascon_aead128_encrypt/32/32_max",
@@ -139,12 +139,12 @@
       "aggregate_name": "max",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 2.0508678534887099e+02,
-      "cpu_time": 2.0504862083002755e+02,
+      "real_time": 2.1628641563971556e+02,
+      "cpu_time": 2.1624656307423896e+02,
       "time_unit": "ns",
-      "CYCLES": 9.5991108119913349e+02,
-      "CYCLES/ BYTE": 1.4998610643736461e+01,
-      "bytes_per_second": 3.1252550752752000e+08
+      "CYCLES": 1.0106803504364989e+03,
+      "CYCLES/ BYTE": 1.5791880475570295e+01,
+      "bytes_per_second": 2.9686611384838170e+08
     },
     {
       "name": "ascon_aead128_encrypt/32/256_mean",
@@ -157,12 +157,12 @@
       "aggregate_name": "mean",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 5.5770607598270715e+02,
-      "cpu_time": 5.5765769782110067e+02,
+      "real_time": 6.0241629067167230e+02,
+      "cpu_time": 6.0230284221166096e+02,
       "time_unit": "ns",
-      "CYCLES": 2.6113324565175844e+03,
-      "CYCLES/ BYTE": 9.0671265851305005e+00,
-      "bytes_per_second": 5.1644622412277234e+08
+      "CYCLES": 2.8200752661347560e+03,
+      "CYCLES/ BYTE": 9.7919280074123449e+00,
+      "bytes_per_second": 4.7816500444149280e+08
     },
     {
       "name": "ascon_aead128_encrypt/32/256_median",
@@ -175,12 +175,12 @@
       "aggregate_name": "median",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 5.5761242912136913e+02,
-      "cpu_time": 5.5755576261467945e+02,
+      "real_time": 6.0242332737813717e+02,
+      "cpu_time": 6.0236150239790140e+02,
       "time_unit": "ns",
-      "CYCLES": 2.6115758334129714e+03,
-      "CYCLES/ BYTE": 9.0679716437950404e+00,
-      "bytes_per_second": 5.1654026334208554e+08
+      "CYCLES": 2.8194622637045959e+03,
+      "CYCLES/ BYTE": 9.7897995267520699e+00,
+      "bytes_per_second": 4.7811825565943271e+08
     },
     {
       "name": "ascon_aead128_encrypt/32/256_stddev",
@@ -193,12 +193,12 @@
       "aggregate_name": "stddev",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 4.9403537148464993e-01,
-      "cpu_time": 5.0527278072341253e-01,
+      "real_time": 5.3238651556561312e-01,
+      "cpu_time": 4.4456325403968122e-01,
       "time_unit": "ns",
-      "CYCLES": 5.3948668995398119e-01,
-      "CYCLES/ BYTE": 1.8732176859391158e-03,
-      "bytes_per_second": 4.6705856660594506e+05
+      "CYCLES": 1.6606674875080167e+00,
+      "CYCLES/ BYTE": 5.7662065568391714e-03,
+      "bytes_per_second": 3.5295883851929376e+05
     },
     {
       "name": "ascon_aead128_encrypt/32/256_cv",
@@ -211,12 +211,12 @@
       "aggregate_name": "cv",
       "aggregate_unit": "percentage",
       "iterations": 10,
-      "real_time": 8.8583465872078544e-04,
-      "cpu_time": 9.0606259484560443e-04,
+      "real_time": 8.8375185699580180e-04,
+      "cpu_time": 7.3810585453530544e-04,
       "time_unit": "ns",
-      "CYCLES": 2.0659441068389615e-04,
-      "CYCLES/ BYTE": 2.0659441206115632e-04,
-      "bytes_per_second": 9.0437018374814066e-04
+      "CYCLES": 5.8887346286475408e-04,
+      "CYCLES/ BYTE": 5.8887346317030090e-04,
+      "bytes_per_second": 7.3815280340634173e-04
     },
     {
       "name": "ascon_aead128_encrypt/32/256_min",
@@ -229,12 +229,12 @@
       "aggregate_name": "min",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 5.5731525946313707e+02,
-      "cpu_time": 5.5723631020642165e+02,
+      "real_time": 6.0172133163834758e+02,
+      "cpu_time": 6.0172226929611372e+02,
       "time_unit": "ns",
-      "CYCLES": 2.6105999100089193e+03,
-      "CYCLES/ BYTE": 9.0645830208643030e+00,
-      "bytes_per_second": 5.1518300119289583e+08
+      "CYCLES": 2.8184320178928579e+03,
+      "CYCLES/ BYTE": 9.7862222843502007e+00,
+      "bytes_per_second": 4.7769129400879174e+08
     },
     {
       "name": "ascon_aead128_encrypt/32/256_max",
@@ -247,12 +247,12 @@
       "aggregate_name": "max",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 5.5904186579505199e+02,
-      "cpu_time": 5.5902465596330205e+02,
+      "real_time": 6.0327692208161102e+02,
+      "cpu_time": 6.0289983010387346e+02,
       "time_unit": "ns",
-      "CYCLES": 2.6119843630542814e+03,
-      "CYCLES/ BYTE": 9.0693901494940317e+00,
-      "bytes_per_second": 5.1683638471677089e+08
+      "CYCLES": 2.8232639067506830e+03,
+      "CYCLES/ BYTE": 9.8029996762176488e+00,
+      "bytes_per_second": 4.7862612819182903e+08
     },
     {
       "name": "ascon_aead128_encrypt/32/2048_mean",
@@ -265,12 +265,12 @@
       "aggregate_name": "mean",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 3.3794444401849346e+03,
-      "cpu_time": 3.3791272525403720e+03,
+      "real_time": 3.7193740083679331e+03,
+      "cpu_time": 3.7185752528729536e+03,
       "time_unit": "ns",
-      "CYCLES": 1.5825719811252447e+04,
-      "CYCLES/ BYTE": 7.6085191400252130e+00,
-      "bytes_per_second": 6.1554391653439713e+08
+      "CYCLES": 1.7374687033310387e+04,
+      "CYCLES/ BYTE": 8.3532149198607613e+00,
+      "bytes_per_second": 5.5936384885585868e+08
     },
     {
       "name": "ascon_aead128_encrypt/32/2048_median",
@@ -283,12 +283,12 @@
       "aggregate_name": "median",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 3.3791708984238130e+03,
-      "cpu_time": 3.3789117810335229e+03,
+      "real_time": 3.7160583064436423e+03,
+      "cpu_time": 3.7157631202669058e+03,
       "time_unit": "ns",
-      "CYCLES": 1.5823414749825009e+04,
-      "CYCLES/ BYTE": 7.6074109374158709e+00,
-      "bytes_per_second": 6.1558282801918888e+08
+      "CYCLES": 1.7383294550654027e+04,
+      "CYCLES/ BYTE": 8.3573531493528979e+00,
+      "bytes_per_second": 5.5977734120222950e+08
     },
     {
       "name": "ascon_aead128_encrypt/32/2048_stddev",
@@ -301,12 +301,12 @@
       "aggregate_name": "stddev",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 2.7326794967518704e+00,
-      "cpu_time": 2.7322228871123175e+00,
+      "real_time": 1.6473792569815423e+01,
+      "cpu_time": 1.6517006943925274e+01,
       "time_unit": "ns",
-      "CYCLES": 9.9819628780556826e+00,
-      "CYCLES/ BYTE": 4.7990206171447140e-03,
-      "bytes_per_second": 4.9755868831726775e+05
+      "CYCLES": 3.2471668547106972e+01,
+      "CYCLES/ BYTE": 1.5611379110004169e-02,
+      "bytes_per_second": 2.4598148918684470e+06
     },
     {
       "name": "ascon_aead128_encrypt/32/2048_cv",
@@ -319,12 +319,12 @@
       "aggregate_name": "cv",
       "aggregate_unit": "percentage",
       "iterations": 10,
-      "real_time": 8.0861796816589443e-04,
-      "cpu_time": 8.0855874399470397e-04,
+      "real_time": 4.4291841941015639e-03,
+      "cpu_time": 4.4417568075741688e-03,
       "time_unit": "ns",
-      "CYCLES": 6.3074305605728459e-04,
-      "CYCLES/ BYTE": 6.3074305641147555e-04,
-      "bytes_per_second": 8.0832362233160618e-04
+      "CYCLES": 1.8689066735333400e-03,
+      "CYCLES/ BYTE": 1.8689066736312817e-03,
+      "bytes_per_second": 4.3975221081945740e-03
     },
     {
       "name": "ascon_aead128_encrypt/32/2048_min",
@@ -337,12 +337,12 @@
       "aggregate_name": "min",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 3.3759458860133955e+03,
-      "cpu_time": 3.3758963819362348e+03,
+      "real_time": 3.7091773817820090e+03,
+      "cpu_time": 3.7063237038606121e+03,
       "time_unit": "ns",
-      "CYCLES": 1.5815867514662934e+04,
-      "CYCLES/ BYTE": 7.6037824589725638e+00,
-      "bytes_per_second": 6.1469951079390395e+08
+      "CYCLES": 1.7296621723243130e+04,
+      "CYCLES/ BYTE": 8.3156835207899658e+00,
+      "bytes_per_second": 5.5255972752423406e+08
     },
     {
       "name": "ascon_aead128_encrypt/32/2048_max",
@@ -355,12 +355,12 @@
       "aggregate_name": "max",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 3.3839750428359935e+03,
-      "cpu_time": 3.3837671308923186e+03,
+      "real_time": 3.7653379759297009e+03,
+      "cpu_time": 3.7642989461420270e+03,
       "time_unit": "ns",
-      "CYCLES": 1.5847372136805774e+04,
-      "CYCLES/ BYTE": 7.6189289119258525e+00,
-      "bytes_per_second": 6.1613265476087356e+08
+      "CYCLES": 1.7406526770110682e+04,
+      "CYCLES/ BYTE": 8.3685224856301357e+00,
+      "bytes_per_second": 5.6120300497050846e+08
     },
     {
       "name": "ascon_aead128_encrypt/32/16384_mean",
@@ -373,12 +373,12 @@
       "aggregate_name": "mean",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 2.6007233821371825e+04,
-      "cpu_time": 2.5992052046675268e+04,
+      "real_time": 2.8754101663187728e+04,
+      "cpu_time": 2.8751587926078046e+04,
       "time_unit": "ns",
-      "CYCLES": 1.2152733482126320e+05,
-      "CYCLES/ BYTE": 7.4029809223479042e+00,
-      "bytes_per_second": 6.3158072632916462e+08
+      "CYCLES": 1.3452802312114989e+05,
+      "CYCLES/ BYTE": 8.1949331823312566e+00,
+      "bytes_per_second": 5.7096087176467419e+08
     },
     {
       "name": "ascon_aead128_encrypt/32/16384_median",
@@ -391,12 +391,12 @@
       "aggregate_name": "median",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 2.5969839414959770e+04,
-      "cpu_time": 2.5969454713835821e+04,
+      "real_time": 2.8757353285209225e+04,
+      "cpu_time": 2.8755731211499013e+04,
       "time_unit": "ns",
-      "CYCLES": 1.2151228116317837e+05,
-      "CYCLES/ BYTE": 7.4020639110123270e+00,
-      "bytes_per_second": 6.3212725030573809e+08
+      "CYCLES": 1.3450496108829568e+05,
+      "CYCLES/ BYTE": 8.1935283314020282e+00,
+      "bytes_per_second": 5.7087751318268132e+08
     },
     {
       "name": "ascon_aead128_encrypt/32/16384_stddev",
@@ -409,12 +409,12 @@
       "aggregate_name": "stddev",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 6.9078576990846429e+01,
-      "cpu_time": 6.0278840758820351e+01,
+      "real_time": 4.0391951939884962e+01,
+      "cpu_time": 4.2132484980645117e+01,
       "time_unit": "ns",
-      "CYCLES": 7.3075503473225538e+01,
-      "CYCLES/ BYTE": 4.4514804743694758e-03,
-      "bytes_per_second": 1.4582342314761674e+06
+      "CYCLES": 1.4679215572382907e+02,
+      "CYCLES/ BYTE": 8.9420172828707893e-03,
+      "bytes_per_second": 8.3617039526641939e+05
     },
     {
       "name": "ascon_aead128_encrypt/32/16384_cv",
@@ -427,12 +427,12 @@
       "aggregate_name": "cv",
       "aggregate_unit": "percentage",
       "iterations": 10,
-      "real_time": 2.6561293471387992e-03,
-      "cpu_time": 2.3191258870432600e-03,
+      "real_time": 1.4047370497961521e-03,
+      "cpu_time": 1.4653968013512890e-03,
       "time_unit": "ns",
-      "CYCLES": 6.0130919171971981e-04,
-      "CYCLES/ BYTE": 6.0130919167054387e-04,
-      "bytes_per_second": 2.3088643631537465e-03
+      "CYCLES": 1.0911641479458495e-03,
+      "CYCLES/ BYTE": 1.0911641478847307e-03,
+      "bytes_per_second": 1.4644968449099842e-03
     },
     {
       "name": "ascon_aead128_encrypt/32/16384_min",
@@ -445,12 +445,12 @@
       "aggregate_name": "min",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 2.5946110205961675e+04,
-      "cpu_time": 2.5945713095017516e+04,
+      "real_time": 2.8692003901376396e+04,
+      "cpu_time": 2.8688129158110842e+04,
       "time_unit": "ns",
-      "CYCLES": 1.2143964900907576e+05,
-      "CYCLES/ BYTE": 7.3976394376873635e+00,
-      "bytes_per_second": 6.2774563243754888e+08
+      "CYCLES": 1.3428539363449693e+05,
+      "CYCLES/ BYTE": 8.1801531210098020e+00,
+      "bytes_per_second": 5.6929572708756280e+08
     },
     {
       "name": "ascon_aead128_encrypt/32/16384_max",
@@ -463,12 +463,12 @@
       "aggregate_name": "max",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 2.6151061123895957e+04,
-      "cpu_time": 2.6150719577699558e+04,
+      "real_time": 2.8835454415244312e+04,
+      "cpu_time": 2.8835628336755581e+04,
       "time_unit": "ns",
-      "CYCLES": 1.2164801166882756e+05,
-      "CYCLES/ BYTE": 7.4103320948359865e+00,
-      "bytes_per_second": 6.3270567819361436e+08
+      "CYCLES": 1.3474605790554415e+05,
+      "CYCLES/ BYTE": 8.2082150283591702e+00,
+      "bytes_per_second": 5.7222274445033979e+08
     },
     {
       "name": "ascon_hash256/32_mean",
@@ -481,12 +481,12 @@
       "aggregate_name": "mean",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 3.0983880675091569e+02,
-      "cpu_time": 3.0964124516287512e+02,
+      "real_time": 3.0904697484984297e+02,
+      "cpu_time": 3.0901137522909460e+02,
       "time_unit": "ns",
-      "CYCLES": 1.4485988089996529e+03,
-      "CYCLES/ BYTE": 4.5268712781239152e+01,
-      "bytes_per_second": 1.0334556558574334e+08
+      "CYCLES": 1.4451169035263983e+03,
+      "CYCLES/ BYTE": 4.5159903235199948e+01,
+      "bytes_per_second": 1.0355610937157983e+08
     },
     {
       "name": "ascon_hash256/32_median",
@@ -499,12 +499,12 @@
       "aggregate_name": "median",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 3.0961636869500666e+02,
-      "cpu_time": 3.0957626451137685e+02,
+      "real_time": 3.0899126128941998e+02,
+      "cpu_time": 3.0895133482014762e+02,
       "time_unit": "ns",
-      "CYCLES": 1.4485928860794781e+03,
-      "CYCLES/ BYTE": 4.5268527689983692e+01,
-      "bytes_per_second": 1.0336712154658279e+08
+      "CYCLES": 1.4451166548899241e+03,
+      "CYCLES/ BYTE": 4.5159895465310129e+01,
+      "bytes_per_second": 1.0357618632150459e+08
     },
     {
       "name": "ascon_hash256/32_stddev",
@@ -517,12 +517,12 @@
       "aggregate_name": "stddev",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 6.3235523973715257e-01,
-      "cpu_time": 4.0656958121171211e-01,
+      "real_time": 2.2913411715242224e-01,
+      "cpu_time": 2.2872259838531880e-01,
       "time_unit": "ns",
-      "CYCLES": 1.0939001650133127e-01,
-      "CYCLES/ BYTE": 3.4184380156666023e-03,
-      "bytes_per_second": 1.3557899035863436e+05
+      "CYCLES": 6.4985429251946031e-02,
+      "CYCLES/ BYTE": 2.0307946641233135e-03,
+      "bytes_per_second": 7.6610459541182179e+04
     },
     {
       "name": "ascon_hash256/32_cv",
@@ -535,12 +535,12 @@
       "aggregate_name": "cv",
       "aggregate_unit": "percentage",
       "iterations": 10,
-      "real_time": 2.0409168443690558e-03,
-      "cpu_time": 1.3130343181440556e-03,
+      "real_time": 7.4142164719053437e-04,
+      "cpu_time": 7.4017533566765506e-04,
       "time_unit": "ns",
-      "CYCLES": 7.5514363136106575e-05,
-      "CYCLES/ BYTE": 7.5514363136106575e-05,
-      "bytes_per_second": 1.3118994471625174e-03
+      "CYCLES": 4.4968977314823112e-05,
+      "CYCLES/ BYTE": 4.4968977314823112e-05,
+      "bytes_per_second": 7.3979661852965797e-04
     },
     {
       "name": "ascon_hash256/32_min",
@@ -553,12 +553,12 @@
       "aggregate_name": "min",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 3.0922586085250339e+02,
-      "cpu_time": 3.0920506977186608e+02,
+      "real_time": 3.0878288250732169e+02,
+      "cpu_time": 3.0877242696579594e+02,
       "time_unit": "ns",
-      "CYCLES": 1.4483750179767376e+03,
-      "CYCLES/ BYTE": 4.5261719311773049e+01,
-      "bytes_per_second": 1.0308345567503674e+08
+      "CYCLES": 1.4450023075054651e+03,
+      "CYCLES/ BYTE": 4.5156322109545783e+01,
+      "bytes_per_second": 1.0341302132455446e+08
     },
     {
       "name": "ascon_hash256/32_max",
@@ -571,12 +571,12 @@
       "aggregate_name": "max",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 3.1105955223881904e+02,
-      "cpu_time": 3.1042808751850276e+02,
+      "real_time": 3.0950459293207950e+02,
+      "cpu_time": 3.0943878817320558e+02,
       "time_unit": "ns",
-      "CYCLES": 1.4487721899316994e+03,
-      "CYCLES/ BYTE": 4.5274130935365605e+01,
-      "bytes_per_second": 1.0349118797958215e+08
+      "CYCLES": 1.4452392850045267e+03,
+      "CYCLES/ BYTE": 4.5163727656391458e+01,
+      "bytes_per_second": 1.0363619677590182e+08
     },
     {
       "name": "ascon_hash256/64_mean",
@@ -589,12 +589,12 @@
       "aggregate_name": "mean",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 4.4709559844692239e+02,
-      "cpu_time": 4.4675596377410454e+02,
+      "real_time": 4.4608419145747803e+02,
+      "cpu_time": 4.4604958243452882e+02,
       "time_unit": "ns",
-      "CYCLES": 2.0902779405617052e+03,
-      "CYCLES/ BYTE": 3.2660592821276644e+01,
-      "bytes_per_second": 1.4325565662615603e+08
+      "CYCLES": 2.0851656882581419e+03,
+      "CYCLES/ BYTE": 3.2580713879033468e+01,
+      "bytes_per_second": 1.4348320113094556e+08
     },
     {
       "name": "ascon_hash256/64_median",
@@ -607,12 +607,12 @@
       "aggregate_name": "median",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 4.4646618659603365e+02,
-      "cpu_time": 4.4638181429442056e+02,
+      "real_time": 4.4558870358928925e+02,
+      "cpu_time": 4.4557350649847132e+02,
       "time_unit": "ns",
-      "CYCLES": 2.0902007247093661e+03,
-      "CYCLES/ BYTE": 3.2659386323583846e+01,
-      "bytes_per_second": 1.4337501685639668e+08
+      "CYCLES": 2.0856232415570839e+03,
+      "CYCLES/ BYTE": 3.2587863149329436e+01,
+      "bytes_per_second": 1.4363511099427122e+08
     },
     {
       "name": "ascon_hash256/64_stddev",
@@ -625,12 +625,12 @@
       "aggregate_name": "stddev",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 1.1352168388552062e+00,
-      "cpu_time": 1.0542266746318776e+00,
+      "real_time": 1.4952382593420368e+00,
+      "cpu_time": 1.4716217184960441e+00,
       "time_unit": "ns",
-      "CYCLES": 2.7367944269415967e-01,
-      "CYCLES/ BYTE": 4.2762412920962448e-03,
-      "bytes_per_second": 3.3615196529083228e+05
+      "CYCLES": 1.4470257209904749e+00,
+      "CYCLES/ BYTE": 2.2609776890476170e-02,
+      "bytes_per_second": 4.6958879107860604e+05
     },
     {
       "name": "ascon_hash256/64_cv",
@@ -643,12 +643,12 @@
       "aggregate_name": "cv",
       "aggregate_unit": "percentage",
       "iterations": 10,
-      "real_time": 2.5390919588531248e-03,
-      "cpu_time": 2.3597372169942236e-03,
+      "real_time": 3.3519194088826323e-03,
+      "cpu_time": 3.2992334853537237e-03,
       "time_unit": "ns",
-      "CYCLES": 1.3092968996296052e-04,
-      "CYCLES/ BYTE": 1.3092968996296052e-04,
-      "bytes_per_second": 2.3465179191357439e-03
+      "CYCLES": 6.9396198543783744e-04,
+      "CYCLES/ BYTE": 6.9396198543783744e-04,
+      "bytes_per_second": 3.2727788854532884e-03
     },
     {
       "name": "ascon_hash256/64_min",
@@ -661,12 +661,12 @@
       "aggregate_name": "min",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 4.4626021565420990e+02,
-      "cpu_time": 4.4625362594019026e+02,
+      "real_time": 4.4539949910926225e+02,
+      "cpu_time": 4.4537387164920182e+02,
       "time_unit": "ns",
-      "CYCLES": 2.0900855099611636e+03,
-      "CYCLES/ BYTE": 3.2657586093143181e+01,
-      "bytes_per_second": 1.4231457142848322e+08
+      "CYCLES": 2.0810539250516977e+03,
+      "CYCLES/ BYTE": 3.2516467578932776e+01,
+      "bytes_per_second": 1.4215837497146121e+08
     },
     {
       "name": "ascon_hash256/64_max",
@@ -679,12 +679,12 @@
       "aggregate_name": "max",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 4.4971301061648876e+02,
-      "cpu_time": 4.4970799094990542e+02,
+      "real_time": 4.5030642073073096e+02,
+      "cpu_time": 4.5020210742313446e+02,
       "time_unit": "ns",
-      "CYCLES": 2.0910418742241527e+03,
-      "CYCLES/ BYTE": 3.2672529284752386e+01,
-      "bytes_per_second": 1.4341620163906008e+08
+      "CYCLES": 2.0857766749616849e+03,
+      "CYCLES/ BYTE": 3.2590260546276326e+01,
+      "bytes_per_second": 1.4369949400715971e+08
     },
     {
       "name": "ascon_hash256/512_mean",
@@ -697,12 +697,12 @@
       "aggregate_name": "mean",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 2.3622464165620127e+03,
-      "cpu_time": 2.3613398476986254e+03,
+      "real_time": 2.3620641192827866e+03,
+      "cpu_time": 2.3618838042287921e+03,
       "time_unit": "ns",
-      "CYCLES": 1.1052010819462228e+04,
-      "CYCLES/ BYTE": 2.1585958631762164e+01,
-      "bytes_per_second": 2.1682638017294246e+08
+      "CYCLES": 1.1050743339230057e+04,
+      "CYCLES/ BYTE": 2.1583483084433706e+01,
+      "bytes_per_second": 2.1677631295154759e+08
     },
     {
       "name": "ascon_hash256/512_median",
@@ -715,12 +715,12 @@
       "aggregate_name": "median",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 2.3607914364680410e+03,
-      "cpu_time": 2.3600573657254581e+03,
+      "real_time": 2.3618854940636693e+03,
+      "cpu_time": 2.3616750147418088e+03,
       "time_unit": "ns",
-      "CYCLES": 1.1051976228182491e+04,
-      "CYCLES/ BYTE": 2.1585891070668929e+01,
-      "bytes_per_second": 2.1694388133055922e+08
+      "CYCLES": 1.1050731480077500e+04,
+      "CYCLES/ BYTE": 2.1583459922026368e+01,
+      "bytes_per_second": 2.1679528184349442e+08
     },
     {
       "name": "ascon_hash256/512_stddev",
@@ -733,12 +733,12 @@
       "aggregate_name": "stddev",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 3.7898096615810246e+00,
-      "cpu_time": 3.0580581902861210e+00,
+      "real_time": 2.3467457583918145e+00,
+      "cpu_time": 2.3682493581319539e+00,
       "time_unit": "ns",
-      "CYCLES": 3.8073145791341489e-01,
-      "CYCLES/ BYTE": 7.4361612873713847e-04,
-      "bytes_per_second": 2.8032848547532392e+05
+      "CYCLES": 4.2664196111136160e-01,
+      "CYCLES/ BYTE": 8.3328508029562813e-04,
+      "bytes_per_second": 2.1708536510373568e+05
     },
     {
       "name": "ascon_hash256/512_cv",
@@ -751,12 +751,12 @@
       "aggregate_name": "cv",
       "aggregate_unit": "percentage",
       "iterations": 10,
-      "real_time": 1.6043244409263079e-03,
-      "cpu_time": 1.2950521261336104e-03,
+      "real_time": 9.9351484120777231e-04,
+      "cpu_time": 1.0026951173007601e-03,
       "time_unit": "ns",
-      "CYCLES": 3.4449066702229360e-05,
-      "CYCLES/ BYTE": 3.4449066702229360e-05,
-      "bytes_per_second": 1.2928707533268399e-03
+      "CYCLES": 3.8607535078367605e-05,
+      "CYCLES/ BYTE": 3.8607535078367605e-05,
+      "bytes_per_second": 1.0014256730727640e-03
     },
     {
       "name": "ascon_hash256/512_min",
@@ -769,12 +769,12 @@
       "aggregate_name": "min",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 2.3592048655885733e+03,
-      "cpu_time": 2.3591696374418561e+03,
+      "real_time": 2.3594257939212598e+03,
+      "cpu_time": 2.3593603740207163e+03,
       "time_unit": "ns",
-      "CYCLES": 1.1051438237077969e+04,
-      "CYCLES/ BYTE": 2.1584840306792909e+01,
-      "bytes_per_second": 2.1628303921594399e+08
+      "CYCLES": 1.1050106309493724e+04,
+      "CYCLES/ BYTE": 2.1582238885729929e+01,
+      "bytes_per_second": 2.1625377796874809e+08
     },
     {
       "name": "ascon_hash256/512_max",
@@ -787,12 +787,12 @@
       "aggregate_name": "max",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 2.3692611868128488e+03,
-      "cpu_time": 2.3672683806186142e+03,
+      "real_time": 2.3676723275060549e+03,
+      "cpu_time": 2.3675886951394286e+03,
       "time_unit": "ns",
-      "CYCLES": 1.1052669570051890e+04,
-      "CYCLES/ BYTE": 2.1587245254007598e+01,
-      "bytes_per_second": 2.1702551265248665e+08
+      "CYCLES": 1.1051675259034622e+04,
+      "CYCLES/ BYTE": 2.1585303240301997e+01,
+      "bytes_per_second": 2.1700796776860017e+08
     },
     {
       "name": "ascon_hash256/4096_mean",
@@ -805,12 +805,12 @@
       "aggregate_name": "mean",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 1.7752801002065960e+04,
-      "cpu_time": 1.7745130319553617e+04,
+      "real_time": 1.7702641419502943e+04,
+      "cpu_time": 1.7700754474017740e+04,
       "time_unit": "ns",
-      "CYCLES": 8.2760538701496320e+04,
-      "CYCLES/ BYTE": 2.0205209643920000e+01,
-      "bytes_per_second": 2.3083328630834037e+08
+      "CYCLES": 8.2751944283903664e+04,
+      "CYCLES/ BYTE": 2.0203111397437418e+01,
+      "bytes_per_second": 2.3140295127079391e+08
     },
     {
       "name": "ascon_hash256/4096_median",
@@ -823,12 +823,12 @@
       "aggregate_name": "median",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 1.7692237953502066e+04,
-      "cpu_time": 1.7682467283793980e+04,
+      "real_time": 1.7692111913973589e+04,
+      "cpu_time": 1.7689532192648931e+04,
       "time_unit": "ns",
-      "CYCLES": 8.2753048376870400e+04,
-      "CYCLES/ BYTE": 2.0203380951384375e+01,
-      "bytes_per_second": 2.3164191499530387e+08
+      "CYCLES": 8.2748756083650194e+04,
+      "CYCLES/ BYTE": 2.0202333028234911e+01,
+      "bytes_per_second": 2.3154936804544562e+08
     },
     {
       "name": "ascon_hash256/4096_stddev",
@@ -841,12 +841,12 @@
       "aggregate_name": "stddev",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 1.2002878665015290e+02,
-      "cpu_time": 1.1984940734862251e+02,
+      "real_time": 2.3399707323674626e+01,
+      "cpu_time": 2.4102773076925644e+01,
       "time_unit": "ns",
-      "CYCLES": 1.7366737108581955e+01,
-      "CYCLES/ BYTE": 4.2399260518998913e-03,
-      "bytes_per_second": 1.5459195369890518e+06
+      "CYCLES": 7.8547774396976839e+00,
+      "CYCLES/ BYTE": 1.9176702733636924e-03,
+      "bytes_per_second": 3.1462541435809026e+05
     },
     {
       "name": "ascon_hash256/4096_cv",
@@ -859,12 +859,12 @@
       "aggregate_name": "cv",
       "aggregate_unit": "percentage",
       "iterations": 10,
-      "real_time": 6.7611182390984207e-03,
-      "cpu_time": 6.7539322163533916e-03,
+      "real_time": 1.3218201040831818e-03,
+      "cpu_time": 1.3616805493972125e-03,
       "time_unit": "ns",
-      "CYCLES": 2.0984321007407801e-04,
-      "CYCLES/ BYTE": 2.0984321007407801e-04,
-      "bytes_per_second": 6.6971257122946199e-03
+      "CYCLES": 9.4919551530410877e-05,
+      "CYCLES/ BYTE": 9.4919551530410877e-05,
+      "bytes_per_second": 1.3596430496251848e-03
     },
     {
       "name": "ascon_hash256/4096_min",
@@ -877,12 +877,12 @@
       "aggregate_name": "min",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 1.7666296729754329e+04,
-      "cpu_time": 1.7666032462591891e+04,
+      "real_time": 1.7681287705832772e+04,
+      "cpu_time": 1.7678977566539841e+04,
       "time_unit": "ns",
-      "CYCLES": 8.2748382323104233e+04,
-      "CYCLES/ BYTE": 2.0202241778101619e+01,
-      "bytes_per_second": 2.2737335317034158e+08
+      "CYCLES": 8.2745887579214192e+04,
+      "CYCLES/ BYTE": 2.0201632709769090e+01,
+      "bytes_per_second": 2.3074839717835262e+08
     },
     {
       "name": "ascon_hash256/4096_max",
@@ -895,12 +895,12 @@
       "aggregate_name": "max",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 1.8014653183121492e+04,
-      "cpu_time": 1.8014424042607112e+04,
+      "real_time": 1.7751891381613063e+04,
+      "cpu_time": 1.7750935868187520e+04,
       "time_unit": "ns",
-      "CYCLES": 8.2804885746893226e+04,
-      "CYCLES/ BYTE": 2.0216036559300104e+01,
-      "bytes_per_second": 2.3185737989972261e+08
+      "CYCLES": 8.2768987325728769e+04,
+      "CYCLES/ BYTE": 2.0207272296320500e+01,
+      "bytes_per_second": 2.3168760662677142e+08
     },
     {
       "name": "ascon_hash256/16384_mean",
@@ -913,12 +913,12 @@
       "aggregate_name": "mean",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 7.0285071666253076e+04,
-      "cpu_time": 7.0278110367387970e+04,
+      "real_time": 7.0377256648914772e+04,
+      "cpu_time": 7.0371024937280483e+04,
       "time_unit": "ns",
-      "CYCLES": 3.2857922752893809e+05,
-      "CYCLES/ BYTE": 2.0054884492733038e+01,
-      "bytes_per_second": 2.3313349729795256e+08
+      "CYCLES": 3.2861432654290018e+05,
+      "CYCLES/ BYTE": 2.0057026766534435e+01,
+      "bytes_per_second": 2.3282517447383475e+08
     },
     {
       "name": "ascon_hash256/16384_median",
@@ -931,12 +931,12 @@
       "aggregate_name": "median",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 7.0167888524007256e+04,
-      "cpu_time": 7.0163389783593128e+04,
+      "real_time": 7.0302680633057695e+04,
+      "cpu_time": 7.0292971650777457e+04,
       "time_unit": "ns",
-      "CYCLES": 3.2857529391041771e+05,
-      "CYCLES/ BYTE": 2.0054644403712018e+01,
-      "bytes_per_second": 2.3351209388710901e+08
+      "CYCLES": 3.2857519167084794e+05,
+      "CYCLES/ BYTE": 2.0054638163503903e+01,
+      "bytes_per_second": 2.3308162420133710e+08
     },
     {
       "name": "ascon_hash256/16384_stddev",
@@ -949,12 +949,12 @@
       "aggregate_name": "stddev",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 2.4858004681269193e+02,
-      "cpu_time": 2.4752473910251450e+02,
+      "real_time": 2.2551192538526544e+02,
+      "cpu_time": 2.2231087783976403e+02,
       "time_unit": "ns",
-      "CYCLES": 1.7868390477466299e+01,
-      "CYCLES/ BYTE": 1.0906000047281677e-03,
-      "bytes_per_second": 8.1542582924778911e+05
+      "CYCLES": 1.1648377999326385e+02,
+      "CYCLES/ BYTE": 7.1096057124794831e-03,
+      "bytes_per_second": 7.3050530190790235e+05
     },
     {
       "name": "ascon_hash256/16384_cv",
@@ -967,12 +967,12 @@
       "aggregate_name": "cv",
       "aggregate_unit": "percentage",
       "iterations": 10,
-      "real_time": 3.5367403193820178e-03,
-      "cpu_time": 3.5220744810659636e-03,
+      "real_time": 3.2043295820730583e-03,
+      "cpu_time": 3.1591251944660865e-03,
       "time_unit": "ns",
-      "CYCLES": 5.4380767195310981e-05,
-      "CYCLES/ BYTE": 5.4380767195310981e-05,
-      "bytes_per_second": 3.4976776769476722e-03
+      "CYCLES": 3.5446957294497943e-04,
+      "CYCLES/ BYTE": 3.5446957294497943e-04,
+      "bytes_per_second": 3.1375700826114816e-03
     },
     {
       "name": "ascon_hash256/16384_min",
@@ -985,12 +985,12 @@
       "aggregate_name": "min",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 7.0136474582500683e+04,
-      "cpu_time": 7.0131834927025920e+04,
+      "real_time": 7.0238941796832514e+04,
+      "cpu_time": 7.0231087305569410e+04,
       "time_unit": "ns",
-      "CYCLES": 3.2856094765978865e+05,
-      "CYCLES/ BYTE": 2.0053768778063272e+01,
-      "bytes_per_second": 2.3097236567975894e+08
+      "CYCLES": 3.2856278173607629e+05,
+      "CYCLES/ BYTE": 2.0053880721196062e+01,
+      "bytes_per_second": 2.3083211329315358e+08
     },
     {
       "name": "ascon_hash256/16384_max",
@@ -1003,12 +1003,12 @@
       "aggregate_name": "max",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 7.0938428287196555e+04,
-      "cpu_time": 7.0934892803220733e+04,
+      "real_time": 7.0993414451000150e+04,
+      "cpu_time": 7.0977992473657883e+04,
       "time_unit": "ns",
-      "CYCLES": 3.2862146099647711e+05,
-      "CYCLES/ BYTE": 2.0057462219023261e+01,
-      "bytes_per_second": 2.3361715855642444e+08
+      "CYCLES": 3.2894097942799801e+05,
+      "CYCLES/ BYTE": 2.0076964076415894e+01,
+      "bytes_per_second": 2.3328700478058425e+08
     },
     {
       "name": "ascon_permutation<1>_mean",
@@ -1021,12 +1021,12 @@
       "aggregate_name": "mean",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 6.5266810033649465e+00,
-      "cpu_time": 6.5260558258494381e+00,
+      "real_time": 6.5262973329886149e+00,
+      "cpu_time": 6.5259251317179103e+00,
       "time_unit": "ns",
-      "CYCLES": 3.0533881500455863e+01,
-      "CYCLES/ BYTE": 7.6334703751139654e-01,
-      "bytes_per_second": 6.1292978327344217e+09
+      "CYCLES": 3.0515574840849325e+01,
+      "CYCLES/ BYTE": 7.6288937102123322e-01,
+      "bytes_per_second": 6.1294041663113022e+09
     },
     {
       "name": "ascon_permutation<1>_median",
@@ -1039,12 +1039,12 @@
       "aggregate_name": "median",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 6.5217757316558815e+00,
-      "cpu_time": 6.5213878789396631e+00,
+      "real_time": 6.5268480541904257e+00,
+      "cpu_time": 6.5265543678268259e+00,
       "time_unit": "ns",
-      "CYCLES": 3.0539846007737133e+01,
-      "CYCLES/ BYTE": 7.6349615019342831e-01,
-      "bytes_per_second": 6.1336637018866587e+09
+      "CYCLES": 3.0519105992006203e+01,
+      "CYCLES/ BYTE": 7.6297764980015503e-01,
+      "bytes_per_second": 6.1288082226032181e+09
     },
     {
       "name": "ascon_permutation<1>_stddev",
@@ -1057,12 +1057,12 @@
       "aggregate_name": "stddev",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 1.2836177105642856e-02,
-      "cpu_time": 1.2877873295303674e-02,
+      "real_time": 6.3903199339217483e-03,
+      "cpu_time": 6.2196806496846013e-03,
       "time_unit": "ns",
-      "CYCLES": 2.8788381544358178e-02,
-      "CYCLES/ BYTE": 7.1970953848211861e-04,
-      "bytes_per_second": 1.2064603584688557e+07
+      "CYCLES": 1.7150710957291655e-02,
+      "CYCLES/ BYTE": 4.2876777369062018e-04,
+      "bytes_per_second": 5.8401368161751525e+06
     },
     {
       "name": "ascon_permutation<1>_cv",
@@ -1075,12 +1075,12 @@
       "aggregate_name": "cv",
       "aggregate_unit": "percentage",
       "iterations": 10,
-      "real_time": 1.9667235305394788e-03,
-      "cpu_time": 1.9733011238265768e-03,
+      "real_time": 9.7916469444633792e-04,
+      "cpu_time": 9.5307263325089780e-04,
       "time_unit": "ns",
-      "CYCLES": 9.4283399717551058e-04,
-      "CYCLES/ BYTE": 9.4283399700935313e-04,
-      "bytes_per_second": 1.9683500319165039e-03
+      "CYCLES": 5.6203139042077140e-04,
+      "CYCLES/ BYTE": 5.6203139010398725e-04,
+      "bytes_per_second": 9.5280661181945984e-04
     },
     {
       "name": "ascon_permutation<1>_min",
@@ -1093,12 +1093,12 @@
       "aggregate_name": "min",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 6.5144465848214139e+00,
-      "cpu_time": 6.5141916784072880e+00,
+      "real_time": 6.5168667675828118e+00,
+      "cpu_time": 6.5167756042383385e+00,
       "time_unit": "ns",
-      "CYCLES": 3.0463268498487459e+01,
-      "CYCLES/ BYTE": 7.6158171246218642e-01,
-      "bytes_per_second": 6.1040166717816420e+09
+      "CYCLES": 3.0486403011636746e+01,
+      "CYCLES/ BYTE": 7.6216007529091867e-01,
+      "bytes_per_second": 6.1181977730455770e+09
     },
     {
       "name": "ascon_permutation<1>_max",
@@ -1111,12 +1111,12 @@
       "aggregate_name": "max",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 6.5539582256606321e+00,
-      "cpu_time": 6.5530620492759537e+00,
+      "real_time": 6.5383947527070223e+00,
+      "cpu_time": 6.5378729952510835e+00,
       "time_unit": "ns",
-      "CYCLES": 3.0567186882197120e+01,
-      "CYCLES/ BYTE": 7.6417967205492798e-01,
-      "bytes_per_second": 6.1404395164773474e+09
+      "CYCLES": 3.0541753321817627e+01,
+      "CYCLES/ BYTE": 7.6354383304544071e-01,
+      "bytes_per_second": 6.1380048093086176e+09
     },
     {
       "name": "ascon_permutation<8>_mean",
@@ -1129,12 +1129,12 @@
       "aggregate_name": "mean",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 2.6812514501364156e+01,
-      "cpu_time": 2.6801580352696782e+01,
+      "real_time": 2.6758833293593511e+01,
+      "cpu_time": 2.6757173246064895e+01,
       "time_unit": "ns",
-      "CYCLES": 1.2548621558187148e+02,
-      "CYCLES/ BYTE": 3.1371553895467876e+00,
-      "bytes_per_second": 1.4924498475817456e+09
+      "CYCLES": 1.2510760025496938e+02,
+      "CYCLES/ BYTE": 3.1276900063742357e+00,
+      "bytes_per_second": 1.4949282029981132e+09
     },
     {
       "name": "ascon_permutation<8>_median",
@@ -1147,12 +1147,12 @@
       "aggregate_name": "median",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 2.6796803239938278e+01,
-      "cpu_time": 2.6792335776481231e+01,
+      "real_time": 2.6749190727926663e+01,
+      "cpu_time": 2.6746670120171910e+01,
       "time_unit": "ns",
-      "CYCLES": 1.2548880842665943e+02,
-      "CYCLES/ BYTE": 3.1372202106664862e+00,
-      "bytes_per_second": 1.4929642691050150e+09
+      "CYCLES": 1.2510736428238738e+02,
+      "CYCLES/ BYTE": 3.1276841070596850e+00,
+      "bytes_per_second": 1.4955132691146379e+09
     },
     {
       "name": "ascon_permutation<8>_stddev",
@@ -1165,12 +1165,12 @@
       "aggregate_name": "stddev",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 3.0266663212956586e-02,
-      "cpu_time": 1.7023649946272760e-02,
+      "real_time": 3.2349446721529188e-02,
+      "cpu_time": 3.2481947770551120e-02,
       "time_unit": "ns",
-      "CYCLES": 1.0958326548025395e-02,
-      "CYCLES/ BYTE": 2.7395815361434372e-04,
-      "bytes_per_second": 9.4720085255216889e+05
+      "CYCLES": 9.1269074640614976e-03,
+      "CYCLES/ BYTE": 2.2817267777837597e-04,
+      "bytes_per_second": 1.8101704818816253e+06
     },
     {
       "name": "ascon_permutation<8>_cv",
@@ -1183,12 +1183,12 @@
       "aggregate_name": "cv",
       "aggregate_unit": "percentage",
       "iterations": 10,
-      "real_time": 1.1288259894989220e-03,
-      "cpu_time": 6.3517336374382244e-04,
+      "real_time": 1.2089259037042605e-03,
+      "cpu_time": 1.2139528892622525e-03,
       "time_unit": "ns",
-      "CYCLES": 8.7326934653438572e-05,
-      "CYCLES/ BYTE": 8.7326931438331260e-05,
-      "bytes_per_second": 6.3466176373493718e-04
+      "CYCLES": 7.2952462084324636e-05,
+      "CYCLES/ BYTE": 7.2952459263341254e-05,
+      "bytes_per_second": 1.2108745277875461e-03
     },
     {
       "name": "ascon_permutation<8>_min",
@@ -1201,12 +1201,12 @@
       "aggregate_name": "min",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 2.6789465566770083e+01,
-      "cpu_time": 2.6789057162312378e+01,
+      "real_time": 2.6735011487194505e+01,
+      "cpu_time": 2.6733163302868650e+01,
       "time_unit": "ns",
-      "CYCLES": 1.2546517777412882e+02,
-      "CYCLES/ BYTE": 3.1366294443532201e+00,
-      "bytes_per_second": 1.4902991284594300e+09
+      "CYCLES": 1.2509285612653257e+02,
+      "CYCLES/ BYTE": 3.1273214031633145e+00,
+      "bytes_per_second": 1.4900352802517030e+09
     },
     {
       "name": "ascon_permutation<8>_max",
@@ -1219,12 +1219,12 @@
       "aggregate_name": "max",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 2.6883521017959474e+01,
-      "cpu_time": 2.6840249206445741e+01,
+      "real_time": 2.6846482402074400e+01,
+      "cpu_time": 2.6845001947365326e+01,
       "time_unit": "ns",
-      "CYCLES": 1.2549783530894166e+02,
-      "CYCLES/ BYTE": 3.1374458827235414e+00,
-      "bytes_per_second": 1.4931469875047770e+09
+      "CYCLES": 1.2512129204334479e+02,
+      "CYCLES/ BYTE": 3.1280323010836200e+00,
+      "bytes_per_second": 1.4962688682527790e+09
     },
     {
       "name": "ascon_permutation<12>_mean",
@@ -1237,12 +1237,12 @@
       "aggregate_name": "mean",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 3.8003528469261973e+01,
-      "cpu_time": 3.7995299275384959e+01,
+      "real_time": 3.8047380970893144e+01,
+      "cpu_time": 3.8045856585428552e+01,
       "time_unit": "ns",
-      "CYCLES": 1.7792239086308891e+02,
-      "CYCLES/ BYTE": 4.4480597715772223e+00,
-      "bytes_per_second": 1.0527620267661904e+09
+      "CYCLES": 1.7791133078675301e+02,
+      "CYCLES/ BYTE": 4.4477832696688253e+00,
+      "bytes_per_second": 1.0513643859396050e+09
     },
     {
       "name": "ascon_permutation<12>_median",
@@ -1255,12 +1255,12 @@
       "aggregate_name": "median",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 3.7996177474534669e+01,
-      "cpu_time": 3.7989471154564328e+01,
+      "real_time": 3.8029492222762975e+01,
+      "cpu_time": 3.8025962256002657e+01,
       "time_unit": "ns",
-      "CYCLES": 1.7792045119744097e+02,
-      "CYCLES/ BYTE": 4.4480112799360239e+00,
-      "bytes_per_second": 1.0529233262957029e+09
+      "CYCLES": 1.7791241656441184e+02,
+      "CYCLES/ BYTE": 4.4478104141102959e+00,
+      "bytes_per_second": 1.0519129039346846e+09
     },
     {
       "name": "ascon_permutation<12>_stddev",
@@ -1273,12 +1273,12 @@
       "aggregate_name": "stddev",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 1.9670634974981366e-02,
-      "cpu_time": 1.8217693721471938e-02,
+      "real_time": 4.7578451564838788e-02,
+      "cpu_time": 4.8598016657493567e-02,
       "time_unit": "ns",
-      "CYCLES": 1.0825279040496266e-02,
-      "CYCLES/ BYTE": 2.7063198534749768e-04,
-      "bytes_per_second": 5.0456094018903648e+05
+      "CYCLES": 4.7908131950828619e-03,
+      "CYCLES/ BYTE": 1.1977030614689372e-04,
+      "bytes_per_second": 1.3408534833141002e+06
     },
     {
       "name": "ascon_permutation<12>_cv",
@@ -1291,12 +1291,12 @@
       "aggregate_name": "cv",
       "aggregate_unit": "percentage",
       "iterations": 10,
-      "real_time": 5.1760022732866436e-04,
-      "cpu_time": 4.7947230496679270e-04,
+      "real_time": 1.2505053002527839e-03,
+      "cpu_time": 1.2773537257170459e-03,
       "time_unit": "ns",
-      "CYCLES": 6.0842702191576930e-05,
-      "CYCLES/ BYTE": 6.0842704290265239e-05,
-      "bytes_per_second": 4.7927349900614836e-04
+      "CYCLES": 2.6928094876796785e-05,
+      "CYCLES/ BYTE": 2.6928089541514828e-05,
+      "bytes_per_second": 1.2753461133418350e-03
     },
     {
       "name": "ascon_permutation<12>_min",
@@ -1309,12 +1309,12 @@
       "aggregate_name": "min",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 3.7981162725859477e+01,
-      "cpu_time": 3.7975972704401265e+01,
+      "real_time": 3.8004672447627300e+01,
+      "cpu_time": 3.8003230817429866e+01,
       "time_unit": "ns",
-      "CYCLES": 1.7791097105477178e+02,
-      "CYCLES/ BYTE": 4.4477742763692945e+00,
-      "bytes_per_second": 1.0517209725767082e+09
+      "CYCLES": 1.7790098061291980e+02,
+      "CYCLES/ BYTE": 4.4475245153229945e+00,
+      "bytes_per_second": 1.0482331575650944e+09
     },
     {
       "name": "ascon_permutation<12>_max",
@@ -1327,12 +1327,12 @@
       "aggregate_name": "max",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 3.8033266307134390e+01,
-      "cpu_time": 3.8032901352152663e+01,
+      "real_time": 3.8159280659223015e+01,
+      "cpu_time": 3.8159449270727762e+01,
       "time_unit": "ns",
-      "CYCLES": 1.7794955908049783e+02,
-      "CYCLES/ BYTE": 4.4487389770124466e+00,
-      "bytes_per_second": 1.0532975761109118e+09
+      "CYCLES": 1.7791748443333421e+02,
+      "CYCLES/ BYTE": 4.4479371108333554e+00,
+      "bytes_per_second": 1.0525420902281375e+09
     },
     {
       "name": "ascon_permutation<16>_mean",
@@ -1345,12 +1345,12 @@
       "aggregate_name": "mean",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 4.9550907388505912e+01,
-      "cpu_time": 4.9542412617175806e+01,
+      "real_time": 4.9592021838604595e+01,
+      "cpu_time": 4.9588024068453443e+01,
       "time_unit": "ns",
-      "CYCLES": 2.3173970598368152e+02,
-      "CYCLES/ BYTE": 5.7934926495920394e+00,
-      "bytes_per_second": 8.0739371306653488e+08
+      "CYCLES": 2.3176266979320599e+02,
+      "CYCLES/ BYTE": 5.7940667448301504e+00,
+      "bytes_per_second": 8.0665229929090488e+08
     },
     {
       "name": "ascon_permutation<16>_median",
@@ -1363,12 +1363,12 @@
       "aggregate_name": "median",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 4.9484480648248550e+01,
-      "cpu_time": 4.9473209808883283e+01,
+      "real_time": 4.9537877197557165e+01,
+      "cpu_time": 4.9533995097822341e+01,
       "time_unit": "ns",
-      "CYCLES": 2.3173848278844838e+02,
-      "CYCLES/ BYTE": 5.7934620697112100e+00,
-      "bytes_per_second": 8.0851839283268297e+08
+      "CYCLES": 2.3174680482430915e+02,
+      "CYCLES/ BYTE": 5.7936701206077288e+00,
+      "bytes_per_second": 8.0752622393845892e+08
     },
     {
       "name": "ascon_permutation<16>_stddev",
@@ -1381,12 +1381,12 @@
       "aggregate_name": "stddev",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 1.2458196885935950e-01,
-      "cpu_time": 1.2613068371741099e-01,
+      "real_time": 1.4305293733118732e-01,
+      "cpu_time": 1.4209317647538833e-01,
       "time_unit": "ns",
-      "CYCLES": 5.8072151889045380e-03,
-      "CYCLES/ BYTE": 1.4518032425493092e-04,
-      "bytes_per_second": 2.0479443463271491e+06
+      "CYCLES": 5.8169800574431732e-02,
+      "CYCLES/ BYTE": 1.4542450114291990e-03,
+      "bytes_per_second": 2.2960874867420304e+06
     },
     {
       "name": "ascon_permutation<16>_cv",
@@ -1399,12 +1399,12 @@
       "aggregate_name": "cv",
       "aggregate_unit": "percentage",
       "iterations": 10,
-      "real_time": 2.5142217453773246e-03,
-      "cpu_time": 2.5459132297824929e-03,
+      "real_time": 2.8845957883457105e-03,
+      "cpu_time": 2.8654736530585850e-03,
       "time_unit": "ns",
-      "CYCLES": 2.5059215313380378e-05,
-      "CYCLES/ BYTE": 2.5059205739245063e-05,
-      "bytes_per_second": 2.5364878536754030e-03
+      "CYCLES": 2.5098865415355582e-04,
+      "CYCLES/ BYTE": 2.5098865364759092e-04,
+      "bytes_per_second": 2.8464401437402797e-03
     },
     {
       "name": "ascon_permutation<16>_min",
@@ -1417,12 +1417,12 @@
       "aggregate_name": "min",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 4.9469433549338703e+01,
-      "cpu_time": 4.9464538928151697e+01,
+      "real_time": 4.9511026006436381e+01,
+      "cpu_time": 4.9508334940846581e+01,
       "time_unit": "ns",
-      "CYCLES": 2.3173240479751749e+02,
-      "CYCLES/ BYTE": 5.7933101199379378e+00,
-      "bytes_per_second": 8.0253664291678607e+08
+      "CYCLES": 2.3173034660342799e+02,
+      "CYCLES/ BYTE": 5.7932586650856992e+00,
+      "bytes_per_second": 8.0026336157305121e+08
     },
     {
       "name": "ascon_permutation<16>_max",
@@ -1435,12 +1435,12 @@
       "aggregate_name": "max",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 4.9848229732002935e+01,
-      "cpu_time": 4.9841960928564795e+01,
+      "real_time": 4.9989530931481532e+01,
+      "cpu_time": 4.9983545318597763e+01,
       "time_unit": "ns",
-      "CYCLES": 2.3175452916506333e+02,
-      "CYCLES/ BYTE": 5.7938632291265835e+00,
-      "bytes_per_second": 8.0866012029548800e+08
+      "CYCLES": 2.3192581394731485e+02,
+      "CYCLES/ BYTE": 5.7981453486828718e+00,
+      "bytes_per_second": 8.0794476420571792e+08
     },
     {
       "name": "ascon_xof128/32/64_mean",
@@ -1453,12 +1453,12 @@
       "aggregate_name": "mean",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 4.4814578108722242e+02,
-      "cpu_time": 4.4806971167543668e+02,
+      "real_time": 4.4823400176606174e+02,
+      "cpu_time": 4.4819333232381058e+02,
       "time_unit": "ns",
-      "CYCLES": 2.0973485490939242e+03,
-      "CYCLES/ BYTE": 2.1847380719728378e+01,
-      "bytes_per_second": 2.1425246326733494e+08
+      "CYCLES": 2.0973247830065279e+03,
+      "CYCLES/ BYTE": 2.1847133156317994e+01,
+      "bytes_per_second": 2.1419331402211428e+08
     },
     {
       "name": "ascon_xof128/32/64_median",
@@ -1471,12 +1471,12 @@
       "aggregate_name": "median",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 4.4800249366865529e+02,
-      "cpu_time": 4.4797725126524574e+02,
+      "real_time": 4.4823707060580119e+02,
+      "cpu_time": 4.4818410293255084e+02,
       "time_unit": "ns",
-      "CYCLES": 2.0974077006059715e+03,
-      "CYCLES/ BYTE": 2.1847996881312199e+01,
-      "bytes_per_second": 2.1429659685414988e+08
+      "CYCLES": 2.0974529525288517e+03,
+      "CYCLES/ BYTE": 2.1848468255508873e+01,
+      "bytes_per_second": 2.1419769160025615e+08
     },
     {
       "name": "ascon_xof128/32/64_stddev",
@@ -1489,12 +1489,12 @@
       "aggregate_name": "stddev",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 3.1679388419850030e-01,
-      "cpu_time": 3.0286971853611544e-01,
+      "real_time": 1.9402200025298783e-01,
+      "cpu_time": 1.8784440862093718e-01,
       "time_unit": "ns",
-      "CYCLES": 3.2669409395189869e-01,
-      "CYCLES/ BYTE": 3.4030634683547456e-03,
-      "bytes_per_second": 1.4469716197785098e+05
+      "CYCLES": 6.7509460600585358e-01,
+      "CYCLES/ BYTE": 7.0322355011821873e-03,
+      "bytes_per_second": 8.9749537318522649e+04
     },
     {
       "name": "ascon_xof128/32/64_cv",
@@ -1507,12 +1507,12 @@
       "aggregate_name": "cv",
       "aggregate_unit": "percentage",
       "iterations": 10,
-      "real_time": 7.0689917782990996e-04,
-      "cpu_time": 6.7594329775966158e-04,
+      "real_time": 4.3285872889725586e-04,
+      "cpu_time": 4.1911468795618627e-04,
       "time_unit": "ns",
-      "CYCLES": 1.5576528474155326e-04,
-      "CYCLES/ BYTE": 1.5576528426960350e-04,
-      "bytes_per_second": 6.7535821885652777e-04
+      "CYCLES": 3.2188367365692464e-04,
+      "CYCLES/ BYTE": 3.2188367466184128e-04,
+      "bytes_per_second": 4.1901185257937841e-04
     },
     {
       "name": "ascon_xof128/32/64_min",
@@ -1525,12 +1525,12 @@
       "aggregate_name": "min",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 4.4784804299779955e+02,
-      "cpu_time": 4.4781110211242355e+02,
+      "real_time": 4.4795646921723966e+02,
+      "cpu_time": 4.4792371237651651e+02,
       "time_unit": "ns",
-      "CYCLES": 2.0967185418273893e+03,
-      "CYCLES/ BYTE": 2.1840818144035307e+01,
-      "bytes_per_second": 2.1395351963015804e+08
+      "CYCLES": 2.0961521628465935e+03,
+      "CYCLES/ BYTE": 2.1834918362985348e+01,
+      "bytes_per_second": 2.1400612139502805e+08
     },
     {
       "name": "ascon_xof128/32/64_max",
@@ -1543,12 +1543,12 @@
       "aggregate_name": "max",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 4.4870196960574151e+02,
-      "cpu_time": 4.4869558662061962e+02,
+      "real_time": 4.4860283911794647e+02,
+      "cpu_time": 4.4858529921579310e+02,
       "time_unit": "ns",
-      "CYCLES": 2.0976529509492912e+03,
-      "CYCLES/ BYTE": 2.1850551572388451e+01,
-      "bytes_per_second": 2.1437610534251356e+08
+      "CYCLES": 2.0981403965487243e+03,
+      "CYCLES/ BYTE": 2.1855629130715879e+01,
+      "bytes_per_second": 2.1432221011622655e+08
     },
     {
       "name": "ascon_xof128/256/64_mean",
@@ -1561,12 +1561,12 @@
       "aggregate_name": "mean",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 1.4107904416551241e+03,
-      "cpu_time": 1.4104192898204981e+03,
+      "real_time": 1.4126246415735925e+03,
+      "cpu_time": 1.4124297893761827e+03,
       "time_unit": "ns",
-      "CYCLES": 6.6033994664089323e+03,
-      "CYCLES/ BYTE": 2.0635623332527913e+01,
-      "bytes_per_second": 2.2688298672105026e+08
+      "CYCLES": 6.6035215375941370e+03,
+      "CYCLES/ BYTE": 2.0636004804981678e+01,
+      "bytes_per_second": 2.2656052007473800e+08
     },
     {
       "name": "ascon_xof128/256/64_median",
@@ -1579,12 +1579,12 @@
       "aggregate_name": "median",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 1.4103642614644207e+03,
-      "cpu_time": 1.4101519224380249e+03,
+      "real_time": 1.4118685614680767e+03,
+      "cpu_time": 1.4117168257420117e+03,
       "time_unit": "ns",
-      "CYCLES": 6.6033236431181849e+03,
-      "CYCLES/ BYTE": 2.0635386384744329e+01,
-      "bytes_per_second": 2.2692590422155154e+08
+      "CYCLES": 6.6034401957230875e+03,
+      "CYCLES/ BYTE": 2.0635750611634649e+01,
+      "bytes_per_second": 2.2667435527096993e+08
     },
     {
       "name": "ascon_xof128/256/64_stddev",
@@ -1597,12 +1597,12 @@
       "aggregate_name": "stddev",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 1.1516103339538504e+00,
-      "cpu_time": 9.8730836360343210e-01,
+      "real_time": 2.6054033940943229e+00,
+      "cpu_time": 2.3969114327289969e+00,
       "time_unit": "ns",
-      "CYCLES": 4.9431871933234089e-01,
-      "CYCLES/ BYTE": 1.5447460109972652e-03,
-      "bytes_per_second": 1.5868450171470572e+05
+      "CYCLES": 8.7832739806446991e-01,
+      "CYCLES/ BYTE": 2.7447731405815961e-03,
+      "bytes_per_second": 3.8366524902141799e+05
     },
     {
       "name": "ascon_xof128/256/64_cv",
@@ -1615,12 +1615,12 @@
       "aggregate_name": "cv",
       "aggregate_unit": "percentage",
       "iterations": 10,
-      "real_time": 8.1628730954740069e-04,
-      "cpu_time": 7.0001053639098018e-04,
+      "real_time": 1.8443706257254831e-03,
+      "cpu_time": 1.6970128007478674e-03,
       "time_unit": "ns",
-      "CYCLES": 7.4858218383865523e-05,
-      "CYCLES/ BYTE": 7.4858219017900150e-05,
-      "bytes_per_second": 6.9941119873305566e-04
+      "CYCLES": 1.3300893970953431e-04,
+      "CYCLES/ BYTE": 1.3300894075770852e-04,
+      "bytes_per_second": 1.6934338290486540e-03
     },
     {
       "name": "ascon_xof128/256/64_min",
@@ -1633,12 +1633,12 @@
       "aggregate_name": "min",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 1.4096075891225000e+03,
-      "cpu_time": 1.4095650125343313e+03,
+      "real_time": 1.4101773992171945e+03,
+      "cpu_time": 1.4101793725584937e+03,
       "time_unit": "ns",
-      "CYCLES": 6.6026232645705595e+03,
-      "CYCLES/ BYTE": 2.0633197701783001e+01,
-      "bytes_per_second": 2.2652987276531455e+08
+      "CYCLES": 6.6022622931013648e+03,
+      "CYCLES/ BYTE": 2.0632069665941767e+01,
+      "bytes_per_second": 2.2584578335196871e+08
     },
     {
       "name": "ascon_xof128/256/64_max",
@@ -1651,12 +1651,12 @@
       "aggregate_name": "max",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 1.4126609985356395e+03,
-      "cpu_time": 1.4126172239169564e+03,
+      "real_time": 1.4179529821473004e+03,
+      "cpu_time": 1.4168960573476677e+03,
       "time_unit": "ns",
-      "CYCLES": 6.6044722985693716e+03,
-      "CYCLES/ BYTE": 2.0638975933029286e+01,
-      "bytes_per_second": 2.2702039079748091e+08
+      "CYCLES": 6.6054059240465549e+03,
+      "CYCLES/ BYTE": 2.0641893512645485e+01,
+      "bytes_per_second": 2.2692148688816994e+08
     },
     {
       "name": "ascon_xof128/2048/64_mean",
@@ -1669,12 +1669,12 @@
       "aggregate_name": "mean",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 9.1228308333215500e+03,
-      "cpu_time": 9.1218257075779220e+03,
+      "real_time": 9.1555171940919336e+03,
+      "cpu_time": 9.1541278629689423e+03,
       "time_unit": "ns",
-      "CYCLES": 4.2697493093778532e+04,
-      "CYCLES/ BYTE": 2.0216616048190591e+01,
-      "bytes_per_second": 2.3153274461918169e+08
+      "CYCLES": 4.2702206179445355e+04,
+      "CYCLES/ BYTE": 2.0218847622843441e+01,
+      "bytes_per_second": 2.3072028888148856e+08
     },
     {
       "name": "ascon_xof128/2048/64_median",
@@ -1687,12 +1687,12 @@
       "aggregate_name": "median",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 9.1205782576748861e+03,
-      "cpu_time": 9.1175891156906200e+03,
+      "real_time": 9.1378399673296699e+03,
+      "cpu_time": 9.1356447960848636e+03,
       "time_unit": "ns",
-      "CYCLES": 4.2697241130820403e+04,
-      "CYCLES/ BYTE": 2.0216496747547538e+01,
-      "bytes_per_second": 2.3164018215718251e+08
+      "CYCLES": 4.2697108613376840e+04,
+      "CYCLES/ BYTE": 2.0216434002545853e+01,
+      "bytes_per_second": 2.3118237476809612e+08
     },
     {
       "name": "ascon_xof128/2048/64_stddev",
@@ -1705,12 +1705,12 @@
       "aggregate_name": "stddev",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 7.4829298976683898e+00,
-      "cpu_time": 7.6671053664548436e+00,
+      "real_time": 4.5104452996483289e+01,
+      "cpu_time": 4.3681857201597396e+01,
       "time_unit": "ns",
-      "CYCLES": 1.3173827521736767e+00,
-      "CYCLES/ BYTE": 6.2376075174942899e-04,
-      "bytes_per_second": 1.9448358687674504e+05
+      "CYCLES": 1.4163099204399892e+01,
+      "CYCLES/ BYTE": 6.7060128892170523e-03,
+      "bytes_per_second": 1.0944073231764406e+06
     },
     {
       "name": "ascon_xof128/2048/64_cv",
@@ -1723,12 +1723,12 @@
       "aggregate_name": "cv",
       "aggregate_unit": "percentage",
       "iterations": 10,
-      "real_time": 8.2024209747884975e-04,
-      "cpu_time": 8.4052311590271064e-04,
+      "real_time": 4.9264778865348259e-03,
+      "cpu_time": 4.7718207409253007e-03,
       "time_unit": "ns",
-      "CYCLES": 3.0853866508749035e-05,
-      "CYCLES/ BYTE": 3.0853865467027862e-05,
-      "bytes_per_second": 8.3998307538152316e-04
+      "CYCLES": 3.3167136950449364e-04,
+      "CYCLES/ BYTE": 3.3167136991727147e-04,
+      "bytes_per_second": 4.7434377292176165e-03
     },
     {
       "name": "ascon_xof128/2048/64_min",
@@ -1741,12 +1741,12 @@
       "aggregate_name": "min",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 9.1156631665736386e+03,
-      "cpu_time": 9.1149800443460699e+03,
+      "real_time": 9.1224770635392269e+03,
+      "cpu_time": 9.1219884502445984e+03,
       "time_unit": "ns",
-      "CYCLES": 4.2695734120255642e+04,
-      "CYCLES/ BYTE": 2.0215783200878619e+01,
-      "bytes_per_second": 2.3116937846429026e+08
+      "CYCLES": 4.2694434257748777e+04,
+      "CYCLES/ BYTE": 2.0215167735676506e+01,
+      "bytes_per_second": 2.2846413659962255e+08
     },
     {
       "name": "ascon_xof128/2048/64_max",
@@ -1759,12 +1759,12 @@
       "aggregate_name": "max",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 9.1362973126141023e+03,
-      "cpu_time": 9.1361581452979935e+03,
+      "real_time": 9.2507321369487854e+03,
+      "cpu_time": 9.2443393148449595e+03,
       "time_unit": "ns",
-      "CYCLES": 4.2699796856658410e+04,
-      "CYCLES/ BYTE": 2.0217706845008713e+01,
-      "bytes_per_second": 2.3170648643493763e+08
+      "CYCLES": 4.2741110668841764e+04,
+      "CYCLES/ BYTE": 2.0237268309110682e+01,
+      "bytes_per_second": 2.3152846679425126e+08
     },
     {
       "name": "ascon_xof128/16384/64_mean",
@@ -1777,12 +1777,12 @@
       "aggregate_name": "mean",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 7.0821938131091592e+04,
-      "cpu_time": 7.0812367323232145e+04,
+      "real_time": 7.0853195643739979e+04,
+      "cpu_time": 7.0848188601823480e+04,
       "time_unit": "ns",
-      "CYCLES": 3.3120493747474754e+05,
-      "CYCLES/ BYTE": 2.0136486957365488e+01,
-      "bytes_per_second": 2.3227713147621441e+08
+      "CYCLES": 3.3118744989868288e+05,
+      "CYCLES/ BYTE": 2.0135423753567785e+01,
+      "bytes_per_second": 2.3215848867666808e+08
     },
     {
       "name": "ascon_xof128/16384/64_median",
@@ -1795,12 +1795,12 @@
       "aggregate_name": "median",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 7.0746632322558507e+04,
-      "cpu_time": 7.0725951010100631e+04,
+      "real_time": 7.0835832574194486e+04,
+      "cpu_time": 7.0830247720364147e+04,
       "time_unit": "ns",
-      "CYCLES": 3.3120889696969697e+05,
-      "CYCLES/ BYTE": 2.0136727685414456e+01,
-      "bytes_per_second": 2.3255962121725607e+08
+      "CYCLES": 3.3117932725430594e+05,
+      "CYCLES/ BYTE": 2.0134929915753037e+01,
+      "bytes_per_second": 2.3221717730219623e+08
     },
     {
       "name": "ascon_xof128/16384/64_stddev",
@@ -1813,12 +1813,12 @@
       "aggregate_name": "stddev",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 1.7623068429838827e+02,
-      "cpu_time": 1.7833775627586857e+02,
+      "real_time": 5.4875638906096356e+01,
+      "cpu_time": 5.3369256873020262e+01,
       "time_unit": "ns",
-      "CYCLES": 1.4133918159908747e+01,
-      "CYCLES/ BYTE": 8.5930923960740536e-04,
-      "bytes_per_second": 5.8288259976697806e+05
+      "CYCLES": 2.2991375471748082e+01,
+      "CYCLES/ BYTE": 1.3978219430610473e-03,
+      "bytes_per_second": 1.7470068546580526e+05
     },
     {
       "name": "ascon_xof128/16384/64_cv",
@@ -1831,12 +1831,12 @@
       "aggregate_name": "cv",
       "aggregate_unit": "percentage",
       "iterations": 10,
-      "real_time": 2.4883629133699335e-03,
-      "cpu_time": 2.5184549396833887e-03,
+      "real_time": 7.7449772600263406e-04,
+      "cpu_time": 7.5329035118967976e-04,
       "time_unit": "ns",
-      "CYCLES": 4.2674237490757141e-05,
-      "CYCLES/ BYTE": 4.2674238134328031e-05,
-      "bytes_per_second": 2.5094274070913704e-03
+      "CYCLES": 6.9421034760772546e-05,
+      "CYCLES/ BYTE": 6.9421034300972583e-05,
+      "bytes_per_second": 7.5250612829890753e-04
     },
     {
       "name": "ascon_xof128/16384/64_min",
@@ -1849,12 +1849,12 @@
       "aggregate_name": "min",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 7.0700268685932955e+04,
-      "cpu_time": 7.0697314646465151e+04,
+      "real_time": 7.0808127659008867e+04,
+      "cpu_time": 7.0803884498479645e+04,
       "time_unit": "ns",
-      "CYCLES": 3.3118171010101010e+05,
-      "CYCLES/ BYTE": 2.0135074787269584e+01,
-      "bytes_per_second": 2.3098165380093479e+08
+      "CYCLES": 3.3117259422492399e+05,
+      "CYCLES/ BYTE": 2.0134520563285751e+01,
+      "bytes_per_second": 2.3174220211432609e+08
     },
     {
       "name": "ascon_xof128/16384/64_max",
@@ -1867,12 +1867,12 @@
       "aggregate_name": "max",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 7.1210179797190271e+04,
-      "cpu_time": 7.1209118686868780e+04,
+      "real_time": 7.0986820668320142e+04,
+      "cpu_time": 7.0975419452886941e+04,
       "time_unit": "ns",
-      "CYCLES": 3.3122249545454548e+05,
-      "CYCLES/ BYTE": 2.0137554441545809e+01,
-      "bytes_per_second": 2.3265381552681643e+08
+      "CYCLES": 3.3124955673758866e+05,
+      "CYCLES/ BYTE": 2.0139199704376743e+01,
+      "bytes_per_second": 2.3230363865633932e+08
     },
     {
       "name": "ascon_xof128/32/512_mean",
@@ -1885,12 +1885,12 @@
       "aggregate_name": "mean",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 2.3894971945116599e+03,
-      "cpu_time": 2.3892993523205782e+03,
+      "real_time": 2.3894631899052547e+03,
+      "cpu_time": 2.3892488021598811e+03,
       "time_unit": "ns",
-      "CYCLES": 1.1173532205007587e+04,
-      "CYCLES/ BYTE": 2.0539581259205121e+01,
-      "bytes_per_second": 2.2768394811480433e+08
+      "CYCLES": 1.1174410932640716e+04,
+      "CYCLES/ BYTE": 2.0541196567354259e+01,
+      "bytes_per_second": 2.2768675183900091e+08
     },
     {
       "name": "ascon_xof128/32/512_median",
@@ -1903,12 +1903,12 @@
       "aggregate_name": "median",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 2.3871354246227120e+03,
-      "cpu_time": 2.3866247038570846e+03,
+      "real_time": 2.3892645500770400e+03,
+      "cpu_time": 2.3891117955640684e+03,
       "time_unit": "ns",
-      "CYCLES": 1.1174962766954714e+04,
-      "CYCLES/ BYTE": 2.0542210968666751e+01,
-      "bytes_per_second": 2.2793696923857671e+08
+      "CYCLES": 1.1175961168449472e+04,
+      "CYCLES/ BYTE": 2.0544046265532117e+01,
+      "bytes_per_second": 2.2769968601628709e+08
     },
     {
       "name": "ascon_xof128/32/512_stddev",
@@ -1921,12 +1921,12 @@
       "aggregate_name": "stddev",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 7.7481075601520839e+00,
-      "cpu_time": 7.7483193429569059e+00,
+      "real_time": 1.8733328437223022e+00,
+      "cpu_time": 1.8679940235865875e+00,
       "time_unit": "ns",
-      "CYCLES": 3.9834699371555553e+00,
-      "CYCLES/ BYTE": 7.3225550378333238e-03,
-      "bytes_per_second": 7.3274286831511825e+05
+      "CYCLES": 5.3365006026376651e+00,
+      "CYCLES/ BYTE": 9.8097437575109057e-03,
+      "bytes_per_second": 1.7790869188684653e+05
     },
     {
       "name": "ascon_xof128/32/512_cv",
@@ -1939,12 +1939,12 @@
       "aggregate_name": "cv",
       "aggregate_unit": "percentage",
       "iterations": 10,
-      "real_time": 3.2425681762457814e-03,
-      "cpu_time": 3.2429253100627357e-03,
+      "real_time": 7.8399736461166511e-04,
+      "cpu_time": 7.8183319455802204e-04,
       "time_unit": "ns",
-      "CYCLES": 3.5650946039877197e-04,
-      "CYCLES/ BYTE": 3.5650946070536912e-04,
-      "bytes_per_second": 3.2182456180250779e-03
+      "CYCLES": 4.7756437764872434e-04,
+      "CYCLES/ BYTE": 4.7756437777833003e-04,
+      "bytes_per_second": 7.8137480749273971e-04
     },
     {
       "name": "ascon_xof128/32/512_min",
@@ -1957,12 +1957,12 @@
       "aggregate_name": "min",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 2.3843334868413594e+03,
-      "cpu_time": 2.3841353650014644e+03,
+      "real_time": 2.3869285568079863e+03,
+      "cpu_time": 2.3868845049724864e+03,
       "time_unit": "ns",
-      "CYCLES": 1.1164675086499292e+04,
-      "CYCLES/ BYTE": 2.0523299791358994e+01,
-      "bytes_per_second": 2.2563602046565196e+08
+      "CYCLES": 1.1165544205597895e+04,
+      "CYCLES/ BYTE": 2.0524897436760835e+01,
+      "bytes_per_second": 2.2730499823316175e+08
     },
     {
       "name": "ascon_xof128/32/512_max",
@@ -1975,12 +1975,12 @@
       "aggregate_name": "max",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 2.4111676295010357e+03,
-      "cpu_time": 2.4109625709464763e+03,
+      "real_time": 2.3935020163132886e+03,
+      "cpu_time": 2.3932601756604718e+03,
       "time_unit": "ns",
-      "CYCLES": 1.1177757648582776e+04,
-      "CYCLES/ BYTE": 2.0547348618718338e+01,
-      "bytes_per_second": 2.2817496354686463e+08
+      "CYCLES": 1.1182513037831926e+04,
+      "CYCLES/ BYTE": 2.0556090143073394e+01,
+      "bytes_per_second": 2.2791215865983877e+08
     },
     {
       "name": "ascon_xof128/256/512_mean",
@@ -1993,12 +1993,12 @@
       "aggregate_name": "mean",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 3.3494726008086573e+03,
-      "cpu_time": 3.3490487917035971e+03,
+      "real_time": 3.3571831157433612e+03,
+      "cpu_time": 3.3569937642239374e+03,
       "time_unit": "ns",
-      "CYCLES": 1.5677989507340792e+04,
-      "CYCLES/ BYTE": 2.0414048837683325e+01,
-      "bytes_per_second": 2.2931896947644168e+08
+      "CYCLES": 1.5677591878877894e+04,
+      "CYCLES/ BYTE": 2.0413531092288927e+01,
+      "bytes_per_second": 2.2878006065955079e+08
     },
     {
       "name": "ascon_xof128/256/512_median",
@@ -2011,12 +2011,12 @@
       "aggregate_name": "median",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 3.3484427228064669e+03,
-      "cpu_time": 3.3481453069240051e+03,
+      "real_time": 3.3502014110115351e+03,
+      "cpu_time": 3.3499148240423065e+03,
       "time_unit": "ns",
-      "CYCLES": 1.5678699063540345e+04,
-      "CYCLES/ BYTE": 2.0414972738984822e+01,
-      "bytes_per_second": 2.2938072572869420e+08
+      "CYCLES": 1.5677010229259995e+04,
+      "CYCLES/ BYTE": 2.0412773736015620e+01,
+      "bytes_per_second": 2.2925956197424400e+08
     },
     {
       "name": "ascon_xof128/256/512_stddev",
@@ -2029,12 +2029,12 @@
       "aggregate_name": "stddev",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 2.6597177616155245e+00,
-      "cpu_time": 2.6041759910196669e+00,
+      "real_time": 1.4696009666947145e+01,
+      "cpu_time": 1.4736846695257459e+01,
       "time_unit": "ns",
-      "CYCLES": 2.1621005701262734e+00,
-      "CYCLES/ BYTE": 2.8152351111200178e-03,
-      "bytes_per_second": 1.7819237594365378e+05
+      "CYCLES": 5.2693167327734880e+00,
+      "CYCLES/ BYTE": 6.8610894835248902e-03,
+      "bytes_per_second": 9.9802986436278548e+05
     },
     {
       "name": "ascon_xof128/256/512_cv",
@@ -2047,12 +2047,12 @@
       "aggregate_name": "cv",
       "aggregate_unit": "percentage",
       "iterations": 10,
-      "real_time": 7.9407061307902431e-04,
-      "cpu_time": 7.7758675761035187e-04,
+      "real_time": 4.3774822999766861e-03,
+      "cpu_time": 4.3898939736828164e-03,
       "time_unit": "ns",
-      "CYCLES": 1.3790674940265325e-04,
-      "CYCLES/ BYTE": 1.3790674909737813e-04,
-      "bytes_per_second": 7.7705030835645620e-04
+      "CYCLES": 3.3610498177801993e-04,
+      "CYCLES/ BYTE": 3.3610498117675583e-04,
+      "bytes_per_second": 4.3623988099555609e-03
     },
     {
       "name": "ascon_xof128/256/512_min",
@@ -2065,12 +2065,12 @@
       "aggregate_name": "min",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 3.3461549347041496e+03,
-      "cpu_time": 3.3460142265226591e+03,
+      "real_time": 3.3485734853475524e+03,
+      "cpu_time": 3.3484440984117223e+03,
       "time_unit": "ns",
-      "CYCLES": 1.5674545014729481e+04,
-      "CYCLES/ BYTE": 2.0409563821262346e+01,
-      "bytes_per_second": 2.2895951382843912e+08
+      "CYCLES": 1.5670885346046043e+04,
+      "CYCLES/ BYTE": 2.0404798627664118e+01,
+      "bytes_per_second": 2.2664764337805933e+08
     },
     {
       "name": "ascon_xof128/256/512_max",
@@ -2083,12 +2083,12 @@
       "aggregate_name": "max",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 3.3544787201339218e+03,
-      "cpu_time": 3.3543048164203719e+03,
+      "real_time": 3.3885018805521004e+03,
+      "cpu_time": 3.3885196799462792e+03,
       "time_unit": "ns",
-      "CYCLES": 1.5681720834431058e+04,
-      "CYCLES/ BYTE": 2.0418907336498773e+01,
-      "bytes_per_second": 2.2952681847923371e+08
+      "CYCLES": 1.5689511846297582e+04,
+      "CYCLES/ BYTE": 2.0429051883199978e+01,
+      "bytes_per_second": 2.2936025731004077e+08
     },
     {
       "name": "ascon_xof128/2048/512_mean",
@@ -2101,12 +2101,12 @@
       "aggregate_name": "mean",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 1.1062652174091865e+04,
-      "cpu_time": 1.1061733793702115e+04,
+      "real_time": 1.1067238907318726e+04,
+      "cpu_time": 1.1065653939681015e+04,
       "time_unit": "ns",
-      "CYCLES": 5.1770161999842159e+04,
-      "CYCLES/ BYTE": 2.0222719531188346e+01,
-      "bytes_per_second": 2.3142890211611563e+08
+      "CYCLES": 5.1789278706774043e+04,
+      "CYCLES/ BYTE": 2.0230186994833609e+01,
+      "bytes_per_second": 2.3134676514428455e+08
     },
     {
       "name": "ascon_xof128/2048/512_median",
@@ -2119,12 +2119,12 @@
       "aggregate_name": "median",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 1.1056980032771075e+04,
-      "cpu_time": 1.1055551969063188e+04,
+      "real_time": 1.1061055581827710e+04,
+      "cpu_time": 1.1059286672982704e+04,
       "time_unit": "ns",
-      "CYCLES": 5.1769685936390182e+04,
-      "CYCLES/ BYTE": 2.0222533568902413e+01,
-      "bytes_per_second": 2.3155786415614092e+08
+      "CYCLES": 5.1789369532606979e+04,
+      "CYCLES/ BYTE": 2.0230222473674601e+01,
+      "bytes_per_second": 2.3147966738432199e+08
     },
     {
       "name": "ascon_xof128/2048/512_stddev",
@@ -2137,12 +2137,12 @@
       "aggregate_name": "stddev",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 1.5981077165793195e+01,
-      "cpu_time": 1.6162585196700743e+01,
+      "real_time": 1.2782490150389801e+01,
+      "cpu_time": 1.3139337662730682e+01,
       "time_unit": "ns",
-      "CYCLES": 3.3913052721741721e+00,
-      "CYCLES/ BYTE": 1.3247285904760822e-03,
-      "bytes_per_second": 3.3736212971951801e+05
+      "CYCLES": 4.5606639773509556e+00,
+      "CYCLES/ BYTE": 1.7815094001873289e-03,
+      "bytes_per_second": 2.7425292185620678e+05
     },
     {
       "name": "ascon_xof128/2048/512_cv",
@@ -2155,12 +2155,12 @@
       "aggregate_name": "cv",
       "aggregate_unit": "percentage",
       "iterations": 10,
-      "real_time": 1.4445972732668952e-03,
-      "cpu_time": 1.4611258504433318e-03,
+      "real_time": 1.1549845681868114e-03,
+      "cpu_time": 1.1873982083981064e-03,
       "time_unit": "ns",
-      "CYCLES": 6.5506947267897510e-05,
-      "CYCLES/ BYTE": 6.5506945711877617e-05,
-      "bytes_per_second": 1.4577355145998668e-03
+      "CYCLES": 8.8061932724975769e-05,
+      "CYCLES/ BYTE": 8.8061934407343407e-05,
+      "bytes_per_second": 1.1854625314737504e-03
     },
     {
       "name": "ascon_xof128/2048/512_min",
@@ -2173,12 +2173,12 @@
       "aggregate_name": "min",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 1.1050293268090130e+04,
-      "cpu_time": 1.1050118854076263e+04,
+      "real_time": 1.1058679614450832e+04,
+      "cpu_time": 1.1056474024948684e+04,
       "time_unit": "ns",
-      "CYCLES": 5.1765425617551889e+04,
-      "CYCLES/ BYTE": 2.0220869381856208e+01,
-      "bytes_per_second": 2.3062339946866396e+08
+      "CYCLES": 5.1782814937628296e+04,
+      "CYCLES/ BYTE": 2.0227662085011055e+01,
+      "bytes_per_second": 2.3079522123686859e+08
     },
     {
       "name": "ascon_xof128/2048/512_max",
@@ -2191,12 +2191,12 @@
       "aggregate_name": "max",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 1.1100500435078880e+04,
-      "cpu_time": 1.1100348038828733e+04,
+      "real_time": 1.1093079898864105e+04,
+      "cpu_time": 1.1092084083372913e+04,
       "time_unit": "ns",
-      "CYCLES": 5.1776968747533741e+04,
-      "CYCLES/ BYTE": 2.0225378417005366e+01,
-      "bytes_per_second": 2.3167171627802402e+08
+      "CYCLES": 5.1797216011369019e+04,
+      "CYCLES/ BYTE": 2.0233287504441023e+01,
+      "bytes_per_second": 2.3153855326964253e+08
     },
     {
       "name": "ascon_xof128/16384/512_mean",
@@ -2209,12 +2209,12 @@
       "aggregate_name": "mean",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 7.2715338346910401e+04,
-      "cpu_time": 7.2709382810867362e+04,
+      "real_time": 7.2988252650663868e+04,
+      "cpu_time": 7.2980496257796462e+04,
       "time_unit": "ns",
-      "CYCLES": 3.4028444655172416e+05,
-      "CYCLES/ BYTE": 2.0139941202161701e+01,
-      "bytes_per_second": 2.3237735488581654e+08
+      "CYCLES": 3.4028660051975056e+05,
+      "CYCLES/ BYTE": 2.0140068686064780e+01,
+      "bytes_per_second": 2.3154279340533134e+08
     },
     {
       "name": "ascon_xof128/16384/512_median",
@@ -2227,12 +2227,12 @@
       "aggregate_name": "median",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 7.2693700362876392e+04,
-      "cpu_time": 7.2691767763846321e+04,
+      "real_time": 7.2715676714912275e+04,
+      "cpu_time": 7.2701204781705368e+04,
       "time_unit": "ns",
-      "CYCLES": 3.4028160292580980e+05,
-      "CYCLES/ BYTE": 2.0139772900438555e+01,
-      "bytes_per_second": 2.3243347733050644e+08
+      "CYCLES": 3.4027956211018714e+05,
+      "CYCLES/ BYTE": 2.0139652113529067e+01,
+      "bytes_per_second": 2.3240330160305279e+08
     },
     {
       "name": "ascon_xof128/16384/512_stddev",
@@ -2245,12 +2245,12 @@
       "aggregate_name": "stddev",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 7.0426429931192303e+01,
-      "cpu_time": 6.9928429633565855e+01,
+      "real_time": 8.7188306667488700e+02,
+      "cpu_time": 8.7207738404982570e+02,
       "time_unit": "ns",
-      "CYCLES": 1.3594711562016574e+01,
-      "CYCLES/ BYTE": 8.0461131037722110e-04,
-      "bytes_per_second": 2.2329140476068488e+05
+      "CYCLES": 3.0606480126033688e+01,
+      "CYCLES/ BYTE": 1.8114631069698097e-03,
+      "bytes_per_second": 2.6857567176512638e+06
     },
     {
       "name": "ascon_xof128/16384/512_cv",
@@ -2263,12 +2263,12 @@
       "aggregate_name": "cv",
       "aggregate_unit": "percentage",
       "iterations": 10,
-      "real_time": 9.6852234387196029e-04,
-      "cpu_time": 9.6175248544558061e-04,
+      "real_time": 1.1945525958100283e-02,
+      "cpu_time": 1.1949458126035451e-02,
       "time_unit": "ns",
-      "CYCLES": 3.9951022445423881e-05,
-      "CYCLES/ BYTE": 3.9951025790028571e-05,
-      "bytes_per_second": 9.6090001915377578e-04
+      "CYCLES": 8.9943242194331596e-05,
+      "CYCLES/ BYTE": 8.9943243749868071e-05,
+      "bytes_per_second": 1.1599396716915584e-02
     },
     {
       "name": "ascon_xof128/16384/512_min",
@@ -2281,12 +2281,12 @@
       "aggregate_name": "min",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 7.2644218388429581e+04,
-      "cpu_time": 7.2637842737720697e+04,
+      "real_time": 7.2681268190428003e+04,
+      "cpu_time": 7.2674444386694784e+04,
       "time_unit": "ns",
-      "CYCLES": 3.4026728840125393e+05,
-      "CYCLES/ BYTE": 2.0138925686627243e+01,
-      "bytes_per_second": 2.3190371450673521e+08
+      "CYCLES": 3.4025971517671517e+05,
+      "CYCLES/ BYTE": 2.0138477460743086e+01,
+      "bytes_per_second": 2.2390257093435729e+08
     },
     {
       "name": "ascon_xof128/16384/512_max",
@@ -2299,12 +2299,12 @@
       "aggregate_name": "max",
       "aggregate_unit": "time",
       "iterations": 10,
-      "real_time": 7.2860810866159969e+04,
-      "cpu_time": 7.2857823928944825e+04,
+      "real_time": 7.5468610706737309e+04,
+      "cpu_time": 7.5461393451143042e+04,
       "time_unit": "ns",
-      "CYCLES": 3.4031021159874607e+05,
-      "CYCLES/ BYTE": 2.0141466122084879e+01,
-      "bytes_per_second": 2.3260602687510625e+08
+      "CYCLES": 3.4037035187110188e+05,
+      "CYCLES/ BYTE": 2.0145025560552906e+01,
+      "bytes_per_second": 2.3248887752203184e+08
     }
   ]
 }

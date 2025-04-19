@@ -28,7 +28,11 @@ ascon_aead128_encrypt(benchmark::State& state)
     benchmark::DoNotOptimize(ciphertext);
     benchmark::DoNotOptimize(tag);
 
-    ascon_aead128::encrypt(key, nonce, associated_data, plaintext, ciphertext, tag);
+    ascon_aead128::ascon_aead128_t enc_handle(key, nonce);
+    assert(enc_handle.absorb_data(associated_data) == ascon_aead128::ascon_aead128_status_t::absorbed_data);
+    assert(enc_handle.finalize_data() == ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
+    assert(enc_handle.encrypt_plaintext(plaintext, ciphertext) == ascon_aead128::ascon_aead128_status_t::encrypted_plaintext);
+    assert(enc_handle.finalize_encrypt(tag) == ascon_aead128::ascon_aead128_status_t::finalized_encryption_phase);
 
     benchmark::ClobberMemory();
   }

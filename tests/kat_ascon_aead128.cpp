@@ -1,5 +1,6 @@
 #include "ascon/aead/ascon_aead128.hpp"
 #include "test_helper.hpp"
+#include <cstdint>
 #include <fstream>
 #include <gtest/gtest.h>
 
@@ -46,20 +47,31 @@ TEST(AsconAEAD128, KnownAnswerTests)
 
       auto key_span = std::span<const uint8_t, ascon_aead128::KEY_BYTE_LEN>(key);
       auto nonce_span = std::span<const uint8_t, ascon_aead128::NONCE_BYTE_LEN>(nonce);
+      auto ct_span = std::span(ct);
+      auto tag_span = std::span<const uint8_t, ascon_aead128::TAG_BYTE_LEN>(ct_span.last(ascon_aead128::TAG_BYTE_LEN));
 
       std::vector<uint8_t> computed_ct(pt.size());
       std::array<uint8_t, ascon_aead128::TAG_BYTE_LEN> computed_tag{};
       std::vector<uint8_t> computed_pt(computed_ct.size());
 
-      ascon_aead128::encrypt(key_span, nonce_span, ad, pt, computed_ct, computed_tag);
-      const auto is_decrypted = ascon_aead128::decrypt(key_span, nonce_span, ad, computed_ct, computed_pt, computed_tag);
+      ascon_aead128::ascon_aead128_t enc_handle(key_span, nonce_span);
 
-      EXPECT_TRUE(is_decrypted);
+      EXPECT_EQ(enc_handle.absorb_data(ad), ascon_aead128::ascon_aead128_status_t::absorbed_data);
+      EXPECT_EQ(enc_handle.finalize_data(), ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
 
-      auto ct_span = std::span(ct);
+      EXPECT_EQ(enc_handle.encrypt_plaintext(pt, computed_ct), ascon_aead128::ascon_aead128_status_t::encrypted_plaintext);
+      EXPECT_EQ(enc_handle.finalize_encrypt(computed_tag), ascon_aead128::ascon_aead128_status_t::finalized_encryption_phase);
+
+      ascon_aead128::ascon_aead128_t dec_handle(key_span, nonce_span);
+
+      EXPECT_EQ(dec_handle.absorb_data(ad), ascon_aead128::ascon_aead128_status_t::absorbed_data);
+      EXPECT_EQ(dec_handle.finalize_data(), ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
+
+      EXPECT_EQ(dec_handle.decrypt_ciphertext(computed_ct, computed_pt), ascon_aead128::ascon_aead128_status_t::decrypted_ciphertext);
+      EXPECT_EQ(dec_handle.finalize_decrypt(tag_span), ascon_aead128::ascon_aead128_status_t::decryption_success_as_tag_matches);
 
       EXPECT_TRUE(std::ranges::equal(ct_span.first(pt.size()), computed_ct));
-      EXPECT_TRUE(std::ranges::equal(ct_span.last(computed_tag.size()), computed_tag));
+      EXPECT_TRUE(std::ranges::equal(tag_span, computed_tag));
 
       std::string empty_line;
       std::getline(file, empty_line);
