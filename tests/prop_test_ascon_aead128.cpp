@@ -57,80 +57,6 @@ TEST(AsconAEAD128, CompileTimeEncryptAndThenDecrypt)
   static_assert(expected_tag == computed_tag, "Must be able to encrypt and then decrypt using Ascon-AEAD128 during program compilation time itself !");
 }
 
-TEST(AsconAEAD128, ForSamePlaintextOneshotEncryptionAndIncrementalEncryptionProducesSameTag)
-{
-  for (size_t associated_data_len = MIN_AD_LEN; associated_data_len <= MAX_AD_LEN; associated_data_len++) {
-    for (size_t plaintext_len = MIN_PT_LEN; plaintext_len <= MAX_PT_LEN; plaintext_len++) {
-      std::array<uint8_t, ascon_aead128::KEY_BYTE_LEN> key{};
-      std::array<uint8_t, ascon_aead128::NONCE_BYTE_LEN> nonce{};
-      std::array<uint8_t, ascon_aead128::TAG_BYTE_LEN> tag_oneshot{};
-      std::array<uint8_t, ascon_aead128::TAG_BYTE_LEN> tag_multishot{};
-      std::vector<uint8_t> associated_data(associated_data_len);
-      std::vector<uint8_t> plaintext(plaintext_len);
-      std::vector<uint8_t> ciphertext(plaintext_len);
-      std::vector<uint8_t> decipheredtext(plaintext_len);
-
-      generate_random_data<uint8_t>(key);
-      generate_random_data<uint8_t>(nonce);
-      generate_random_data<uint8_t>(associated_data);
-      generate_random_data<uint8_t>(plaintext);
-
-      tag_oneshot.fill(0x3f);
-      tag_multishot.fill(0x5f);
-
-      auto associated_data_span = std::span(associated_data);
-      auto plaintext_span = std::span(plaintext);
-      auto ciphertext_span = std::span(ciphertext);
-
-      // Oneshot encryption
-      {
-        ascon_aead128::ascon_aead128_t aead(key, nonce);
-
-        EXPECT_EQ(aead.absorb_data(associated_data), ascon_aead128::ascon_aead128_status_t::absorbed_data);
-        EXPECT_EQ(aead.finalize_data(), ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
-        EXPECT_EQ(aead.encrypt_plaintext(plaintext, ciphertext), ascon_aead128::ascon_aead128_status_t::encrypted_plaintext);
-        EXPECT_EQ(aead.finalize_encrypt(tag_oneshot), ascon_aead128::ascon_aead128_status_t::finalized_encryption_phase);
-      }
-
-      std::ranges::fill(ciphertext, 0x00);
-
-      // Incremental encryption
-      {
-        ascon_aead128::ascon_aead128_t aead(key, nonce);
-
-        size_t ad_offset = 0;
-        while (ad_offset < associated_data.size()) {
-          // Because we don't want to be stuck in an infinite loop if associated_data[ad_offset] = 0
-          const auto elen = std::min<size_t>(std::max<uint8_t>(associated_data[ad_offset], 1), associated_data.size() - ad_offset);
-
-          auto ad = associated_data_span.subspan(ad_offset, elen);
-
-          EXPECT_EQ(aead.absorb_data(ad), ascon_aead128::ascon_aead128_status_t::absorbed_data);
-          ad_offset += elen;
-        }
-
-        EXPECT_EQ(aead.finalize_data(), ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
-
-        size_t pt_offset = 0;
-        while (pt_offset < plaintext.size()) {
-          // Because we don't want to be stuck in an infinite loop if plaintext[pt_offset] = 0
-          const auto elen = std::min<size_t>(std::max<uint8_t>(plaintext[pt_offset], 1), plaintext.size() - pt_offset);
-
-          auto pt = plaintext_span.subspan(pt_offset, elen);
-          auto ct = ciphertext_span.subspan(pt_offset, elen);
-
-          EXPECT_EQ(aead.encrypt_plaintext(pt, ct), ascon_aead128::ascon_aead128_status_t::encrypted_plaintext);
-          pt_offset += elen;
-        }
-
-        EXPECT_EQ(aead.finalize_encrypt(tag_multishot), ascon_aead128::ascon_aead128_status_t::finalized_encryption_phase);
-      }
-
-      EXPECT_EQ(tag_oneshot, tag_multishot);
-    }
-  }
-}
-
 TEST(AsconAEAD128, EncryptThenDecrypt)
 {
   for (size_t associated_data_len = MIN_AD_LEN; associated_data_len <= MAX_AD_LEN; associated_data_len++) {
@@ -258,6 +184,161 @@ TEST(AsconAEAD128, DecryptionFailureDueToBitFlippingInCipherText)
   for (size_t associated_data_len = 1; associated_data_len <= MAX_AD_LEN; associated_data_len++) {
     for (size_t plaintext_len = 1; plaintext_len <= MAX_PT_LEN; plaintext_len++) {
       test_decryption_failure_for_ascon_aead128(associated_data_len, plaintext_len, aead_mutation_kind_t::mutate_cipher_text);
+    }
+  }
+}
+
+TEST(AsconAEAD128, ForSamePlaintextOneshotEncryptionAndIncrementalEncryptionProducesSameTag)
+{
+  for (size_t associated_data_len = MIN_AD_LEN; associated_data_len <= MAX_AD_LEN; associated_data_len++) {
+    for (size_t plaintext_len = MIN_PT_LEN; plaintext_len <= MAX_PT_LEN; plaintext_len++) {
+      std::array<uint8_t, ascon_aead128::KEY_BYTE_LEN> key{};
+      std::array<uint8_t, ascon_aead128::NONCE_BYTE_LEN> nonce{};
+      std::array<uint8_t, ascon_aead128::TAG_BYTE_LEN> tag_oneshot{};
+      std::array<uint8_t, ascon_aead128::TAG_BYTE_LEN> tag_multishot{};
+      std::vector<uint8_t> associated_data(associated_data_len);
+      std::vector<uint8_t> plaintext(plaintext_len);
+      std::vector<uint8_t> ciphertext(plaintext_len);
+      std::vector<uint8_t> decipheredtext(plaintext_len);
+
+      generate_random_data<uint8_t>(key);
+      generate_random_data<uint8_t>(nonce);
+      generate_random_data<uint8_t>(associated_data);
+      generate_random_data<uint8_t>(plaintext);
+
+      tag_oneshot.fill(0x3f);
+      tag_multishot.fill(0x5f);
+
+      auto associated_data_span = std::span(associated_data);
+      auto plaintext_span = std::span(plaintext);
+      auto ciphertext_span = std::span(ciphertext);
+
+      // Oneshot encryption
+      {
+        ascon_aead128::ascon_aead128_t aead(key, nonce);
+
+        EXPECT_EQ(aead.absorb_data(associated_data), ascon_aead128::ascon_aead128_status_t::absorbed_data);
+        EXPECT_EQ(aead.finalize_data(), ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
+        EXPECT_EQ(aead.encrypt_plaintext(plaintext, ciphertext), ascon_aead128::ascon_aead128_status_t::encrypted_plaintext);
+        EXPECT_EQ(aead.finalize_encrypt(tag_oneshot), ascon_aead128::ascon_aead128_status_t::finalized_encryption_phase);
+      }
+
+      std::ranges::fill(ciphertext, 0x00);
+
+      // Incremental encryption
+      {
+        ascon_aead128::ascon_aead128_t aead(key, nonce);
+
+        size_t ad_offset = 0;
+        while (ad_offset < associated_data.size()) {
+          // Because we don't want to be stuck in an infinite loop if associated_data[ad_offset] = 0
+          const auto elen = std::min<size_t>(std::max<uint8_t>(associated_data[ad_offset], 1), associated_data.size() - ad_offset);
+
+          auto ad = associated_data_span.subspan(ad_offset, elen);
+
+          EXPECT_EQ(aead.absorb_data(ad), ascon_aead128::ascon_aead128_status_t::absorbed_data);
+          ad_offset += elen;
+        }
+
+        EXPECT_EQ(aead.finalize_data(), ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
+
+        size_t pt_offset = 0;
+        while (pt_offset < plaintext.size()) {
+          // Because we don't want to be stuck in an infinite loop if plaintext[pt_offset] = 0
+          const auto elen = std::min<size_t>(std::max<uint8_t>(plaintext[pt_offset], 1), plaintext.size() - pt_offset);
+
+          auto pt = plaintext_span.subspan(pt_offset, elen);
+          auto ct = ciphertext_span.subspan(pt_offset, elen);
+
+          EXPECT_EQ(aead.encrypt_plaintext(pt, ct), ascon_aead128::ascon_aead128_status_t::encrypted_plaintext);
+          pt_offset += elen;
+        }
+
+        EXPECT_EQ(aead.finalize_encrypt(tag_multishot), ascon_aead128::ascon_aead128_status_t::finalized_encryption_phase);
+      }
+
+      EXPECT_EQ(tag_oneshot, tag_multishot);
+    }
+  }
+}
+
+TEST(AsconAEAD128, ForSameCiphertextOneshotDecryptionAndIncrementalDecryptionProducesSamePlaintext)
+{
+  for (size_t associated_data_len = MIN_AD_LEN; associated_data_len <= MAX_AD_LEN; associated_data_len++) {
+    for (size_t plaintext_len = MIN_PT_LEN; plaintext_len <= MAX_PT_LEN; plaintext_len++) {
+      std::array<uint8_t, ascon_aead128::KEY_BYTE_LEN> key{};
+      std::array<uint8_t, ascon_aead128::NONCE_BYTE_LEN> nonce{};
+      std::array<uint8_t, ascon_aead128::TAG_BYTE_LEN> tag{};
+      std::vector<uint8_t> associated_data(associated_data_len);
+      std::vector<uint8_t> plaintext(plaintext_len);
+      std::vector<uint8_t> ciphertext(plaintext_len);
+      std::vector<uint8_t> decipheredtext_oneshot(plaintext_len);
+      std::vector<uint8_t> decipheredtext_multishot(plaintext_len);
+
+      generate_random_data<uint8_t>(key);
+      generate_random_data<uint8_t>(nonce);
+      generate_random_data<uint8_t>(associated_data);
+      generate_random_data<uint8_t>(plaintext);
+
+      std::ranges::fill(decipheredtext_oneshot, 0x3f);
+      std::ranges::fill(decipheredtext_multishot, 0x5f);
+
+      auto associated_data_span = std::span(associated_data);
+      auto ciphertext_span = std::span(ciphertext);
+      auto decipheredtext_oneshot_span = std::span(decipheredtext_oneshot);
+      auto decipheredtext_multishot_span = std::span(decipheredtext_multishot);
+
+      ascon_aead128::ascon_aead128_t enc_obj(key, nonce);
+
+      EXPECT_EQ(enc_obj.absorb_data(associated_data), ascon_aead128::ascon_aead128_status_t::absorbed_data);
+      EXPECT_EQ(enc_obj.finalize_data(), ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
+      EXPECT_EQ(enc_obj.encrypt_plaintext(plaintext, ciphertext), ascon_aead128::ascon_aead128_status_t::encrypted_plaintext);
+      EXPECT_EQ(enc_obj.finalize_encrypt(tag), ascon_aead128::ascon_aead128_status_t::finalized_encryption_phase);
+
+      // Oneshot decryption
+      {
+        ascon_aead128::ascon_aead128_t aead(key, nonce);
+
+        EXPECT_EQ(aead.absorb_data(associated_data), ascon_aead128::ascon_aead128_status_t::absorbed_data);
+        EXPECT_EQ(aead.finalize_data(), ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
+        EXPECT_EQ(aead.decrypt_ciphertext(ciphertext, decipheredtext_oneshot_span), ascon_aead128::ascon_aead128_status_t::decrypted_ciphertext);
+        EXPECT_EQ(aead.finalize_decrypt(tag), ascon_aead128::ascon_aead128_status_t::decryption_success_as_tag_matches);
+      }
+
+      // Incremental decryption
+      {
+        ascon_aead128::ascon_aead128_t aead(key, nonce);
+
+        size_t ad_offset = 0;
+        while (ad_offset < associated_data.size()) {
+          // Because we don't want to be stuck in an infinite loop if associated_data[ad_offset] = 0
+          const auto elen = std::min<size_t>(std::max<uint8_t>(associated_data[ad_offset], 1), associated_data.size() - ad_offset);
+
+          auto ad = associated_data_span.subspan(ad_offset, elen);
+
+          EXPECT_EQ(aead.absorb_data(ad), ascon_aead128::ascon_aead128_status_t::absorbed_data);
+          ad_offset += elen;
+        }
+
+        EXPECT_EQ(aead.finalize_data(), ascon_aead128::ascon_aead128_status_t::finalized_data_absorption_phase);
+
+        size_t ct_offset = 0;
+        while (ct_offset < ciphertext.size()) {
+          // Because we don't want to be stuck in an infinite loop if ciphertext[ct_offset] = 0
+          const auto elen = std::min<size_t>(std::max<uint8_t>(ciphertext[ct_offset], 1), ciphertext.size() - ct_offset);
+
+          auto ct = ciphertext_span.subspan(ct_offset, elen);
+          auto dt = decipheredtext_multishot_span.subspan(ct_offset, elen);
+
+          EXPECT_EQ(aead.decrypt_ciphertext(ct, dt), ascon_aead128::ascon_aead128_status_t::decrypted_ciphertext);
+          ct_offset += elen;
+        }
+
+        EXPECT_EQ(aead.finalize_decrypt(tag), ascon_aead128::ascon_aead128_status_t::decryption_success_as_tag_matches);
+      }
+
+      EXPECT_EQ(decipheredtext_oneshot, plaintext);
+      EXPECT_EQ(decipheredtext_oneshot, decipheredtext_multishot);
     }
   }
 }
