@@ -165,6 +165,8 @@ public:
     ascon_sponge_mode::squeeze(state, readable, out);
 
     finished_squeezing = true;
+    this->state.reset();
+
     return ascon_hash256_status_t::message_digest_produced;
   }
 };
