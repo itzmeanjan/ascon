@@ -40,7 +40,11 @@ bench_ascon_hash256(benchmark::State& state)
 
 BENCHMARK(bench_ascon_hash256)
   ->Name("ascon_hash256")
-  ->RangeMultiplier(8)
-  ->Range(32, 16 * 1'024)
+  ->ArgsProduct({ {
+    32,
+    64,
+    2 * 1'024,
+    16 * 1'024,
+  } })
   ->ComputeStatistics("min", compute_min)
   ->ComputeStatistics("max", compute_max);

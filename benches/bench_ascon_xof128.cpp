@@ -42,8 +42,8 @@ bench_ascon_xof128(benchmark::State& state)
 BENCHMARK(bench_ascon_xof128)
   ->Name("ascon_xof128")
   ->ArgsProduct({
-    { 32, 256, 2'048, 16'384 }, // Input, to be absorbed
-    { 64, 512 }                 // Output, to be squeezed
+    { 32, 64, 2 * 1'048, 16 * 1'024 }, // Input, to be absorbed
+    { 64, 512 }                        // Output, to be squeezed
   })
   ->ComputeStatistics("min", compute_min)
   ->ComputeStatistics("max", compute_max);
