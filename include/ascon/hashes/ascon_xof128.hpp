@@ -11,6 +11,21 @@ static constexpr auto INITIAL_PERMUTATION_STATE = ascon_sponge_mode::compute_ini
                                                                                                                        0,
                                                                                                                        ascon_sponge_mode::RATE_BYTES));
 
+/// @brief Enumeration representing the status of Ascon-XOF128 operations.
+enum class ascon_xof128_status_t : uint8_t
+{
+  /// @brief Data was successfully absorbed by the `absorb()` method.
+  absorbed_data = 0x01,
+  /// @brief The state is still in the data absorption phase; `finalize()` must be called before squeezing output.
+  still_in_data_absorption_phase,
+  /// @brief The data absorption phase was successfully finalized by the `finalize()` method.
+  finalized_data_absorption_phase,
+  /// @brief Attempted to absorb data or finalize after the data absorption phase was already finalized.
+  data_absorption_phase_already_finalized,
+  /// @brief Output data was successfully squeezed by the `squeeze()` method.
+  squeezed_output,
+};
+
 /**
  * @brief Ascon-based extendable-output function (XOF) offering 128-bit security. Provides methods for absorbing arbitrary long data, finalizing the internal
  * state, and squeezing arbitrarily long output sequences.
@@ -42,54 +57,60 @@ public:
   /**
    * @brief Absorbs input data into the XOF's internal state. This function can be called repeatedly to absorb data in chunks before calling `finalize()`.
    * @param msg The data to absorb.
-   * @return True if the data was successfully absorbed (the XOF has not been finalized), false otherwise.
+   * @return An `ascon_xof128_status_t` indicating the result of the operation.
+   *   - `ascon_xof128_status_t::absorbed_data`: Data was successfully absorbed.
+   *   - `ascon_xof128_status_t::data_absorption_phase_already_finalized`: Data absorption phase was already finalized.
    */
   [[nodiscard]]
-  forceinline constexpr bool absorb(std::span<const uint8_t> msg)
+  forceinline constexpr ascon_xof128_status_t absorb(std::span<const uint8_t> msg)
   {
-    if (!finished_absorbing) [[likely]] {
-      ascon_sponge_mode::absorb(state, offset, msg);
-      return true;
+    if (finished_absorbing) {
+      return ascon_xof128_status_t::data_absorption_phase_already_finalized;
     }
 
-    return false;
+    ascon_sponge_mode::absorb(state, offset, msg);
+    return ascon_xof128_status_t::absorbed_data;
   }
 
   /**
    * @brief Completes the absorption phase of the XOF. This function must be called after all data has been absorbed using the `absorb` method. It prepares the
    * internal state for the squeezing operation.
-   * @return True if the XOF was successfully finalized, false if it was already finalized.
+   * @return An `ascon_xof128_status_t` indicating the result of the operation.
+   *   - `ascon_xof128_status_t::finalized_data_absorption_phase`: The XOF state was successfully finalized.
+   *   - `ascon_xof128_status_t::data_absorption_phase_already_finalized`: The XOF state was already finalized.
    */
   [[nodiscard]]
-  forceinline constexpr bool finalize()
+  forceinline constexpr ascon_xof128_status_t finalize()
   {
-    if (!finished_absorbing) [[likely]] {
-      ascon_sponge_mode::finalize(state, offset);
-
-      finished_absorbing = true;
-      readable = ascon_sponge_mode::RATE_BYTES;
-
-      return true;
+    if (finished_absorbing) {
+      return ascon_xof128_status_t::data_absorption_phase_already_finalized;
     }
 
-    return false;
+    ascon_sponge_mode::finalize(state, offset);
+
+    finished_absorbing = true;
+    readable = ascon_sponge_mode::RATE_BYTES;
+
+    return ascon_xof128_status_t::finalized_data_absorption_phase;
   }
 
   /**
    * @brief Extracts output data from the finalized XOF. This function can be called multiple times to generate an arbitrary amount of output data.
    * The `finalize` method must be called before the first call to this function.
    * @param out The buffer to write the squeezed data to.
-   * @return True if output was successfully squeezed (XOF is finalized), false otherwise.
+   * @return An `ascon_xof128_status_t` indicating the result of the operation.
+   *   - `ascon_xof128_status_t::squeezed_output`: Output was successfully squeezed.
+   *   - `ascon_xof128_status_t::still_in_data_absorption_phase`: XOF state is not yet finalized.
    */
   [[nodiscard]]
-  forceinline constexpr bool squeeze(std::span<uint8_t> out)
+  forceinline constexpr ascon_xof128_status_t squeeze(std::span<uint8_t> out)
   {
-    if (!finished_absorbing) [[unlikely]] {
-      return false;
+    if (!finished_absorbing) {
+      return ascon_xof128_status_t::still_in_data_absorption_phase;
     }
 
     ascon_sponge_mode::squeeze(state, readable, out);
-    return true;
+    return ascon_xof128_status_t::squeezed_output;
   }
 };
 
