@@ -97,3 +97,105 @@ TEST(AsconXof128, ForSameMessageOneshotHashingAndIncrementalHashingProducesSameO
     }
   }
 }
+
+TEST(AsconXof128, ValidXofSequence)
+{
+  std::array<uint8_t, 16> msg{};
+  std::array<uint8_t, 32> output{};
+
+  ascon_xof128::ascon_xof128_t xof;
+  EXPECT_EQ(xof.absorb(msg), ascon_xof128::ascon_xof128_status_t::absorbed_data);
+  EXPECT_EQ(xof.finalize(), ascon_xof128::ascon_xof128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(xof.squeeze(output), ascon_xof128::ascon_xof128_status_t::squeezed_output);
+}
+
+TEST(AsconXof128, MultipleAbsorbCalls)
+{
+  std::array<uint8_t, 16> msg{};
+  std::array<uint8_t, 32> output{};
+
+  ascon_xof128::ascon_xof128_t xof;
+  EXPECT_EQ(xof.absorb(msg), ascon_xof128::ascon_xof128_status_t::absorbed_data);
+  EXPECT_EQ(xof.absorb(msg), ascon_xof128::ascon_xof128_status_t::absorbed_data);
+  EXPECT_EQ(xof.finalize(), ascon_xof128::ascon_xof128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(xof.squeeze(output), ascon_xof128::ascon_xof128_status_t::squeezed_output);
+}
+
+TEST(AsconXof128, MultipleFinalizeCalls)
+{
+  std::array<uint8_t, 16> msg{};
+  std::array<uint8_t, 32> output{};
+
+  ascon_xof128::ascon_xof128_t xof;
+  EXPECT_EQ(xof.absorb(msg), ascon_xof128::ascon_xof128_status_t::absorbed_data);
+  EXPECT_EQ(xof.finalize(), ascon_xof128::ascon_xof128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(xof.finalize(), ascon_xof128::ascon_xof128_status_t::data_absorption_phase_already_finalized);
+  EXPECT_EQ(xof.squeeze(output), ascon_xof128::ascon_xof128_status_t::squeezed_output);
+}
+
+TEST(AsconXof128, MultipleSqueezeCalls)
+{
+  std::array<uint8_t, 16> msg{};
+  std::array<uint8_t, 32> output{};
+
+  ascon_xof128::ascon_xof128_t xof;
+  EXPECT_EQ(xof.absorb(msg), ascon_xof128::ascon_xof128_status_t::absorbed_data);
+  EXPECT_EQ(xof.finalize(), ascon_xof128::ascon_xof128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(xof.squeeze(output), ascon_xof128::ascon_xof128_status_t::squeezed_output);
+  EXPECT_EQ(xof.squeeze(output), ascon_xof128::ascon_xof128_status_t::squeezed_output);
+}
+
+TEST(AsconXof128, AbsorbMessageAfterFinalize)
+{
+  std::array<uint8_t, 16> msg{};
+  std::array<uint8_t, 32> output{};
+
+  ascon_xof128::ascon_xof128_t xof;
+  EXPECT_EQ(xof.absorb(msg), ascon_xof128::ascon_xof128_status_t::absorbed_data);
+  EXPECT_EQ(xof.finalize(), ascon_xof128::ascon_xof128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(xof.absorb(msg), ascon_xof128::ascon_xof128_status_t::data_absorption_phase_already_finalized);
+  EXPECT_EQ(xof.squeeze(output), ascon_xof128::ascon_xof128_status_t::squeezed_output);
+}
+
+TEST(AsconXof128, AbsorbMessageDuringSqueezing)
+{
+  std::array<uint8_t, 16> msg{};
+  std::array<uint8_t, 32> output{};
+
+  ascon_xof128::ascon_xof128_t xof;
+  EXPECT_EQ(xof.absorb(msg), ascon_xof128::ascon_xof128_status_t::absorbed_data);
+  EXPECT_EQ(xof.finalize(), ascon_xof128::ascon_xof128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(xof.squeeze(output), ascon_xof128::ascon_xof128_status_t::squeezed_output);
+  EXPECT_EQ(xof.absorb(msg), ascon_xof128::ascon_xof128_status_t::data_absorption_phase_already_finalized);
+}
+
+TEST(AsconXof128, FinalizeDuringSqueezing)
+{
+  std::array<uint8_t, 16> msg{};
+  std::array<uint8_t, 32> output{};
+
+  ascon_xof128::ascon_xof128_t xof;
+  EXPECT_EQ(xof.absorb(msg), ascon_xof128::ascon_xof128_status_t::absorbed_data);
+  EXPECT_EQ(xof.finalize(), ascon_xof128::ascon_xof128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(xof.squeeze(output), ascon_xof128::ascon_xof128_status_t::squeezed_output);
+  EXPECT_EQ(xof.finalize(), ascon_xof128::ascon_xof128_status_t::data_absorption_phase_already_finalized);
+}
+
+TEST(AsconXof128, FinalizeWithoutAbsorb)
+{
+  std::array<uint8_t, 32> output{};
+
+  ascon_xof128::ascon_xof128_t xof;
+  EXPECT_EQ(xof.finalize(), ascon_xof128::ascon_xof128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(xof.squeeze(output), ascon_xof128::ascon_xof128_status_t::squeezed_output);
+}
+
+TEST(AsconXof128, SqueezeWithoutFinalize)
+{
+  std::array<uint8_t, 16> msg{};
+  std::array<uint8_t, 32> output{};
+
+  ascon_xof128::ascon_xof128_t xof;
+  EXPECT_EQ(xof.absorb(msg), ascon_xof128::ascon_xof128_status_t::absorbed_data);
+  EXPECT_EQ(xof.squeeze(output), ascon_xof128::ascon_xof128_status_t::still_in_data_absorption_phase);
+}
