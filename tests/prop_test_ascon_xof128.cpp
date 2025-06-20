@@ -18,9 +18,9 @@ eval_ascon_xof128()
   std::array<uint8_t, olen> md{};
 
   ascon_xof128::ascon_xof128_t hasher;
-  assert(hasher.absorb(data));
-  assert(hasher.finalize());
-  assert(hasher.squeeze(md));
+  assert(hasher.absorb(data) == ascon_xof128::ascon_xof128_status_t::absorbed_data);
+  assert(hasher.finalize() == ascon_xof128::ascon_xof128_status_t::finalized_data_absorption_phase);
+  assert(hasher.squeeze(md) == ascon_xof128::ascon_xof128_status_t::squeezed_output);
 
   // Returns hex-encoded digest.
   return bytes_to_hex(md);
@@ -60,9 +60,9 @@ TEST(AsconXof128, ForSameMessageOneshotHashingAndIncrementalHashingProducesSameO
       {
         ascon_xof128::ascon_xof128_t hasher;
 
-        EXPECT_TRUE(hasher.absorb(msg_span));
-        EXPECT_TRUE(hasher.finalize());
-        EXPECT_TRUE(hasher.squeeze(digest_oneshot_span));
+        EXPECT_EQ(hasher.absorb(msg_span), ascon_xof128::ascon_xof128_status_t::absorbed_data);
+        EXPECT_EQ(hasher.finalize(), ascon_xof128::ascon_xof128_status_t::finalized_data_absorption_phase);
+        EXPECT_EQ(hasher.squeeze(digest_oneshot_span), ascon_xof128::ascon_xof128_status_t::squeezed_output);
       }
 
       // Incremental hashing
@@ -74,21 +74,21 @@ TEST(AsconXof128, ForSameMessageOneshotHashingAndIncrementalHashingProducesSameO
           // Because we don't want to be stuck in an infinite loop if msg[off] = 0
           const auto elen = std::min<size_t>(std::max<uint8_t>(msg_span[msg_offset], 1), msg_byte_len - msg_offset);
 
-          EXPECT_TRUE(hasher.absorb(msg_span.subspan(msg_offset, elen)));
+          EXPECT_EQ(hasher.absorb(msg_span.subspan(msg_offset, elen)), ascon_xof128::ascon_xof128_status_t::absorbed_data);
           msg_offset += elen;
         }
 
-        EXPECT_TRUE(hasher.finalize());
+        EXPECT_EQ(hasher.finalize(), ascon_xof128::ascon_xof128_status_t::finalized_data_absorption_phase);
 
         // Squeeze message bytes in many iterations
         size_t output_offset = 0;
         while (output_offset < output_byte_len) {
-          EXPECT_TRUE(hasher.squeeze(digest_multishot_span.subspan(output_offset, 1)));
+          EXPECT_EQ(hasher.squeeze(digest_multishot_span.subspan(output_offset, 1)), ascon_xof128::ascon_xof128_status_t::squeezed_output);
 
           auto elen = std::min<size_t>(digest_multishot_span[output_offset], output_byte_len - (output_offset + 1));
 
           output_offset += 1;
-          EXPECT_TRUE(hasher.squeeze(digest_multishot_span.subspan(output_offset, elen)));
+          EXPECT_EQ(hasher.squeeze(digest_multishot_span.subspan(output_offset, elen)), ascon_xof128::ascon_xof128_status_t::squeezed_output);
           output_offset += elen;
         }
       }

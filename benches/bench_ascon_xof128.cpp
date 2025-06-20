@@ -14,22 +14,17 @@ bench_ascon_xof128(benchmark::State& state)
 
   generate_random_data<uint8_t>(msg);
 
-  bool ret_val = true;
   for (auto _ : state) {
-    ascon_xof128::ascon_xof128_t hasher;
-
-    benchmark::DoNotOptimize(ret_val);
     benchmark::DoNotOptimize(msg);
     benchmark::DoNotOptimize(output);
 
-    ret_val &= hasher.absorb(msg);
-    ret_val &= hasher.finalize();
-    ret_val &= hasher.squeeze(output);
+    ascon_xof128::ascon_xof128_t hasher;
+    assert(hasher.absorb(msg) == ascon_xof128::ascon_xof128_status_t::absorbed_data);
+    assert(hasher.finalize() == ascon_xof128::ascon_xof128_status_t::finalized_data_absorption_phase);
+    assert(hasher.squeeze(output) == ascon_xof128::ascon_xof128_status_t::squeezed_output);
 
     benchmark::ClobberMemory();
   }
-
-  assert(ret_val);
 
   const size_t total_bytes_processed = (msg_byte_len + out_byte_len) * state.iterations();
   state.SetBytesProcessed(total_bytes_processed);
