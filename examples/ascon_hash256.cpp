@@ -16,9 +16,9 @@ main()
   generate_random_data<uint8_t>(msg);
 
   ascon_hash256::ascon_hash256_t hasher;
-  assert(hasher.absorb(msg));
-  assert(hasher.finalize());
-  assert(hasher.digest(digest));
+  assert(hasher.absorb(msg) == ascon_hash256::ascon_hash256_status_t::absorbed_data);
+  assert(hasher.finalize() == ascon_hash256::ascon_hash256_status_t::finalized_data_absorption_phase);
+  assert(hasher.digest(digest) == ascon_hash256::ascon_hash256_status_t::message_digest_produced);
 
   std::cout << "Ascon-Hash256\n\n";
   std::cout << "Message :\t" << bytes_to_hex_string(msg) << "\n";

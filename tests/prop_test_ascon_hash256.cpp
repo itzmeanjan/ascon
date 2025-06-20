@@ -1,5 +1,6 @@
 #include "ascon/hashes/ascon_hash256.hpp"
 #include "test_helper.hpp"
+#include <array>
 #include <cassert>
 #include <gtest/gtest.h>
 
@@ -17,9 +18,9 @@ eval_ascon_hash256()
   std::array<uint8_t, ascon_hash256::DIGEST_BYTE_LEN> md{};
 
   ascon_hash256::ascon_hash256_t hasher;
-  assert(hasher.absorb(data));
-  assert(hasher.finalize());
-  assert(hasher.digest(md));
+  assert(hasher.absorb(data) == ascon_hash256::ascon_hash256_status_t::absorbed_data);
+  assert(hasher.finalize() == ascon_hash256::ascon_hash256_status_t::finalized_data_absorption_phase);
+  assert(hasher.digest(md) == ascon_hash256::ascon_hash256_status_t::message_digest_produced);
 
   // Returns hex-encoded digest.
   return bytes_to_hex(md);
@@ -59,9 +60,9 @@ TEST(AsconHash256, ForSameMessageOneshotHashingAndIncrementalHashingProducesSame
     {
       ascon_hash256::ascon_hash256_t hasher;
 
-      EXPECT_TRUE(hasher.absorb(msg_span));
-      EXPECT_TRUE(hasher.finalize());
-      EXPECT_TRUE(hasher.digest(digest_oneshot));
+      EXPECT_EQ(hasher.absorb(msg_span), ascon_hash256::ascon_hash256_status_t::absorbed_data);
+      EXPECT_EQ(hasher.finalize(), ascon_hash256::ascon_hash256_status_t::finalized_data_absorption_phase);
+      EXPECT_EQ(hasher.digest(digest_oneshot), ascon_hash256::ascon_hash256_status_t::message_digest_produced);
     }
 
     // Incremental hashing
@@ -73,14 +74,120 @@ TEST(AsconHash256, ForSameMessageOneshotHashingAndIncrementalHashingProducesSame
         // Because we don't want to be stuck in an infinite loop if msg[msg_offset] = 0
         const auto elen = std::min<size_t>(std::max<uint8_t>(msg[msg_offset], 1), msg_byte_len - msg_offset);
 
-        EXPECT_TRUE(hasher.absorb(msg_span.subspan(msg_offset, elen)));
+        EXPECT_EQ(hasher.absorb(msg_span.subspan(msg_offset, elen)), ascon_hash256::ascon_hash256_status_t::absorbed_data);
         msg_offset += elen;
       }
 
-      EXPECT_TRUE(hasher.finalize());
-      EXPECT_TRUE(hasher.digest(digest_multishot));
+      EXPECT_EQ(hasher.finalize(), ascon_hash256::ascon_hash256_status_t::finalized_data_absorption_phase);
+      EXPECT_EQ(hasher.digest(digest_multishot), ascon_hash256::ascon_hash256_status_t::message_digest_produced);
     }
 
     EXPECT_EQ(digest_oneshot, digest_multishot);
   }
+}
+
+TEST(AsconHash256, ValidHashingSequence)
+{
+  std::array<uint8_t, 16> msg{};
+  std::array<uint8_t, ascon_hash256::DIGEST_BYTE_LEN> digest{};
+
+  ascon_hash256::ascon_hash256_t hasher;
+  EXPECT_EQ(hasher.absorb(msg), ascon_hash256::ascon_hash256_status_t::absorbed_data);
+  EXPECT_EQ(hasher.finalize(), ascon_hash256::ascon_hash256_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(hasher.digest(digest), ascon_hash256::ascon_hash256_status_t::message_digest_produced);
+}
+
+TEST(AsconHash256, MultipleAbsorbCalls)
+{
+  std::array<uint8_t, 8> msg1{};
+  std::array<uint8_t, 8> msg2{};
+  std::array<uint8_t, ascon_hash256::DIGEST_BYTE_LEN> digest{};
+
+  ascon_hash256::ascon_hash256_t hasher;
+  EXPECT_EQ(hasher.absorb(msg1), ascon_hash256::ascon_hash256_status_t::absorbed_data);
+  EXPECT_EQ(hasher.absorb(msg2), ascon_hash256::ascon_hash256_status_t::absorbed_data);
+  EXPECT_EQ(hasher.finalize(), ascon_hash256::ascon_hash256_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(hasher.digest(digest), ascon_hash256::ascon_hash256_status_t::message_digest_produced);
+}
+
+TEST(AsconHash256, MultipleFinalizeCalls)
+{
+  std::array<uint8_t, 16> msg{};
+  std::array<uint8_t, ascon_hash256::DIGEST_BYTE_LEN> digest{};
+
+  ascon_hash256::ascon_hash256_t hasher;
+  EXPECT_EQ(hasher.absorb(msg), ascon_hash256::ascon_hash256_status_t::absorbed_data);
+  EXPECT_EQ(hasher.finalize(), ascon_hash256::ascon_hash256_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(hasher.finalize(), ascon_hash256::ascon_hash256_status_t::data_absorption_phase_already_finalized);
+  EXPECT_EQ(hasher.digest(digest), ascon_hash256::ascon_hash256_status_t::message_digest_produced);
+}
+
+TEST(AsconHash256, MultipleProduceDigestCalls)
+{
+  std::array<uint8_t, 16> msg{};
+  std::array<uint8_t, ascon_hash256::DIGEST_BYTE_LEN> digest1{};
+  std::array<uint8_t, ascon_hash256::DIGEST_BYTE_LEN> digest2{};
+
+  ascon_hash256::ascon_hash256_t hasher;
+  EXPECT_EQ(hasher.absorb(msg), ascon_hash256::ascon_hash256_status_t::absorbed_data);
+  EXPECT_EQ(hasher.finalize(), ascon_hash256::ascon_hash256_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(hasher.digest(digest1), ascon_hash256::ascon_hash256_status_t::message_digest_produced);
+  EXPECT_EQ(hasher.digest(digest2), ascon_hash256::ascon_hash256_status_t::message_digest_already_produced);
+}
+
+TEST(AsconHash256, AbsorbMessageAfterFinalize)
+{
+  std::array<uint8_t, 8> msg1{};
+  std::array<uint8_t, 8> msg2{};
+  std::array<uint8_t, ascon_hash256::DIGEST_BYTE_LEN> digest{};
+
+  ascon_hash256::ascon_hash256_t hasher;
+  EXPECT_EQ(hasher.absorb(msg1), ascon_hash256::ascon_hash256_status_t::absorbed_data);
+  EXPECT_EQ(hasher.finalize(), ascon_hash256::ascon_hash256_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(hasher.absorb(msg2), ascon_hash256::ascon_hash256_status_t::data_absorption_phase_already_finalized);
+  EXPECT_EQ(hasher.digest(digest), ascon_hash256::ascon_hash256_status_t::message_digest_produced);
+}
+
+TEST(AsconHash256, AbsorbMessageAfterDigestIsProduced)
+{
+  std::array<uint8_t, 8> msg1{};
+  std::array<uint8_t, 8> msg2{};
+  std::array<uint8_t, ascon_hash256::DIGEST_BYTE_LEN> digest{};
+
+  ascon_hash256::ascon_hash256_t hasher;
+  EXPECT_EQ(hasher.absorb(msg1), ascon_hash256::ascon_hash256_status_t::absorbed_data);
+  EXPECT_EQ(hasher.finalize(), ascon_hash256::ascon_hash256_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(hasher.digest(digest), ascon_hash256::ascon_hash256_status_t::message_digest_produced);
+  EXPECT_EQ(hasher.absorb(msg2), ascon_hash256::ascon_hash256_status_t::data_absorption_phase_already_finalized);
+}
+
+TEST(AsconHash256, FinalizeAfterDigestIsProduced)
+{
+  std::array<uint8_t, 16> msg{};
+  std::array<uint8_t, ascon_hash256::DIGEST_BYTE_LEN> digest{};
+
+  ascon_hash256::ascon_hash256_t hasher;
+  EXPECT_EQ(hasher.absorb(msg), ascon_hash256::ascon_hash256_status_t::absorbed_data);
+  EXPECT_EQ(hasher.finalize(), ascon_hash256::ascon_hash256_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(hasher.digest(digest), ascon_hash256::ascon_hash256_status_t::message_digest_produced);
+  EXPECT_EQ(hasher.finalize(), ascon_hash256::ascon_hash256_status_t::data_absorption_phase_already_finalized);
+}
+
+TEST(AsconHash256, FinalizeWithoutAbsorption)
+{
+  std::array<uint8_t, ascon_hash256::DIGEST_BYTE_LEN> digest{};
+
+  ascon_hash256::ascon_hash256_t hasher;
+  EXPECT_EQ(hasher.finalize(), ascon_hash256::ascon_hash256_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(hasher.digest(digest), ascon_hash256::ascon_hash256_status_t::message_digest_produced);
+}
+
+TEST(AsconHash256, DigestWithoutFinalize)
+{
+  std::array<uint8_t, 16> msg{};
+  std::array<uint8_t, ascon_hash256::DIGEST_BYTE_LEN> digest{};
+
+  ascon_hash256::ascon_hash256_t hasher;
+  EXPECT_EQ(hasher.absorb(msg), ascon_hash256::ascon_hash256_status_t::absorbed_data);
+  EXPECT_EQ(hasher.digest(digest), ascon_hash256::ascon_hash256_status_t::still_in_data_absorption_phase);
 }

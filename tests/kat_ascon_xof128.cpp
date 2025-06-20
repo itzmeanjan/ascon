@@ -32,9 +32,9 @@ TEST(AsconXof128, KnownAnswerTests)
       std::vector<uint8_t> computed_md(md.size());
 
       ascon_xof128::ascon_xof128_t hasher;
-      EXPECT_TRUE(hasher.absorb(msg));
-      EXPECT_TRUE(hasher.finalize());
-      EXPECT_TRUE(hasher.squeeze(computed_md));
+      EXPECT_EQ(hasher.absorb(msg), ascon_xof128::ascon_xof128_status_t::absorbed_data);
+      EXPECT_EQ(hasher.finalize(), ascon_xof128::ascon_xof128_status_t::finalized_data_absorption_phase);
+      EXPECT_EQ(hasher.squeeze(computed_md), ascon_xof128::ascon_xof128_status_t::squeezed_output);
 
       EXPECT_EQ(computed_md, md);
 

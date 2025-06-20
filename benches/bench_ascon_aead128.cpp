@@ -47,8 +47,8 @@ ascon_aead128_encrypt(benchmark::State& state)
 
 BENCHMARK(ascon_aead128_encrypt)
   ->ArgsProduct({
-    { 32 },                     // Associated data
-    { 32, 256, 2'048, 16'384 }, // Plain text
+    { 32 },                             // Associated data
+    { 32, 256, 2 * 1'024, 16 * 1'024 }, // Plain text
   })
   ->ComputeStatistics("min", compute_min)
   ->ComputeStatistics("max", compute_max);
