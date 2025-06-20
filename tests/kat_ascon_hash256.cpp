@@ -33,9 +33,9 @@ TEST(AsconHash256, KnownAnswerTests)
       std::array<uint8_t, ascon_hash256::DIGEST_BYTE_LEN> computed_md{};
 
       ascon_hash256::ascon_hash256_t hasher;
-      EXPECT_TRUE(hasher.absorb(msg));
-      EXPECT_TRUE(hasher.finalize());
-      EXPECT_TRUE(hasher.digest(computed_md));
+      EXPECT_EQ(hasher.absorb(msg), ascon_hash256::ascon_hash256_status_t::absorbed_data);
+      EXPECT_EQ(hasher.finalize(), ascon_hash256::ascon_hash256_status_t::finalized_data_absorption_phase);
+      EXPECT_EQ(hasher.digest(computed_md), ascon_hash256::ascon_hash256_status_t::message_digest_produced);
 
       EXPECT_TRUE(std::ranges::equal(computed_md, md));
 
