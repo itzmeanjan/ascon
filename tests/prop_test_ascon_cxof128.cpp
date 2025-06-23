@@ -1,5 +1,6 @@
 #include "ascon/hashes/ascon_cxof128.hpp"
 #include "test_helper.hpp"
+#include <array>
 #include <cassert>
 #include <gtest/gtest.h>
 
@@ -30,17 +31,19 @@ eval_ascon_cxof128()
   return bytes_to_hex(md);
 }
 
-TEST(AsconCXOF128, CompileTimeComputeXofOutput)
+TEST(AsconCXOF128, CompileTimeComputeCXOFOutput)
 {
-  // AsconCXOF128("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f") =
-  // "0b8e325b9bbf1bb43e77aa1eed93bee62b4ea1e4b0c5a696b2f5c5b09c968918"
-  constexpr auto md = eval_ascon_cxof128();
-  constexpr auto flg = md == std::array<char, 64>{ '0', 'b', '8', 'e', '3', '2', '5', 'b', '9', 'b', 'b', 'f', '1', 'b', 'b', '4', '3', 'e', '7', '7', 'a', 'a',
-                                                   '1', 'e', 'e', 'd', '9', '3', 'b', 'e', 'e', '6', '2', 'b', '4', 'e', 'a', '1', 'e', '4', 'b', '0', 'c', '5',
-                                                   'a', '6', '9', '6', 'b', '2', 'f', '5', 'c', '5', 'b', '0', '9', 'c', '9', '6', '8', '9', '1', '8' };
+  constexpr auto expected_output =
+    std::array<char, 64>{ 'E', '0', '9', '8', 'F', '0', '4', '7', 'A', '8', 'A', 'C', 'A', '0', '3', '1', '7', '0', '7', '6', 'E', '4',
+                          '8', '2', 'E', '2', '8', '4', 'F', '5', '7', '9', 'B', 'E', '1', '7', '3', 'A', '2', 'F', '0', 'B', 'D', '5',
+                          '6', '8', 'D', '3', '3', '1', '9', '8', '3', '1', 'B', 'A', '3', '5', '2', '8', 'C', '4', '4', 'D' };
 
-  static_assert(!flg, "Must not be able to evaluate Ascon-CXOF128 correctly, as expected output is wrong. I'll update it !");
-  EXPECT_FALSE(flg);
+  // AsconCXOF128("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f") = "E098F047A8ACA0317076E482E284F579BE173A2F0BD568D3319831BA3528C44D"
+  constexpr auto md = eval_ascon_cxof128();
+  constexpr auto is_matching = md == expected_output;
+
+  static_assert(is_matching, "Must be able to evaluate Ascon-CXOF128 during program compilation time itself !");
+  EXPECT_TRUE(is_matching);
 }
 
 TEST(AsconCXOF128, ForSameMessageOneshotHashingAndIncrementalHashingProducesSameOutput)
