@@ -21,10 +21,10 @@ eval_ascon_cxof128()
   std::array<uint8_t, olen> md{};
 
   ascon_cxof128::ascon_cxof128_t hasher;
-  assert(hasher.customize(cust_str));
-  assert(hasher.absorb(data));
-  assert(hasher.finalize());
-  assert(hasher.squeeze(md));
+  assert(hasher.customize(cust_str) == ascon_cxof128::ascon_cxof128_status_t::customized);
+  assert(hasher.absorb(data) == ascon_cxof128::ascon_cxof128_status_t::absorbed_data);
+  assert(hasher.finalize() == ascon_cxof128::ascon_cxof128_status_t::finalized_data_absorption_phase);
+  assert(hasher.squeeze(md) == ascon_cxof128::ascon_cxof128_status_t::squeezed_output);
 
   // Returns hex-encoded digest.
   return bytes_to_hex(md);
@@ -64,38 +64,38 @@ TEST(AsconCXOF128, ForSameMessageOneshotHashingAndIncrementalHashingProducesSame
         {
           ascon_cxof128::ascon_cxof128_t hasher;
 
-          EXPECT_TRUE(hasher.customize(cust_str));
-          EXPECT_TRUE(hasher.absorb(msg_span));
-          EXPECT_TRUE(hasher.finalize());
-          EXPECT_TRUE(hasher.squeeze(digest_oneshot_span));
+          EXPECT_EQ(hasher.customize(cust_str), ascon_cxof128::ascon_cxof128_status_t::customized);
+          EXPECT_EQ(hasher.absorb(msg_span), ascon_cxof128::ascon_cxof128_status_t::absorbed_data);
+          EXPECT_EQ(hasher.finalize(), ascon_cxof128::ascon_cxof128_status_t::finalized_data_absorption_phase);
+          EXPECT_EQ(hasher.squeeze(digest_oneshot_span), ascon_cxof128::ascon_cxof128_status_t::squeezed_output);
         }
 
         // Incremental hashing
         {
           ascon_cxof128::ascon_cxof128_t hasher;
 
-          EXPECT_TRUE(hasher.customize(cust_str));
+          EXPECT_EQ(hasher.customize(cust_str), ascon_cxof128::ascon_cxof128_status_t::customized);
 
           size_t msg_offset = 0;
           while (msg_offset < msg_byte_len) {
             // Because we don't want to be stuck in an infinite loop if msg[off] = 0
             const auto elen = std::min<size_t>(std::max<uint8_t>(msg_span[msg_offset], 1), msg_byte_len - msg_offset);
 
-            EXPECT_TRUE(hasher.absorb(msg_span.subspan(msg_offset, elen)));
+            EXPECT_EQ(hasher.absorb(msg_span.subspan(msg_offset, elen)), ascon_cxof128::ascon_cxof128_status_t::absorbed_data);
             msg_offset += elen;
           }
 
-          EXPECT_TRUE(hasher.finalize());
+          EXPECT_EQ(hasher.finalize(), ascon_cxof128::ascon_cxof128_status_t::finalized_data_absorption_phase);
 
           // Squeeze message bytes in many iterations
           size_t output_offset = 0;
           while (output_offset < output_byte_len) {
-            EXPECT_TRUE(hasher.squeeze(digest_multishot_span.subspan(output_offset, 1)));
+            EXPECT_EQ(hasher.squeeze(digest_multishot_span.subspan(output_offset, 1)), ascon_cxof128::ascon_cxof128_status_t::squeezed_output);
 
             auto elen = std::min<size_t>(digest_multishot_span[output_offset], output_byte_len - (output_offset + 1));
 
             output_offset += 1;
-            EXPECT_TRUE(hasher.squeeze(digest_multishot_span.subspan(output_offset, elen)));
+            EXPECT_EQ(hasher.squeeze(digest_multishot_span.subspan(output_offset, elen)), ascon_cxof128::ascon_cxof128_status_t::squeezed_output);
             output_offset += elen;
           }
         }
@@ -104,4 +104,194 @@ TEST(AsconCXOF128, ForSameMessageOneshotHashingAndIncrementalHashingProducesSame
       }
     }
   }
+}
+
+TEST(AsconCXOF128, ValidCXOFSequence)
+{
+  std::array<uint8_t, 8> cstr{};
+  std::array<uint8_t, 16> msg{};
+  std::array<uint8_t, 32> output{};
+
+  ascon_cxof128::ascon_cxof128_t cxof;
+  EXPECT_EQ(cxof.customize(cstr), ascon_cxof128::ascon_cxof128_status_t::customized);
+  EXPECT_EQ(cxof.absorb(msg), ascon_cxof128::ascon_cxof128_status_t::absorbed_data);
+  EXPECT_EQ(cxof.finalize(), ascon_cxof128::ascon_cxof128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(cxof.squeeze(output), ascon_cxof128::ascon_cxof128_status_t::squeezed_output);
+}
+
+TEST(AsconCXOF128, MultipleCustomizeCalls)
+{
+  std::array<uint8_t, 8> cstr{};
+  std::array<uint8_t, 16> msg{};
+  std::array<uint8_t, 32> output{};
+
+  ascon_cxof128::ascon_cxof128_t cxof;
+  EXPECT_EQ(cxof.customize(cstr), ascon_cxof128::ascon_cxof128_status_t::customized);
+  EXPECT_EQ(cxof.customize(cstr), ascon_cxof128::ascon_cxof128_status_t::already_customized);
+  EXPECT_EQ(cxof.absorb(msg), ascon_cxof128::ascon_cxof128_status_t::absorbed_data);
+  EXPECT_EQ(cxof.finalize(), ascon_cxof128::ascon_cxof128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(cxof.squeeze(output), ascon_cxof128::ascon_cxof128_status_t::squeezed_output);
+}
+
+TEST(AsconCXOF128, MultipleAbsorbCalls)
+{
+  std::array<uint8_t, 8> cstr{};
+  std::array<uint8_t, 16> msg{};
+  std::array<uint8_t, 32> output{};
+
+  ascon_cxof128::ascon_cxof128_t cxof;
+  EXPECT_EQ(cxof.customize(cstr), ascon_cxof128::ascon_cxof128_status_t::customized);
+  EXPECT_EQ(cxof.absorb(msg), ascon_cxof128::ascon_cxof128_status_t::absorbed_data);
+  EXPECT_EQ(cxof.absorb(msg), ascon_cxof128::ascon_cxof128_status_t::absorbed_data);
+  EXPECT_EQ(cxof.finalize(), ascon_cxof128::ascon_cxof128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(cxof.squeeze(output), ascon_cxof128::ascon_cxof128_status_t::squeezed_output);
+}
+
+TEST(AsconCXOF128, MultipleFinalizeCalls)
+{
+  std::array<uint8_t, 8> cstr{};
+  std::array<uint8_t, 16> msg{};
+  std::array<uint8_t, 32> output{};
+
+  ascon_cxof128::ascon_cxof128_t cxof;
+  EXPECT_EQ(cxof.customize(cstr), ascon_cxof128::ascon_cxof128_status_t::customized);
+  EXPECT_EQ(cxof.absorb(msg), ascon_cxof128::ascon_cxof128_status_t::absorbed_data);
+  EXPECT_EQ(cxof.finalize(), ascon_cxof128::ascon_cxof128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(cxof.finalize(), ascon_cxof128::ascon_cxof128_status_t::data_absorption_phase_already_finalized);
+  EXPECT_EQ(cxof.squeeze(output), ascon_cxof128::ascon_cxof128_status_t::squeezed_output);
+}
+
+TEST(AsconCXOF128, MultipleSqueezeCalls)
+{
+  std::array<uint8_t, 8> cstr{};
+  std::array<uint8_t, 16> msg{};
+  std::array<uint8_t, 32> output{};
+
+  ascon_cxof128::ascon_cxof128_t cxof;
+  EXPECT_EQ(cxof.customize(cstr), ascon_cxof128::ascon_cxof128_status_t::customized);
+  EXPECT_EQ(cxof.absorb(msg), ascon_cxof128::ascon_cxof128_status_t::absorbed_data);
+  EXPECT_EQ(cxof.finalize(), ascon_cxof128::ascon_cxof128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(cxof.squeeze(output), ascon_cxof128::ascon_cxof128_status_t::squeezed_output);
+  EXPECT_EQ(cxof.squeeze(output), ascon_cxof128::ascon_cxof128_status_t::squeezed_output);
+}
+
+TEST(AsconCXOF128, CustomizeDuringAbsorption)
+{
+  std::array<uint8_t, 8> cstr{};
+  std::array<uint8_t, 16> msg{};
+  std::array<uint8_t, 32> output{};
+
+  ascon_cxof128::ascon_cxof128_t cxof;
+  EXPECT_EQ(cxof.customize(cstr), ascon_cxof128::ascon_cxof128_status_t::customized);
+  EXPECT_EQ(cxof.absorb(msg), ascon_cxof128::ascon_cxof128_status_t::absorbed_data);
+  EXPECT_EQ(cxof.customize(cstr), ascon_cxof128::ascon_cxof128_status_t::already_customized);
+  EXPECT_EQ(cxof.finalize(), ascon_cxof128::ascon_cxof128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(cxof.squeeze(output), ascon_cxof128::ascon_cxof128_status_t::squeezed_output);
+}
+
+TEST(AsconCXOF128, CustomizeAfterFinalization)
+{
+  std::array<uint8_t, 8> cstr{};
+  std::array<uint8_t, 16> msg{};
+  std::array<uint8_t, 32> output{};
+
+  ascon_cxof128::ascon_cxof128_t cxof;
+  EXPECT_EQ(cxof.customize(cstr), ascon_cxof128::ascon_cxof128_status_t::customized);
+  EXPECT_EQ(cxof.absorb(msg), ascon_cxof128::ascon_cxof128_status_t::absorbed_data);
+  EXPECT_EQ(cxof.finalize(), ascon_cxof128::ascon_cxof128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(cxof.customize(cstr), ascon_cxof128::ascon_cxof128_status_t::already_customized);
+  EXPECT_EQ(cxof.squeeze(output), ascon_cxof128::ascon_cxof128_status_t::squeezed_output);
+}
+
+TEST(AsconCXOF128, CustomizeDuringSqueezing)
+{
+  std::array<uint8_t, 8> cstr{};
+  std::array<uint8_t, 16> msg{};
+  std::array<uint8_t, 32> output{};
+
+  ascon_cxof128::ascon_cxof128_t cxof;
+  EXPECT_EQ(cxof.customize(cstr), ascon_cxof128::ascon_cxof128_status_t::customized);
+  EXPECT_EQ(cxof.absorb(msg), ascon_cxof128::ascon_cxof128_status_t::absorbed_data);
+  EXPECT_EQ(cxof.finalize(), ascon_cxof128::ascon_cxof128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(cxof.squeeze(output), ascon_cxof128::ascon_cxof128_status_t::squeezed_output);
+  EXPECT_EQ(cxof.customize(cstr), ascon_cxof128::ascon_cxof128_status_t::already_customized);
+}
+
+TEST(AsconCXOF128, AbsorbMessageAfterFinalization)
+{
+  std::array<uint8_t, 8> cstr{};
+  std::array<uint8_t, 16> msg{};
+  std::array<uint8_t, 32> output{};
+
+  ascon_cxof128::ascon_cxof128_t cxof;
+  EXPECT_EQ(cxof.customize(cstr), ascon_cxof128::ascon_cxof128_status_t::customized);
+  EXPECT_EQ(cxof.absorb(msg), ascon_cxof128::ascon_cxof128_status_t::absorbed_data);
+  EXPECT_EQ(cxof.finalize(), ascon_cxof128::ascon_cxof128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(cxof.absorb(msg), ascon_cxof128::ascon_cxof128_status_t::data_absorption_phase_already_finalized);
+  EXPECT_EQ(cxof.squeeze(output), ascon_cxof128::ascon_cxof128_status_t::squeezed_output);
+}
+
+TEST(AsconCXOF128, AbsorbMessageDuringSqueezing)
+{
+  std::array<uint8_t, 8> cstr{};
+  std::array<uint8_t, 16> msg{};
+  std::array<uint8_t, 32> output{};
+
+  ascon_cxof128::ascon_cxof128_t cxof;
+  EXPECT_EQ(cxof.customize(cstr), ascon_cxof128::ascon_cxof128_status_t::customized);
+  EXPECT_EQ(cxof.absorb(msg), ascon_cxof128::ascon_cxof128_status_t::absorbed_data);
+  EXPECT_EQ(cxof.finalize(), ascon_cxof128::ascon_cxof128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(cxof.squeeze(output), ascon_cxof128::ascon_cxof128_status_t::squeezed_output);
+  EXPECT_EQ(cxof.absorb(msg), ascon_cxof128::ascon_cxof128_status_t::data_absorption_phase_already_finalized);
+}
+
+TEST(AsconCXOF128, FinalizeDuringSqueezing)
+{
+  std::array<uint8_t, 8> cstr{};
+  std::array<uint8_t, 16> msg{};
+  std::array<uint8_t, 32> output{};
+
+  ascon_cxof128::ascon_cxof128_t cxof;
+  EXPECT_EQ(cxof.customize(cstr), ascon_cxof128::ascon_cxof128_status_t::customized);
+  EXPECT_EQ(cxof.absorb(msg), ascon_cxof128::ascon_cxof128_status_t::absorbed_data);
+  EXPECT_EQ(cxof.finalize(), ascon_cxof128::ascon_cxof128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(cxof.squeeze(output), ascon_cxof128::ascon_cxof128_status_t::squeezed_output);
+  EXPECT_EQ(cxof.finalize(), ascon_cxof128::ascon_cxof128_status_t::data_absorption_phase_already_finalized);
+}
+
+TEST(AsconCXOF128, AbsorbWithoutCustomize)
+{
+  std::array<uint8_t, 8> cstr{};
+  std::array<uint8_t, 16> msg{};
+  std::array<uint8_t, 32> output{};
+
+  ascon_cxof128::ascon_cxof128_t cxof;
+  EXPECT_EQ(cxof.absorb(msg), ascon_cxof128::ascon_cxof128_status_t::not_yet_customized);
+  EXPECT_EQ(cxof.customize(cstr), ascon_cxof128::ascon_cxof128_status_t::customized);
+  EXPECT_EQ(cxof.absorb(msg), ascon_cxof128::ascon_cxof128_status_t::absorbed_data);
+  EXPECT_EQ(cxof.finalize(), ascon_cxof128::ascon_cxof128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(cxof.squeeze(output), ascon_cxof128::ascon_cxof128_status_t::squeezed_output);
+}
+
+TEST(AsconCXOF128, FinalizeWithoutAbsorb)
+{
+  std::array<uint8_t, 8> cstr{};
+  std::array<uint8_t, 32> output{};
+
+  ascon_cxof128::ascon_cxof128_t cxof;
+  EXPECT_EQ(cxof.customize(cstr), ascon_cxof128::ascon_cxof128_status_t::customized);
+  EXPECT_EQ(cxof.finalize(), ascon_cxof128::ascon_cxof128_status_t::finalized_data_absorption_phase);
+  EXPECT_EQ(cxof.squeeze(output), ascon_cxof128::ascon_cxof128_status_t::squeezed_output);
+}
+
+TEST(AsconCXOF128, SqueezeWithoutFinalize)
+{
+  std::array<uint8_t, 8> cstr{};
+  std::array<uint8_t, 16> msg{};
+  std::array<uint8_t, 32> output{};
+
+  ascon_cxof128::ascon_cxof128_t cxof;
+  EXPECT_EQ(cxof.customize(cstr), ascon_cxof128::ascon_cxof128_status_t::customized);
+  EXPECT_EQ(cxof.absorb(msg), ascon_cxof128::ascon_cxof128_status_t::absorbed_data);
+  EXPECT_EQ(cxof.squeeze(output), ascon_cxof128::ascon_cxof128_status_t::still_in_data_absorption_phase);
 }

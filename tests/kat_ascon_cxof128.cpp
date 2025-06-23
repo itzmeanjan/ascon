@@ -37,10 +37,10 @@ TEST(AsconCXOF128, KnownAnswerTests)
       std::vector<uint8_t> computed_md(md.size());
 
       ascon_cxof128::ascon_cxof128_t hasher;
-      EXPECT_TRUE(hasher.customize(customization_str));
-      EXPECT_TRUE(hasher.absorb(msg));
-      EXPECT_TRUE(hasher.finalize());
-      EXPECT_TRUE(hasher.squeeze(computed_md));
+      EXPECT_EQ(hasher.customize(customization_str), ascon_cxof128::ascon_cxof128_status_t::customized);
+      EXPECT_EQ(hasher.absorb(msg), ascon_cxof128::ascon_cxof128_status_t::absorbed_data);
+      EXPECT_EQ(hasher.finalize(), ascon_cxof128::ascon_cxof128_status_t::finalized_data_absorption_phase);
+      EXPECT_EQ(hasher.squeeze(computed_md), ascon_cxof128::ascon_cxof128_status_t::squeezed_output);
 
       EXPECT_EQ(computed_md, md);
 
