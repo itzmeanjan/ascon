@@ -4,12 +4,11 @@
 #include <fstream>
 #include <gtest/gtest.h>
 
-TEST(AsconHash256, KnownAnswerTests)
+static void
+ascon_hash256_KAT_runner(const std::string file_name)
 {
   using namespace std::literals;
-
-  const std::string kat_file = "./kats/ascon_hash256.kat";
-  std::fstream file(kat_file);
+  std::fstream file(file_name);
 
   while (true) {
     std::string count0;
@@ -47,4 +46,14 @@ TEST(AsconHash256, KnownAnswerTests)
   }
 
   file.close();
+}
+
+TEST(AsconHash256, KnownAnswerTests)
+{
+  ascon_hash256_KAT_runner("./kats/ascon_hash256.kat");
+}
+
+TEST(AsconHash256, ACVPKnownAnswerTests)
+{
+  ascon_hash256_KAT_runner("./kats/ascon_hash256.acvp.kat");
 }
