@@ -16,12 +16,16 @@ enum class ascon_xof128_status_t : uint8_t
 {
   /// @brief Data was successfully absorbed by the `absorb()` method.
   absorbed_data = 0x01,
+
   /// @brief The state is still in the data absorption phase; `finalize()` must be called before squeezing output.
   still_in_data_absorption_phase,
+
   /// @brief The data absorption phase was successfully finalized by the `finalize()` method.
   finalized_data_absorption_phase,
+
   /// @brief Attempted to absorb data or finalize after the data absorption phase was already finalized.
   data_absorption_phase_already_finalized,
+
   /// @brief Output data was successfully squeezed by the `squeeze()` method.
   squeezed_output,
 };

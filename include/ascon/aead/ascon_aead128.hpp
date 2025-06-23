@@ -23,91 +23,37 @@ static constexpr size_t TAG_BYTE_LEN = ascon_duplex_mode::TAG_BYTE_LEN;
  */
 enum class ascon_aead128_status_t : uint8_t
 {
-  /**
-   * @brief Indicates that data has been successfully absorbed into the Ascon state.
-   *
-   * This status is returned by `absorb_data` when associated data is successfully absorbed.
-   */
+  /// @brief Indicates that data has been successfully absorbed into the Ascon state.
   absorbed_data = 0x01,
 
-  /**
-   * @brief Indicates that the process is still in the data absorption phase.
-   *
-   * This status is returned by `encrypt_plaintext` or `decrypt_ciphertext` if data absorption
-   * phase has not yet been finalized.
-   */
+  /// @brief Indicates that the process is still in the data absorption phase.
   still_in_data_absorption_phase,
 
-  /**
-   * @brief Indicates that the data absorption phase has been successfully finalized.
-   *
-   * This status is returned by `finalize_data` after associated data absorption is complete.
-   */
+  /// @brief Indicates that the data absorption phase has been successfully finalized.
   finalized_data_absorption_phase,
 
-  /**
-   * @brief Indicates that the data absorption phase has already been finalized.
-   *
-   * This status is returned by `absorb_data` or `finalize_data` if called after
-   * `finalize_data` has already been called. Meaning you should not be able to absorb
-   * any more associated data, after that phase has finished.
-   */
+  /// @brief Indicates that the data absorption phase has already been finalized.
   data_absorption_phase_already_finalized,
 
-  /**
-   * @brief Indicates that plaintext has been successfully encrypted, generating ciphertext.
-   *
-   * This status is returned by `encrypt_plaintext` after successful encryption.
-   */
+  /// @brief Indicates that plaintext has been successfully encrypted, generating ciphertext.
   encrypted_plaintext,
 
-  /**
-   * @brief Indicates that the encryption phase has been successfully completed.
-   *
-   * This status is returned by `finalize_encrypt` after tag generation.
-   */
+  /// @brief Indicates that the encryption phase has been successfully completed.
   finalized_encryption_phase,
 
-  /**
-   * @brief Indicates that the encryption phase has already been finalized.
-   *
-   * This status is returned by `encrypt_plaintext` or `finalize_encrypt` if called after
-   * `finalize_encrypt` has already been called. Meaning you should not be able to encrypt
-   * any more plaintext, after encryption phase has finished. Now, you have to get rid of
-   * this instance of Ascon-AEAD128.
-   */
+  /// @brief Indicates that the encryption phase has already been finalized.
   encryption_phase_already_finalized,
 
-  /**
-   * @brief Indicates that ciphertext has been successfully decrypted, generating plaintext.
-   *
-   * This status is returned by `decrypt_ciphertext` after successful decryption.
-   */
+  /// @brief Indicates that ciphertext has been successfully decrypted, generating plaintext.
   decrypted_ciphertext,
 
-  /**
-   * @brief Indicates that decryption was successful and the computed tag matches the provided tag.
-   *
-   * This status is returned by `finalize_decrypt` if tag verification succeeds.
-   */
+  /// @brief Indicates that decryption was successful and the computed tag matches the provided tag.
   decryption_success_as_tag_matches,
 
-  /**
-   * @brief Indicates that decryption failed due to a tag mismatch.
-   *
-   * This status is returned by `finalize_decrypt` if tag verification fails. Meaning you have to
-   * discard all of previously decrypted plaintext.
-   */
+  /// @brief Indicates that decryption failed due to a tag mismatch.
   decryption_failure_due_to_tag_mismatch,
 
-  /**
-   * @brief Indicates that the decryption phase has already been finalized.
-   *
-   * This status is returned by `decrypt_ciphertext` or `finalize_decrypt` if called after
-   * `finalize_decrypt` has already been called. Meaning you should not be able to decrypt
-   * any more ciphertext, after decryption phase has finished. Now, you have to get rid of
-   * this instance of Ascon-AEAD128.
-   */
+  /// @brief Indicates that the decryption phase has already been finalized.
   decryption_phase_already_finalized,
 };
 

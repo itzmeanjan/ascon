@@ -22,46 +22,22 @@ static constexpr auto INITIAL_PERMUTATION_STATE = ascon_sponge_mode::compute_ini
  */
 enum class ascon_hash256_status_t : uint8_t
 {
-  /**
-   * @brief Indicates that data was successfully absorbed into the hash state.
-   *
-   * Returned by the `absorb` method when input data is successfully processed.
-   */
+  /// @brief Indicates that data was successfully absorbed into the hash state.
   absorbed_data = 0x01,
 
-  /**
-   * @brief Indicates that the data absorption phase is still ongoing.
-   *
-   * Returned by the `digest` method if called before `finalize` has been successfully called.
-   */
+  /// @brief Indicates that the data absorption phase is still ongoing.
   still_in_data_absorption_phase,
 
-  /**
-   * @brief Indicates that the data absorption phase was successfully finalized.
-   *
-   * Returned by the `finalize` method when the absorption phase is successfully completed for the first time.
-   */
+  /// @brief Indicates that the data absorption phase was successfully finalized.
   finalized_data_absorption_phase,
 
-  /**
-   * @brief Indicates that the data absorption phase has already been finalized.
-   *
-   * Returned by the `absorb` or `finalize` methods if called after `finalize` has already been successfully called.
-   */
+  /// @brief Indicates that the data absorption phase has already been finalized.
   data_absorption_phase_already_finalized,
 
-  /**
-   * @brief Indicates that the message digest was successfully produced.
-   *
-   * Returned by the `digest` method when the final hash value is successfully computed and written to the output buffer for the first time.
-   */
+  /// @brief Indicates that the message digest was successfully produced.
   message_digest_produced,
 
-  /**
-   * @brief Indicates that the message digest has already been produced.
-   *
-   * Returned by the `digest` method if called after the digest has already been successfully produced in a previous call.
-   */
+  /// @brief Indicates that the message digest has already been produced.
   message_digest_already_produced,
 };
 
