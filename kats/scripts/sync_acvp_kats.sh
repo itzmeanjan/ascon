@@ -2,7 +2,7 @@
 
 ACVP_SERVER_REPO_PATH="ACVP-Server"
 if [ -d "$ACVP_SERVER_REPO_PATH" ]; then
-    echo "> $ACVP_SERVER_REPO_PATH repository does exist, let's fetch latest."
+    echo "> $ACVP_SERVER_REPO_PATH repository exists, let's just fetch latest."
 
     pushd $ACVP_SERVER_REPO_PATH
     git checkout master
