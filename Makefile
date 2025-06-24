@@ -39,7 +39,12 @@ $(GTEST_PARALLEL): $(SUBTLE_INC_DIR)
 .PHONY: clean
 clean: ## Remove build directory
 	rm -rf $(BUILD_DIR)
+	rm -rf kats/scripts/ACVP-Server
 
 .PHONY: format
 format: $(ASCON_SOURCES) $(TEST_SOURCES) $(TEST_HEADERS) $(BENCHMARK_SOURCES) $(BENCHMARK_HEADERS) $(EXAMPLE_SOURCES) $(EXAMPLE_HEADERS) ## Format source code
 	clang-format -i $^
+
+.PHONY: sync_acvp_kats
+sync_acvp_kats: ## Downloads NIST ACVP KAT vectors and updates local KATs
+	cd kats/scripts && ./sync_acvp_kats.sh && cd -

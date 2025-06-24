@@ -3,12 +3,11 @@
 #include <fstream>
 #include <gtest/gtest.h>
 
-TEST(AsconCXOF128, KnownAnswerTests)
+static void
+ascon_cxof128_KAT_runner(const std::string file_name)
 {
   using namespace std::literals;
-
-  const std::string kat_file = "./kats/ascon_cxof128.kat";
-  std::fstream file(kat_file);
+  std::fstream file(file_name);
 
   while (true) {
     std::string count0;
@@ -37,10 +36,10 @@ TEST(AsconCXOF128, KnownAnswerTests)
       std::vector<uint8_t> computed_md(md.size());
 
       ascon_cxof128::ascon_cxof128_t hasher;
-      EXPECT_TRUE(hasher.customize(customization_str));
-      EXPECT_TRUE(hasher.absorb(msg));
-      EXPECT_TRUE(hasher.finalize());
-      EXPECT_TRUE(hasher.squeeze(computed_md));
+      EXPECT_EQ(hasher.customize(customization_str), ascon_cxof128::ascon_cxof128_status_t::customized);
+      EXPECT_EQ(hasher.absorb(msg), ascon_cxof128::ascon_cxof128_status_t::absorbed_data);
+      EXPECT_EQ(hasher.finalize(), ascon_cxof128::ascon_cxof128_status_t::finalized_data_absorption_phase);
+      EXPECT_EQ(hasher.squeeze(computed_md), ascon_cxof128::ascon_cxof128_status_t::squeezed_output);
 
       EXPECT_EQ(computed_md, md);
 
@@ -52,4 +51,14 @@ TEST(AsconCXOF128, KnownAnswerTests)
   }
 
   file.close();
+}
+
+TEST(AsconCXOF128, KnownAnswerTests)
+{
+  ascon_cxof128_KAT_runner("./kats/ascon_cxof128.kat");
+}
+
+TEST(AsconCXOF128, ACVPKnownAnswerTests)
+{
+  ascon_cxof128_KAT_runner("./kats/ascon_cxof128.acvp.kat");
 }

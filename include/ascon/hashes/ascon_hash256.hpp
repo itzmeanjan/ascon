@@ -14,6 +14,34 @@ static constexpr auto INITIAL_PERMUTATION_STATE = ascon_sponge_mode::compute_ini
                                                                                                                        ascon_sponge_mode::RATE_BYTES));
 
 /**
+ * @brief Enumerates the possible status results of Ascon-Hash256 operations.
+ *
+ * These status codes indicate the result of calling methods like `absorb`, `finalize`, and `digest`,
+ * reflecting the current state of the hashing process (e.g., whether data was absorbed, if
+ * the absorption phase is finished, or if the digest has been produced).
+ */
+enum class ascon_hash256_status_t : uint8_t
+{
+  /// @brief Indicates that data was successfully absorbed into the hash state.
+  absorbed_data = 0x01,
+
+  /// @brief Indicates that the data absorption phase is still ongoing.
+  still_in_data_absorption_phase,
+
+  /// @brief Indicates that the data absorption phase was successfully finalized.
+  finalized_data_absorption_phase,
+
+  /// @brief Indicates that the data absorption phase has already been finalized.
+  data_absorption_phase_already_finalized,
+
+  /// @brief Indicates that the message digest was successfully produced.
+  message_digest_produced,
+
+  /// @brief Indicates that the message digest has already been produced.
+  message_digest_already_produced,
+};
+
+/**
  * @brief Represents the Ascon-Hash256 hashing algorithm.
  *
  * This struct encapsulates the state and methods for computing the Ascon-Hash256 hash of a message. It uses the Ascon permutation and a sponge construction.
@@ -50,39 +78,42 @@ public:
    * function. This function can be called multiple times to absorb data in chunks; only after calling `finalize()` will further calls to `absorb` be ignored.
    *
    * @param msg A span of bytes representing the data to absorb.
-   * @return `true` if the data was successfully absorbed, `false` if the hash state has already been finalized.
+   * @return An `ascon_hash256_status_t` indicating if data was successfully absorbed (`ascon_hash256_status_t::absorbed_data`)
+   * or if the data absorption phase was already finalized (`ascon_hash256_status_t::data_absorption_phase_already_finalized`).
    */
   [[nodiscard]]
-  forceinline constexpr bool absorb(std::span<const uint8_t> msg)
+  forceinline constexpr ascon_hash256_status_t absorb(std::span<const uint8_t> msg)
   {
-    if (!finished_absorbing) [[likely]] {
-      ascon_sponge_mode::absorb(state, offset, msg);
-      return true;
+    if (finished_absorbing) {
+      return ascon_hash256_status_t::data_absorption_phase_already_finalized;
     }
 
-    return false;
+    ascon_sponge_mode::absorb(state, offset, msg);
+    return ascon_hash256_status_t::absorbed_data;
   }
 
   /**
    * @brief Finalizes the hash computation.
    *
    * This function finalizes the hash computation by padding the message and performing the necessary final transformations within the Ascon sponge
-   * construction.  It must be called before calling `digest()` to obtain the final hash value.  Calling this function multiple times has no effect.
+   * construction. It must be called before calling `digest()` to obtain the final hash value. Calling this function multiple times has no effect.
    * Subsequent calls to `absorb` after calling `finalize` will be ignored.
    *
-   * @return `true` if the function successfully finalized the hash computation (meaning it was called before and not after `digest`), `false` otherwise.
+   * @return An `ascon_hash256_status_t` indicating if the data absorption phase was successfully finalized
+   * (`ascon_hash256_status_t::finalized_data_absorption_phase`) or if it was already finalized
+   * (`ascon_hash256_status_t::data_absorption_phase_already_finalized`).
    */
   [[nodiscard]]
-  forceinline constexpr bool finalize()
+  forceinline constexpr ascon_hash256_status_t finalize()
   {
-    if (!finished_absorbing) [[likely]] {
-      ascon_sponge_mode::finalize(state, offset);
-      finished_absorbing = true;
-
-      return true;
+    if (finished_absorbing) {
+      return ascon_hash256_status_t::data_absorption_phase_already_finalized;
     }
 
-    return false;
+    ascon_sponge_mode::finalize(state, offset);
+    finished_absorbing = true;
+
+    return ascon_hash256_status_t::finalized_data_absorption_phase;
   }
 
   /**
@@ -92,20 +123,27 @@ public:
    * successfully extract and return the digest; subsequent calls will only return `false`.
    *
    * @param out A span of bytes where the resulting digest will be written.  The span must be large enough to hold a digest of `DIGEST_BYTE_LEN` bytes.
-   * @return `true` if the digest was successfully extracted (this is the first call after `finalize()`), `false` otherwise.
+   * @return An `ascon_hash256_status_t` indicating if the message digest was successfully produced (`ascon_hash256_status_t::message_digest_produced`), if the
+   * data absorption phase has not yet been finalized (`ascon_hash256_status_t::still_in_data_absorption_phase`), or if the message digest has already been
+   * produced (`ascon_hash256_status_t::message_digest_already_produced`).
    */
   [[nodiscard]]
-  forceinline constexpr bool digest(std::span<uint8_t, DIGEST_BYTE_LEN> out)
+  forceinline constexpr ascon_hash256_status_t digest(std::span<uint8_t, DIGEST_BYTE_LEN> out)
   {
-    if (finished_absorbing && !finished_squeezing) [[likely]] {
-      size_t readable = ascon_sponge_mode::RATE_BYTES;
-      ascon_sponge_mode::squeeze(state, readable, out);
-
-      finished_squeezing = true;
-      return true;
+    if (!finished_absorbing) {
+      return ascon_hash256_status_t::still_in_data_absorption_phase;
+    }
+    if (finished_squeezing) {
+      return ascon_hash256_status_t::message_digest_already_produced;
     }
 
-    return false;
+    size_t readable = ascon_sponge_mode::RATE_BYTES;
+    ascon_sponge_mode::squeeze(state, readable, out);
+
+    finished_squeezing = true;
+    this->state.reset();
+
+    return ascon_hash256_status_t::message_digest_produced;
   }
 };
 

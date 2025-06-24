@@ -16,9 +16,9 @@ main()
   generate_random_data<uint8_t>(msg);
 
   ascon_xof128::ascon_xof128_t hasher;
-  assert(hasher.absorb(msg));
-  assert(hasher.finalize());
-  assert(hasher.squeeze(out));
+  assert(hasher.absorb(msg) == ascon_xof128::ascon_xof128_status_t::absorbed_data);
+  assert(hasher.finalize() == ascon_xof128::ascon_xof128_status_t::finalized_data_absorption_phase);
+  assert(hasher.squeeze(out) == ascon_xof128::ascon_xof128_status_t::squeezed_output);
 
   std::cout << "Ascon-XOF128\n\n";
   std::cout << "Message :\t" << bytes_to_hex_string(msg) << "\n";

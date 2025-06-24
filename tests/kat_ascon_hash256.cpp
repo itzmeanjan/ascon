@@ -4,12 +4,11 @@
 #include <fstream>
 #include <gtest/gtest.h>
 
-TEST(AsconHash256, KnownAnswerTests)
+static void
+ascon_hash256_KAT_runner(const std::string file_name)
 {
   using namespace std::literals;
-
-  const std::string kat_file = "./kats/ascon_hash256.kat";
-  std::fstream file(kat_file);
+  std::fstream file(file_name);
 
   while (true) {
     std::string count0;
@@ -33,9 +32,9 @@ TEST(AsconHash256, KnownAnswerTests)
       std::array<uint8_t, ascon_hash256::DIGEST_BYTE_LEN> computed_md{};
 
       ascon_hash256::ascon_hash256_t hasher;
-      EXPECT_TRUE(hasher.absorb(msg));
-      EXPECT_TRUE(hasher.finalize());
-      EXPECT_TRUE(hasher.digest(computed_md));
+      EXPECT_EQ(hasher.absorb(msg), ascon_hash256::ascon_hash256_status_t::absorbed_data);
+      EXPECT_EQ(hasher.finalize(), ascon_hash256::ascon_hash256_status_t::finalized_data_absorption_phase);
+      EXPECT_EQ(hasher.digest(computed_md), ascon_hash256::ascon_hash256_status_t::message_digest_produced);
 
       EXPECT_TRUE(std::ranges::equal(computed_md, md));
 
@@ -47,4 +46,14 @@ TEST(AsconHash256, KnownAnswerTests)
   }
 
   file.close();
+}
+
+TEST(AsconHash256, KnownAnswerTests)
+{
+  ascon_hash256_KAT_runner("./kats/ascon_hash256.kat");
+}
+
+TEST(AsconHash256, ACVPKnownAnswerTests)
+{
+  ascon_hash256_KAT_runner("./kats/ascon_hash256.acvp.kat");
 }

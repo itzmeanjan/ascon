@@ -13,22 +13,17 @@ bench_ascon_hash256(benchmark::State& state)
 
   generate_random_data<uint8_t>(msg);
 
-  bool ret_val = true;
   for (auto _ : state) {
-    ascon_hash256::ascon_hash256_t hasher;
-
-    benchmark::DoNotOptimize(ret_val);
     benchmark::DoNotOptimize(msg);
     benchmark::DoNotOptimize(digest);
 
-    ret_val &= hasher.absorb(msg);
-    ret_val &= hasher.finalize();
-    ret_val &= hasher.digest(digest);
+    ascon_hash256::ascon_hash256_t hasher;
+    assert(hasher.absorb(msg) == ascon_hash256::ascon_hash256_status_t::absorbed_data);
+    assert(hasher.finalize() == ascon_hash256::ascon_hash256_status_t::finalized_data_absorption_phase);
+    assert(hasher.digest(digest) == ascon_hash256::ascon_hash256_status_t::message_digest_produced);
 
     benchmark::ClobberMemory();
   }
-
-  assert(ret_val);
 
   const size_t total_bytes_processed = msg.size() * state.iterations();
   state.SetBytesProcessed(total_bytes_processed);
@@ -40,7 +35,11 @@ bench_ascon_hash256(benchmark::State& state)
 
 BENCHMARK(bench_ascon_hash256)
   ->Name("ascon_hash256")
-  ->RangeMultiplier(8)
-  ->Range(32, 16 * 1'024)
+  ->ArgsProduct({ {
+    32,
+    64,
+    2 * 1'024,
+    16 * 1'024,
+  } })
   ->ComputeStatistics("min", compute_min)
   ->ComputeStatistics("max", compute_max);
