@@ -36,6 +36,11 @@ def main():
             sys.stdout.write(f'CT = {test["ct"]}\n')
             sys.stdout.write(f'Tag = {test["tag"]}\n')
 
+            if test_group["direction"]  == "decrypt":
+                sys.stdout.write(f'TestPassed = {test["testPassed"]}\n')
+            else:
+                sys.stdout.write(f'TestPassed = {True}\n')
+
             sys.stdout.write('\n')
             sys.stdout.flush()
 
