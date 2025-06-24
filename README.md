@@ -1,8 +1,8 @@
 # ascon
-Ascon-Based Lightweight Cryptography Standards for Constrained Devices: Authenticated Encryption, Hash, and Extendable Output Functions.
+Ascon Permutation-based Lightweight Cryptography Standards for Constrained Devices: Authenticated Encryption, Hash, and Extendable Output Functions.
 
 ## Overview
-This header-only C++ library implements the whole Ascon LwC cipher-suite, specifically Ascon-AEAD128, Ascon-Hash256, Ascon-XOF128, and Ascon-CXOF128.  These algorithms, suitable for constrained environments, are part of the Ascon family designed for resource-limited devices, prioritizing security, performance, and efficiency. The library offers `constexpr` functions where possible for enhanced performance and simplifies integration.  The implementation conforms to the Ascon draft standard defined in [NIST SP 800-232](https://doi.org/10.6028/NIST.SP.800-232.ipd).
+This header-only C++ library implements the whole Ascon LwC cipher-suite i.e. Ascon-AEAD128, Ascon-Hash256, Ascon-XOF128, and Ascon-CXOF128. These algorithms, suitable for constrained environments, are part of the Ascon family designed for resource-limited devices, prioritizing security, performance, and efficiency. The library offers `constexpr` functions where possible for enhanced performance and simplifies integration. The implementation conforms to the Ascon draft standard defined in [NIST SP 800-232](https://doi.org/10.6028/NIST.SP.800-232.ipd).
 
 The library includes the following core Ascon cryptographic primitives:
 
@@ -11,6 +11,9 @@ The library includes the following core Ascon cryptographic primitives:
 * **Ascon-XOF128:** An extendable output function (XOF) that produces variable-length outputs, useful in various cryptographic contexts where flexibility in output length is required.
 * **Ascon-CXOF128:** A customizable XOF variant, offering additional flexibility by allowing for application-specific parameterization through a customization string.
 
+> [!NOTE]
+> All these schemes offer incremental API - meaning data absorption and squeezing can be performed by making multiple consecutive calls to the corresponding function, as long as that phase it not finalized. It is beneficial when working with large input/ output, which doesn't fit in-memory.
+
 This implementation leverages a sponge construction built upon the Ascon permutation. It employs `std::span` for safe memory handling and provides `constexpr` functions where feasible for optimized compile-time computations for statically known inputs.
 
 **Key Features:**
@@ -18,7 +21,7 @@ This implementation leverages a sponge construction built upon the Ascon permuta
 * **`constexpr` Support:** Compile-time evaluation for optimized performance where applicable.
 * **`std::span` Usage:** Type-safe memory management.
 * **Thorough Testing:** Includes property based tests and known-answer tests (KATs).
-* **Benchmarking Support:** Prepared for benchmarking with Google Benchmark.
+* **Benchmarking Support:** Prepared for benchmarking with google-benchmark.
 
 **Important Considerations:**
 * **Unaudited:** This implementation has not yet undergone formal security audits. Production use requires careful consideration of the risks.
@@ -29,15 +32,19 @@ This implementation leverages a sponge construction built upon the Ascon permuta
 
 * A C++20-compliant compiler (e.g., g++, clang++).
 * Build tools: `make` and `cmake`.
-* For testing: Google Test ([Installation Instructions](https://github.com/google/googletest/tree/main/googletest#standalone-cmake-project)).
-* For benchmarking: Google Benchmark ([Installation Instructions](https://github.com/google/benchmark/#installation)).
-* (Optional) For CPU cycle benchmarking: libPFM ([Installation Instructions](https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7)). Requires building Google Benchmark with libPFM support.
+* For testing: google-test ([Installation Instructions](https://github.com/google/googletest/tree/main/googletest#standalone-cmake-project)).
+* For benchmarking: google-benchmark ([Installation Instructions](https://github.com/google/benchmark/#installation)).
+* (Optional) For CPU cycle benchmarking: libPFM ([Installation Instructions](https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7)). Requires building google-benchmark with libPFM support.
 
 ## Testing
 
-This project includes a comprehensive test suite verifying the functional correctness of Ascon-AEAD128, Ascon-Hash256, Ascon-XOF128, and Ascon-CXOF128.  Known Answer Tests (KATs) ensure conformance to the specification.
+This library includes a comprehensive test suite verifying the functional correctness of Ascon-AEAD128, Ascon-Hash256, Ascon-XOF128, and Ascon-CXOF128.  Known Answer Tests (KATs) ensure conformance to the specification.
 
-Run tests using these commands (from the repository root):
+We incorporate KAT vectors from two sources.
+- (a) Repo hosting, official implementation from Ascon team @ https://github.com/ascon/ascon-c.
+- (b) NIST ACVP server @ https://github.com/usnistgov/ACVP-Server. You can sync latest ACVP KATs by running `$ make sync_acvp_kats`.
+
+Run all tests using these commands (from the repository root):
 
 ```bash
 make test -j               # Run release build tests
@@ -47,47 +54,81 @@ make debug_ubsan_test -j   # Run debug tests with UndefinedBehaviorSanitizer
 make release_ubsan_test -j # Run release tests with UndefinedBehaviorSanitizer
 ```
 
-Test results (pass/fail) are printed to the console.
-
 ```bash
-PASSED TESTS (37/37):
-       1 ms: build/test/test.out AsconAEAD128.ValidEncryptionSequence
-       1 ms: build/test/test.out AsconAEAD128.FinalizeDataCalledTwice
-       1 ms: build/test/test.out AsconAEAD128.DecryptCiphertextAfterFinalizeDecrypt
-       1 ms: build/test/test.out AsconXof128.CompileTimeComputeXofOutput
-       1 ms: build/test/test.out AsconAEAD128.AbsorbDataAfterFinalizeData
-       1 ms: build/test/test.out AsconAEAD128.DecryptCiphertextBeforeFinalizeData
-       1 ms: build/test/test.out AsconAEAD128.FinalizeDecryptBeforeFinalizeData
-       1 ms: build/test/test.out AsconAEAD128.EncryptPlaintextAfterFinalizeEncrypt
-       1 ms: build/test/test.out AsconAEAD128.FinalizeDecryptCalledTwice
-       1 ms: build/test/test.out AsconAEAD128.AbsorbDataAfterEncrypt
-       1 ms: build/test/test.out AsconAEAD128.AbsorbDataAfterDecrypt
-       1 ms: build/test/test.out AsconHash256.CompileTimeComputeMessageDigest
-       2 ms: build/test/test.out AsconAEAD128.MultipleDecryptCiphertextCalls
-       2 ms: build/test/test.out AsconAEAD128.MultipleAbsorbDataCalls
+PASSED TESTS (73/73):
        2 ms: build/test/test.out AsconAEAD128.MultipleEncryptPlaintextCalls
-       2 ms: build/test/test.out AsconAEAD128.FinalizeDataWithoutAbsorb
+       2 ms: build/test/test.out AsconAEAD128.ValidEncryptionSequence
+       2 ms: build/test/test.out AsconHash256.AbsorbMessageAfterDigestIsProduced
+       2 ms: build/test/test.out AsconCXOF128.MultipleFinalizeCalls
+       2 ms: build/test/test.out AsconAEAD128.EncryptPlaintextAfterFinalizeEncrypt
+       2 ms: build/test/test.out AsconHash256.MultipleProduceDigestCalls
+       2 ms: build/test/test.out AsconAEAD128.MultipleDecryptCiphertextCalls
        2 ms: build/test/test.out AsconAEAD128.EncryptPlaintextBeforeFinalizeData
-       2 ms: build/test/test.out AsconCXOF128.CompileTimeComputeXofOutput
-       2 ms: build/test/test.out AsconAEAD128.CompileTimeEncryptAndThenDecrypt
+       2 ms: build/test/test.out AsconAEAD128.FinalizeDataWithoutAbsorb
+       2 ms: build/test/test.out AsconHash256.MultipleFinalizeCalls
+       2 ms: build/test/test.out AsconXof128.AbsorbMessageAfterFinalize
+       2 ms: build/test/test.out AsconCXOF128.CustomizeAfterFinalization
+       2 ms: build/test/test.out AsconHash256.CompileTimeComputeMessageDigest
+       2 ms: build/test/test.out AsconHash256.MultipleAbsorbCalls
+       2 ms: build/test/test.out AsconXof128.SqueezeWithoutFinalize
        2 ms: build/test/test.out AsconAEAD128.FinalizeEncryptBeforeFinalizeData
-       2 ms: build/test/test.out AsconAEAD128.FinalizeEncryptCalledTwice
+       2 ms: build/test/test.out AsconXof128.MultipleSqueezeCalls
+       2 ms: build/test/test.out AsconXof128.ValidXofSequence
+       2 ms: build/test/test.out AsconCXOF128.MultipleCustomizeCalls
+       2 ms: build/test/test.out AsconCXOF128.FinalizeWithoutAbsorb
+       2 ms: build/test/test.out AsconCXOF128.SqueezeWithoutFinalize
+       2 ms: build/test/test.out AsconXof128.FinalizeDuringSqueezing
+       2 ms: build/test/test.out AsconXof128.FinalizeWithoutAbsorb
+       3 ms: build/test/test.out AsconHash256.ACVPKnownAnswerTests
+       3 ms: build/test/test.out AsconAEAD128.MultipleAbsorbDataCalls
+       3 ms: build/test/test.out AsconAEAD128.AbsorbDataAfterDecrypt
+       3 ms: build/test/test.out AsconCXOF128.MultipleAbsorbCalls
+       3 ms: build/test/test.out AsconAEAD128.DecryptCiphertextAfterFinalizeDecrypt
+       3 ms: build/test/test.out AsconAEAD128.AbsorbDataAfterEncrypt
+       3 ms: build/test/test.out AsconCXOF128.CompileTimeComputeCXOFOutput
+       3 ms: build/test/test.out AsconCXOF128.CustomizeDuringSqueezing
+       3 ms: build/test/test.out AsconCXOF128.AbsorbMessageAfterFinalization
+       3 ms: build/test/test.out AsconCXOF128.FinalizeDuringSqueezing
+       3 ms: build/test/test.out AsconCXOF128.AbsorbWithoutCustomize
        3 ms: build/test/test.out AsconAEAD128.ValidDecryptionSequence
-       4 ms: build/test/test.out AsconAEAD128.KnownAnswerTests
-       4 ms: build/test/test.out AsconCXOF128.KnownAnswerTests
-       7 ms: build/test/test.out AsconHash256.ForSameMessageOneshotHashingAndIncrementalHashingProducesSameDigest
-       9 ms: build/test/test.out AsconHash256.KnownAnswerTests
-      10 ms: build/test/test.out AsconXof128.KnownAnswerTests
-     557 ms: build/test/test.out AsconAEAD128.DecryptionFailureDueToBitFlippingInCipherText
-     557 ms: build/test/test.out AsconAEAD128.DecryptionFailureDueToBitFlippingInNonce
-     558 ms: build/test/test.out AsconAEAD128.DecryptionFailureDueToBitFlippingInTag
-     558 ms: build/test/test.out AsconAEAD128.DecryptionFailureDueToBitFlippingInKey
-     559 ms: build/test/test.out AsconAEAD128.DecryptionFailureDueToBitFlippingInAssociatedData
-     565 ms: build/test/test.out AsconAEAD128.ForSameCiphertextOneshotDecryptionAndIncrementalDecryptionProducesSamePlaintext
-     566 ms: build/test/test.out AsconAEAD128.EncryptThenDecrypt
-     566 ms: build/test/test.out AsconAEAD128.ForSamePlaintextOneshotEncryptionAndIncrementalEncryptionProducesSameTag
-     737 ms: build/test/test.out AsconXof128.ForSameMessageOneshotHashingAndIncrementalHashingProducesSameOutput
-    3203 ms: build/test/test.out AsconCXOF128.ForSameMessageOneshotHashingAndIncrementalHashingProducesSameOutput
+       3 ms: build/test/test.out AsconAEAD128.FinalizeDataCalledTwice
+       3 ms: build/test/test.out AsconCXOF128.CustomizeDuringAbsorption
+       3 ms: build/test/test.out AsconCXOF128.AbsorbMessageDuringSqueezing
+       3 ms: build/test/test.out AsconXof128.CompileTimeComputeXofOutput
+       3 ms: build/test/test.out AsconHash256.DigestWithoutFinalize
+       3 ms: build/test/test.out AsconHash256.AbsorbMessageAfterFinalize
+       3 ms: build/test/test.out AsconXof128.MultipleAbsorbCalls
+       4 ms: build/test/test.out AsconAEAD128.FinalizeEncryptCalledTwice
+       4 ms: build/test/test.out AsconAEAD128.AbsorbDataAfterFinalizeData
+       4 ms: build/test/test.out AsconAEAD128.FinalizeDecryptBeforeFinalizeData
+       4 ms: build/test/test.out AsconAEAD128.ACVPKnownAnswerTests
+       4 ms: build/test/test.out AsconAEAD128.CompileTimeEncryptAndThenDecrypt
+       4 ms: build/test/test.out AsconHash256.FinalizeAfterDigestIsProduced
+       4 ms: build/test/test.out AsconXof128.AbsorbMessageDuringSqueezing
+       4 ms: build/test/test.out AsconCXOF128.ACVPKnownAnswerTests
+       5 ms: build/test/test.out AsconAEAD128.FinalizeDecryptCalledTwice
+       5 ms: build/test/test.out AsconCXOF128.MultipleSqueezeCalls
+       5 ms: build/test/test.out AsconXof128.MultipleFinalizeCalls
+       5 ms: build/test/test.out AsconCXOF128.ValidCXOFSequence
+       5 ms: build/test/test.out AsconHash256.FinalizeWithoutAbsorption
+       6 ms: build/test/test.out AsconCXOF128.KnownAnswerTests
+       6 ms: build/test/test.out AsconXof128.ACVPKnownAnswerTests
+       6 ms: build/test/test.out AsconAEAD128.KnownAnswerTests
+       6 ms: build/test/test.out AsconAEAD128.DecryptCiphertextBeforeFinalizeData
+       8 ms: build/test/test.out AsconHash256.ValidHashingSequence
+      11 ms: build/test/test.out AsconHash256.KnownAnswerTests
+      11 ms: build/test/test.out AsconHash256.ForSameMessageOneshotHashingAndIncrementalHashingProducesSameDigest
+      13 ms: build/test/test.out AsconXof128.KnownAnswerTests
+     529 ms: build/test/test.out AsconAEAD128.DecryptionFailureDueToBitFlippingInCipherText
+     535 ms: build/test/test.out AsconAEAD128.DecryptionFailureDueToBitFlippingInKey
+     537 ms: build/test/test.out AsconAEAD128.DecryptionFailureDueToBitFlippingInTag
+     540 ms: build/test/test.out AsconAEAD128.ForSamePlaintextOneshotEncryptionAndIncrementalEncryptionProducesSameTag
+     541 ms: build/test/test.out AsconAEAD128.DecryptionFailureDueToBitFlippingInNonce
+     545 ms: build/test/test.out AsconAEAD128.DecryptionFailureDueToBitFlippingInAssociatedData
+     550 ms: build/test/test.out AsconAEAD128.EncryptThenDecrypt
+     556 ms: build/test/test.out AsconAEAD128.ForSameCiphertextOneshotDecryptionAndIncrementalDecryptionProducesSamePlaintext
+     977 ms: build/test/test.out AsconXof128.ForSameMessageOneshotHashingAndIncrementalHashingProducesSameOutput
+    6222 ms: build/test/test.out AsconCXOF128.ForSameMessageOneshotHashingAndIncrementalHashingProducesSameOutput
 ```
 
 > [!NOTE]
@@ -95,12 +136,7 @@ PASSED TESTS (37/37):
 
 ## Benchmarking
 
-This section details how to benchmark the performance of the implemented Ascon algorithms. The benchmarks measure throughput (bytes per second) and, optionally, cycles per byte if libPFM is used.
-
-The Makefile provides two benchmarking targets:
-
-* **`make benchmark`:** Runs benchmarks without libPFM-based CPU cycle counting. This is the faster option and suitable for initial performance assessments.
-* **`make perf`:** Runs benchmarks *with* libPFM support, providing detailed CPU cycle counts alongside throughput.  This requires building Google Benchmark with libPFM support; see the Prerequisites section for more details.
+This section details how to benchmark the performance of the implemented Ascon schemes for a range of input/ output sizes. The benchmarks measure throughput (bytes/second) and, optionally, cycles/byte if libPFM is used.
 
 To run the benchmarks, execute the following commands from the repository root:
 
@@ -114,15 +150,49 @@ make perf -j       # Run benchmarks with CPU cycle counting (requires libPFM)
 
 ### On 12th Gen Intel(R) Core(TM) i7-1260P
 
-JSON benchmark result lives in [bench_result_on_Linux_6.14.0-15-generic_x86_64_with_g++_14](./bench_result_on_Linux_6.14.0-15-generic_x86_64_with_g++_14.json).
 
-### On ARM Cortex-A72 ( i.e. Raspberry Pi 4B )
+```bash
+$ ./build/perf/perf.out --benchmark_min_warmup_time=.05 --benchmark_min_time=0.1s --benchmark_perf_counters=CYCLES --benchmark_counters_tabular=true
 
-JSON benchmark result lives in [bench_result_on_Linux_6.6.62+rpt-rpi-v8_aarch64_with_g++_12](./bench_result_on_Linux_6.6.62+rpt-rpi-v8_aarch64_with_g++_12.json).
+2025-06-24T12:26:17+04:00
+Running ./build/perf/perf.out
+Run on (16 X 4476.96 MHz CPU s)
+CPU Caches:
+  L1 Data 48 KiB (x8)
+  L1 Instruction 32 KiB (x8)
+  L2 Unified 1280 KiB (x8)
+  L3 Unified 18432 KiB (x1)
+Load Average: 0.66, 0.72, 0.75
+------------------------------------------------------------------------------------------------------------------
+Benchmark                               Time             CPU   Iterations     CYCLES CYCLES/ BYTE bytes_per_second
+------------------------------------------------------------------------------------------------------------------
+ascon_aead128_encrypt/32/32           218 ns          218 ns       647861   1.01088k       15.795      279.846Mi/s
+ascon_aead128_encrypt/32/256          603 ns          603 ns       232372   2.82204k      9.79876      455.836Mi/s
+ascon_aead128_encrypt/32/2048        3719 ns         3716 ns        37706   17.3952k      8.36309       533.76Mi/s
+ascon_aead128_encrypt/32/16384      28763 ns        28749 ns         4869   134.509k      8.19376      544.555Mi/s
+ascon_hash256/32                      304 ns          304 ns       458926   1.42371k       44.491      100.367Mi/s
+ascon_hash256/64                      441 ns          441 ns       319251   2.05356k      32.0869      138.435Mi/s
+ascon_hash256/2048                   8801 ns         8797 ns        15690   41.1541k      20.0948       222.01Mi/s
+ascon_hash256/16384                 69569 ns        69545 ns         2018    323.49k      19.7443      224.675Mi/s
+ascon_permutation<1>                 6.52 ns         6.52 ns     21310975    30.4988     0.762469       5.7115Gi/s
+ascon_permutation<8>                 26.8 ns         26.8 ns      5203520    125.093      3.12733      1.39183Gi/s
+ascon_permutation<12>                38.8 ns         38.7 ns      3450091    177.924      4.44811      984.442Mi/s
+ascon_permutation<16>                49.5 ns         49.5 ns      2828246    231.737      5.79343      770.708Mi/s
+ascon_xof128/32/64                    452 ns          451 ns       307910   2.10692k       21.947      202.854Mi/s
+ascon_xof128/64/64                    591 ns          591 ns       234636   2.75744k      21.5425      206.573Mi/s
+ascon_xof128/2048/64                 9245 ns         9242 ns        14896   43.1936k      20.4515      217.945Mi/s
+ascon_xof128/16384/64               71968 ns        71943 ns         1954   335.222k      20.3807      218.033Mi/s
+ascon_xof128/32/512                  2401 ns         2400 ns        58618   11.1967k      20.5821      216.152Mi/s
+ascon_xof128/64/512                  2530 ns         2529 ns        55372   11.8428k      20.5604      217.227Mi/s
+ascon_xof128/2048/512               11197 ns        11194 ns        12540   52.3059k       20.432      218.095Mi/s
+ascon_xof128/16384/512              73831 ns        73811 ns         1902   344.367k      20.3816      218.306Mi/s
+```
+
+More detailed JSON benchmark result @ [bench_result_on_Linux_6.14.0-22-generic_x86_64_with_g++_14.json](./bench_result_on_Linux_6.14.0-22-generic_x86_64_with_g++_14.json).
 
 ## Usage
 
-This section demonstrates how to use the Ascon header-only library for authenticated encryption (AEAD), hashing, and extendable output functions (XOFs).  Remember that this implementation is **unaudited**, and production use requires careful consideration of the risks. No linking is required; simply include the necessary header files.
+This section demonstrates how to use the Ascon header-only C++ library for authenticated encryption (AEAD), hashing, and extendable output functions (XOFs).
 
 ### Ascon-AEAD128
 
@@ -135,12 +205,13 @@ Ascon-AEAD128 provides authenticated encryption with associated data. The associ
 
 int main() {
   // Key, Nonce, and Associated Data
-  std::array<uint8_t, 16> key = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f};
-  std::array<uint8_t, 16> nonce = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+  std::array<uint8_t, ascon_aead128::KEY_BYTE_LEN> key = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f};
+  std::array<uint8_t, ascon_aead128::NONCE_BYTE_LEN> nonce{};
+  std::array<uint8_t, ascon_aead128::TAG_BYTE_LEN> tag{};
+
   std::array<uint8_t, 10> ad = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09};
   std::array<uint8_t, 10> plaintext = {0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19};
   std::array<uint8_t, 10> ciphertext{};
-  std::array<uint8_t, 16> tag{};
 
   // Encryption
   ascon_aead128::ascon_aead128_t enc_handle(key, nonce);
@@ -172,7 +243,7 @@ int main() {
 
 ### Ascon-Hash256
 
-Ascon-Hash256 computes a 256-bit (32-byte) hash.
+Ascon-Hash256 computes a 256-bit (32-byte) hash for any arbitrary length (>=0) input message.
 
 ```cpp
 #include "ascon/hashes/ascon_hash256.hpp"
@@ -184,9 +255,9 @@ int main() {
   std::array<uint8_t, 32> digest{};
 
   ascon_hash256::ascon_hash256_t hasher;
-  assert(hasher.absorb(message));
-  assert(hasher.finalize());
-  assert(hasher.digest(digest));
+  assert(hasher.absorb(message) == ascon_hash256::ascon_hash256_status_t::absorbed_data);
+  assert(hasher.finalize() == ascon_hash256::ascon_hash256_status_t::finalized_data_absorption_phase);
+  assert(hasher.digest(digest) == ascon_hash256::ascon_hash256_status_t::message_digest_produced);
 
   // digest now contains the hash
   return 0;
@@ -195,7 +266,7 @@ int main() {
 
 ### Ascon-XOF128 and Ascon-CXOF128
 
-Ascon-XOF128 and Ascon-CXOF128 are extendable output functions. XOF128 produces a variable-length output, while CXOF128 allows for customization with an application-specific string.
+Ascon-Xof128 and Ascon-CXOF128 are extendable output functions. XOF128 produces a variable-length output, while CXOF128 allows for customization with an application-specific string.
 
 ```cpp
 #include "ascon/hashes/ascon_xof128.hpp"
@@ -209,9 +280,9 @@ int main() {
   std::array<uint8_t, 20> output{};
 
   ascon_xof128::ascon_xof128_t xof;
-  assert(xof.absorb(message));
-  assert(xof.finalize());
-  assert(xof.squeeze(output));
+  assert(xof.absorb(message) == ascon_xof128::ascon_xof128_status_t::absorbed_data);
+  assert(xof.finalize() == ascon_xof128::ascon_xof128_status_t::finalized_data_absorption_phase);
+  assert(xof.squeeze(output) == ascon_xof128::ascon_xof128_status_t::squeezed_output);
 
   // CXOF128
   std::array<uint8_t, 5> customization_string = {'A', 'S', 'C', 'O', 'N'};
@@ -219,16 +290,16 @@ int main() {
   std::array<uint8_t, 30> output2{};
 
   ascon_cxof128::ascon_cxof128_t cxof;
-  assert(cxof.customize(customization_string));
-  assert(cxof.absorb(message2));
-  assert(cxof.finalize());
-  assert(cxof.squeeze(output2));
+  assert(cxof.customize(customization_string) == ascon_cxof128::ascon_cxof128_status_t::customized);
+  assert(cxof.absorb(message2) == ascon_cxof128::ascon_cxof128_status_t::absorbed_data);
+  assert(cxof.finalize() == ascon_cxof128::ascon_cxof128_status_t::finalized_data_absorption_phase);
+  assert(cxof.squeeze(output2) == ascon_cxof128::ascon_cxof128_status_t::squeezed_output);
 
   return 0;
 }
 ```
 
-Remember to compile with a C++20 compliant compiler.
+Use a C++20 compliant compiler when using this library.
 
 
 ### Example Programs
