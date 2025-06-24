@@ -21,8 +21,8 @@ def main():
                 continue
 
             out_bit_len = test["outLen"]
-            out_bit_len_mul_8 = out_bit_len & -8
-            out_byte_len = out_bit_len_mul_8 // 8
+            out_bit_len_mul_of_8 = out_bit_len & -8
+            out_byte_len = out_bit_len_mul_of_8 // 8
 
             count += 1
 
