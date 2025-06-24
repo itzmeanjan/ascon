@@ -3,12 +3,11 @@
 #include <fstream>
 #include <gtest/gtest.h>
 
-TEST(AsconCXOF128, KnownAnswerTests)
+static void
+ascon_cxof128_KAT_runner(const std::string file_name)
 {
   using namespace std::literals;
-
-  const std::string kat_file = "./kats/ascon_cxof128.kat";
-  std::fstream file(kat_file);
+  std::fstream file(file_name);
 
   while (true) {
     std::string count0;
@@ -52,4 +51,14 @@ TEST(AsconCXOF128, KnownAnswerTests)
   }
 
   file.close();
+}
+
+TEST(AsconCXOF128, KnownAnswerTests)
+{
+  ascon_cxof128_KAT_runner("./kats/ascon_cxof128.kat");
+}
+
+TEST(AsconCXOF128, ACVPKnownAnswerTests)
+{
+  ascon_cxof128_KAT_runner("./kats/ascon_cxof128.acvp.kat");
 }
