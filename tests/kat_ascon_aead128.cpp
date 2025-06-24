@@ -100,6 +100,7 @@ TEST(AsconAEAD128, ACVPKnownAnswerTests)
       std::string ad0;
       std::string ct0;
       std::string tag0;
+      std::string test_passed0;
 
       std::getline(file, key0);
       std::getline(file, nonce0);
@@ -107,6 +108,7 @@ TEST(AsconAEAD128, ACVPKnownAnswerTests)
       std::getline(file, ad0);
       std::getline(file, ct0);
       std::getline(file, tag0);
+      std::getline(file, test_passed0);
 
       auto key1 = std::string_view(key0);
       auto nonce1 = std::string_view(nonce0);
@@ -114,6 +116,7 @@ TEST(AsconAEAD128, ACVPKnownAnswerTests)
       auto ad1 = std::string_view(ad0);
       auto ct1 = std::string_view(ct0);
       auto tag1 = std::string_view(tag0);
+      auto test_passed1 = std::string_view(test_passed0);
 
       auto key2 = key1.substr(key1.find("="sv) + 2, key1.size());
       auto nonce2 = nonce1.substr(nonce1.find("="sv) + 2, nonce1.size());
@@ -121,6 +124,7 @@ TEST(AsconAEAD128, ACVPKnownAnswerTests)
       auto ad2 = ((ad1.find("="sv) + 2) > ad1.size()) ? ""sv : ad1.substr(ad1.find("="sv) + 2, ad1.size());
       auto ct2 = ct1.substr(ct1.find("="sv) + 2, ct1.size());
       auto tag2 = tag1.substr(tag1.find("="sv) + 2, tag1.size());
+      auto test_passed2 = test_passed1.substr(test_passed1.find("="sv) + 2, test_passed1.size());
 
       auto key = hex_to_bytes(key2);
       auto nonce = hex_to_bytes(nonce2);
@@ -128,6 +132,7 @@ TEST(AsconAEAD128, ACVPKnownAnswerTests)
       auto ad = hex_to_bytes(ad2);
       auto ct = hex_to_bytes(ct2);
       auto tag = hex_to_bytes(tag2);
+      auto test_passed = test_passed2 == "True";
 
       auto key_span = std::span<const uint8_t, ascon_aead128::KEY_BYTE_LEN>(key);
       auto nonce_span = std::span<const uint8_t, ascon_aead128::NONCE_BYTE_LEN>(nonce);
@@ -155,7 +160,12 @@ TEST(AsconAEAD128, ACVPKnownAnswerTests)
       EXPECT_EQ(dec_handle.finalize_decrypt(computed_tag_span), ascon_aead128::ascon_aead128_status_t::decryption_success_as_tag_matches);
 
       EXPECT_TRUE(std::ranges::equal(ct_span.first(pt.size()), computed_ct));
-      EXPECT_TRUE(std::ranges::equal(tag, computed_tag_span.subspan(0, tag.size())));
+
+      if (test_passed) {
+        EXPECT_TRUE(std::ranges::equal(tag, computed_tag_span.first(tag.size())));
+      } else {
+        EXPECT_FALSE(std::ranges::equal(tag, computed_tag_span.first(tag.size())));
+      }
 
       std::string empty_line;
       std::getline(file, empty_line);
