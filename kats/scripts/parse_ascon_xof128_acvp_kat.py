@@ -21,14 +21,18 @@ def main():
                 continue
 
             out_bit_len = test["outLen"]
-            out_bit_len_mul_of_8 = out_bit_len & -8
-            out_byte_len = out_bit_len_mul_of_8 // 8
+            smaller_out_bit_len = out_bit_len & -8
+            smaller_out_byte_len = smaller_out_bit_len // 8
+            hex_char_len = smaller_out_byte_len * 2
+
+            if hex_char_len == 0:
+                continue
 
             count += 1
 
             sys.stdout.write(f'Count =  {count}\n')
             sys.stdout.write(f'Msg = {test["msg"]}\n')
-            sys.stdout.write(f'MD = {test["md"][:out_byte_len]}\n')
+            sys.stdout.write(f'MD = {test["md"][:hex_char_len]}\n')
 
             sys.stdout.write('\n')
             sys.stdout.flush()
