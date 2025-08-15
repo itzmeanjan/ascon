@@ -3,7 +3,7 @@
 
 namespace ascon_xof128 {
 
-// See table 12 of Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
+// See table 12 of Ascon standard @ https://doi.org/10.6028/NIST.SP.800-232.
 static constexpr uint8_t UNIQUE_ALGORITHM_ID = 3;
 static constexpr auto INITIAL_PERMUTATION_STATE = ascon_sponge_mode::compute_init_state(ascon_common_utils::compute_iv(UNIQUE_ALGORITHM_ID,
                                                                                                                        ascon_sponge_mode::ASCON_PERM_NUM_ROUNDS,

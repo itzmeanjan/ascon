@@ -5,7 +5,7 @@ namespace ascon_hash256 {
 
 static constexpr size_t DIGEST_BYTE_LEN = (ascon_perm::PERMUTATION_STATE_BITWIDTH - ascon_sponge_mode::RATE_BITS) / std::numeric_limits<uint8_t>::digits;
 
-// See table 12 of Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
+// See table 12 of Ascon standard @ https://doi.org/10.6028/NIST.SP.800-232.
 static constexpr uint8_t UNIQUE_ALGORITHM_ID = 2;
 static constexpr auto INITIAL_PERMUTATION_STATE = ascon_sponge_mode::compute_init_state(ascon_common_utils::compute_iv(UNIQUE_ALGORITHM_ID,
                                                                                                                        ascon_sponge_mode::ASCON_PERM_NUM_ROUNDS,
