@@ -8,7 +8,7 @@
 namespace ascon_common_utils {
 
 // Compile-time evaluated function for computing initial values for Ascon variants.
-// See appendix B of Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
+// See appendix B of Ascon standard @ https://doi.org/10.6028/NIST.SP.800-232.
 [[nodiscard]]
 forceinline consteval uint64_t
 compute_iv(const uint8_t unique_algo_id,

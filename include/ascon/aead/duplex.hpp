@@ -8,7 +8,7 @@
 
 namespace ascon_duplex_mode {
 
-// See table 12 of Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
+// See table 12 of Ascon standard @ https://doi.org/10.6028/NIST.SP.800-232.
 static constexpr uint8_t UNIQUE_ALGORITHM_ID = 1;
 
 static constexpr size_t ASCON_PERM_NUM_ROUNDS_A = 12;
@@ -24,7 +24,7 @@ static constexpr size_t TAG_BYTE_LEN = BIT_SECURITY_LEVEL / std::numeric_limits<
 
 /**
  * @brief Initializes the Ascon permutation state with the given key and nonce.
- * See point 1 of section 4.1.1 in Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
+ * See point 1 of section 4.1.1 in Ascon standard @ https://doi.org/10.6028/NIST.SP.800-232.
  *
  * @param state Ascon permutation state.
  * @param key Encryption key.
@@ -51,7 +51,7 @@ initialize(ascon_perm::ascon_perm_t& state, std::span<const uint8_t, KEY_BYTE_LE
 /**
  * @brief Absorbs arbitrary-length associated data into the Ascon permutation state.
  * This function can be called multiple times with different spans of associated data before calling `finalize_associated_data`.
- * See point 2 of section 4.1.1 in Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
+ * See point 2 of section 4.1.1 in Ascon standard @ https://doi.org/10.6028/NIST.SP.800-232.
  *
  * @param state Ascon permutation state.
  * @param block_offset Offset within the current block, must be <= `RATE_BYTES`.
@@ -90,7 +90,7 @@ absorb_associated_data(ascon_perm::ascon_perm_t& state, size_t& block_offset, st
 /**
  * @brief Finalizes the associated data absorption process by adding a 1-bit domain separator.
  * No more associated data can be absorbed after calling this function.
- * See point 2 of section 4.1.1 in Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
+ * See point 2 of section 4.1.1 in Ascon standard @ https://doi.org/10.6028/NIST.SP.800-232.
  *
  * @param state Ascon permutation state.
  * @param block_offset Offset within the current block, must be <= `RATE_BYTES`.
@@ -119,7 +119,7 @@ finalize_associated_data(ascon_perm::ascon_perm_t& state, size_t& block_offset, 
 /**
  * @brief Absorbs arbitrary-length plaintext into the Ascon permutation state and produces ciphertext.
  * This function can be called multiple times with different spans of plaintext before calling `finalize_ciphering`.
- * See point 3 of section 4.1.1 in Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
+ * See point 3 of section 4.1.1 in Ascon standard @ https://doi.org/10.6028/NIST.SP.800-232.
  *
  * @param state Ascon permutation state.
  * @param block_offset Offset within the current block, must be <= `RATE_BYTES`.
@@ -164,7 +164,7 @@ encrypt_plaintext(ascon_perm::ascon_perm_t& state, size_t& block_offset, std::sp
 /**
  * @brief Absorbs arbitrary-length ciphertext into the Ascon permutation state and produces decrypted plaintext.
  * This function can be called multiple times with different spans of ciphertext before calling `finalize_ciphering`.
- * See point 3 of section 4.1.2 in Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
+ * See point 3 of section 4.1.2 in Ascon standard @ https://doi.org/10.6028/NIST.SP.800-232.
  *
  * @param state Ascon permutation state.
  * @param block_offset Offset within the current block, must be <= `RATE_BYTES`.
@@ -211,7 +211,7 @@ decrypt_ciphertext(ascon_perm::ascon_perm_t& state, size_t& block_offset, std::s
 /**
  * @brief Finalizes the plaintext/ciphertext absorption process by adding a 1-bit domain separator to be permutation state.
  * No more plaintext/ciphertext can be encrypted/decrypted after calling this function.
- * See point 3 of section 4.1.1 in Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
+ * See point 3 of section 4.1.1 in Ascon standard @ https://doi.org/10.6028/NIST.SP.800-232.
  *
  * @param state Ascon permutation state.
  * @param block_offset Offset within the current block, must be <= `RATE_BYTES`.
@@ -232,7 +232,7 @@ finalize_ciphering(ascon_perm::ascon_perm_t& state, size_t& block_offset)
 
 /**
  * @brief Finalizes the Ascon permutation state and produces a tag.
- * See point 4 of section 4.1.1 in Ascon draft standard @ https://doi.org/10.6028/NIST.SP.800-232.ipd.
+ * See point 4 of section 4.1.1 in Ascon standard @ https://doi.org/10.6028/NIST.SP.800-232.
  *
  * @param state Ascon permutation state.
  * @param key Key used for encryption/decryption.

@@ -2,7 +2,7 @@
 Ascon Permutation-based Lightweight Cryptography Standards for Constrained Devices: Authenticated Encryption, Hash, and Extendable Output Functions.
 
 ## Overview
-This header-only C++ library implements the whole Ascon LwC cipher-suite i.e. Ascon-AEAD128, Ascon-Hash256, Ascon-XOF128, and Ascon-CXOF128. These algorithms, suitable for constrained environments, are part of the Ascon family designed for resource-limited devices, prioritizing security, performance, and efficiency. The library offers `constexpr` functions where possible for enhanced performance and simplifies integration. The implementation conforms to the Ascon draft standard defined in [NIST SP 800-232](https://doi.org/10.6028/NIST.SP.800-232.ipd).
+This header-only C++ library implements the whole Ascon LwC cipher-suite i.e. Ascon-AEAD128, Ascon-Hash256, Ascon-XOF128, and Ascon-CXOF128. These algorithms, suitable for constrained environments, are part of the Ascon family designed for resource-limited devices, prioritizing security, performance, and efficiency. The library offers `constexpr` functions where possible for enhanced performance and simplifies integration. The implementation conforms to the Ascon standard defined in [NIST SP 800-232](https://doi.org/10.6028/NIST.SP.800-232).
 
 The library includes the following core Ascon cryptographic primitives:
 
