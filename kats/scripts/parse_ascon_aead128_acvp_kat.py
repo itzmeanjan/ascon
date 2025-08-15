@@ -21,7 +21,7 @@ def main():
         for test in test_group["tests"]:
             if test["payloadLen"] % 8 != 0:
                 continue
-            if test["aadLen"] % 8 != 0:
+            if test["adLen"] % 8 != 0:
                 continue
             if test["tagLen"] % 8 != 0:
                 continue
@@ -32,7 +32,7 @@ def main():
             sys.stdout.write(f'Key = {test["key"]}\n')
             sys.stdout.write(f'Nonce = {test["nonce"]}\n')
             sys.stdout.write(f'PT = {test["pt"]}\n')
-            sys.stdout.write(f'AD = {test["aad"]}\n')
+            sys.stdout.write(f'AD = {test["ad"]}\n')
             sys.stdout.write(f'CT = {test["ct"]}\n')
             sys.stdout.write(f'Tag = {test["tag"]}\n')
 
